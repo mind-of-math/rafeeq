@@ -133,6 +133,8 @@ table.prog td.top{color:#b07d00;font-weight:800}
 #bk{background:rgba(46,38,64,.45)}
 #toast{position:fixed;bottom:2em;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:.5em 1.1em;border-radius:2em;z-index:40;display:none;max-width:90vw;text-align:center}
 #toast.show{display:block;animation:zoom .3s}
+body.slide{font-size:clamp(14px,3.6vmin,34px)}
+body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 </style>
 </head>
 <body>
@@ -167,6 +169,12 @@ table.prog td.top{color:#b07d00;font-weight:800}
   </div>
 </div>
 <div id="toast"></div>
+<div class="ov" id="ask" style="background:rgba(46,38,64,.45);z-index:45">
+  <div class="modal" style="width:min(24em,92vw);text-align:center">
+    <div id="askT" style="font-size:1.05em;line-height:1.6"></div>
+    <div class="acts" style="justify-content:center"><button class="primary" id="askY">نعم</button><button id="askN">إلغاء</button></div>
+  </div>
+</div>
 <div class="ov" id="mg">
   <div class="modal">
     <h2 class="cal">أسماء الطالبات والفصول</h2>
@@ -231,7 +239,8 @@ function start(){
   state = norm(newest(readDoc(), readLocal()) || defaultState());
   render();
 }
-var isFloat = /[?&]float=1/.test(location.search);
+var isFloat = /[?&](float|slide)=1/.test(location.search);
+if(/[?&]slide=1/.test(location.search)) document.body.classList.add("slide");
 var dlg = null;
 function setupFloat(){
   var b = $("flBtn");
@@ -244,7 +253,7 @@ function setupFloat(){
         if(r.status === Office.AsyncResultStatus.Succeeded){
           dlg = r.value;
           dlg.addEventHandler(Office.EventType.DialogEventReceived, function(){ dlg = null; var l = readLocal(); if(valid(l)){ state = norm(newest(state, l)); save(); render(); } });
-        } else { alert("تعذر فتح النافذة العائمة. أعيدي المحاولة."); }
+        } else { note("تعذر فتح النافذة العائمة (رمز " + (r.error ? r.error.code : "؟") + "). أغلقي أي نافذة عائمة مفتوحة ثم أعيدي المحاولة."); }
       });
   };
 }
@@ -319,7 +328,7 @@ function renderStars(){
   $("main").innerHTML = h + '</div>';
   $("srt").onclick = function(){ sortMode = sortMode==="name" ? "points" : "name"; renderStars(); };
   $("allUp").onclick = function(){ c.students.forEach(function(s){ s.points++; logAdd(c, s.id, 1); }); save(); renderStars(); celebrate("👏","أحسنتن جميعًا","نجمة لكل طالبة"); };
-  $("rst").onclick = function(){ if(confirm("هل تريدين تصفير نجوم جميع طالبات هذا الفصل؟")){ c.students.forEach(function(s){ s.points = 0; }); save(); renderStars(); } };
+  $("rst").onclick = function(){ ask("هل تريدين تصفير نجوم جميع طالبات هذا الفصل؟ (سجل التقدم لا يُمسح)", function(){ c.students.forEach(function(s){ s.points = 0; }); save(); renderStars(); }); };
   var cards = document.querySelectorAll(".card");
   for(var i=0;i<cards.length;i++){
     cards[i].onclick = function(e){
@@ -472,6 +481,16 @@ function fmtWhen(m){
   var d = new Date(m*60000), t = d.toLocaleTimeString("ar-SA", {hour:"numeric", minute:"2-digit"});
   return (m >= pStart("day") ? "اليوم" : d.toLocaleDateString("ar-SA", {weekday:"long", day:"numeric", month:"long"})) + " · " + t;
 }
+// بوربوينت لا يعرض نوافذ alert/confirm داخل الإضافات، لذلك نستخدم نافذة خاصة
+function ask(msg, yes, okOnly){
+  $("askT").textContent = msg;
+  $("askN").style.display = okOnly ? "none" : "";
+  $("askY").textContent = okOnly ? "حسنًا" : "نعم";
+  $("askY").onclick = function(){ $("ask").classList.remove("show"); if(yes) yes(); };
+  $("askN").onclick = function(){ $("ask").classList.remove("show"); };
+  $("ask").classList.add("show");
+}
+function note(msg){ ask(msg, null, true); }
 var toastT = null;
 function toast(msg){ var t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("show"); }, 2600); }
 
@@ -675,9 +694,10 @@ function openBk(mode){
     $("bkF").onchange = function(){ var f = this.files && this.files[0]; if(!f) return; var r = new FileReader(); r.onload = function(){ tx.value = r.result; }; r.readAsText(f); };
     $("bkGo").onclick = function(){
       var obj = null; try{ obj = JSON.parse(tx.value.trim()); }catch(e){}
-      if(!valid(obj)){ alert("هذه ليست نسخة احتياطية صالحة من رفيق الحصة."); return; }
-      if(!confirm("سيتم استبدال بيانات المساعد الحالية بالنسخة الاحتياطية. هل تريدين المتابعة؟")) return;
-      state = norm(obj); lastPicked = null; save(); $("bk").classList.remove("show"); render(); toast("تم الاسترجاع بنجاح");
+      if(!valid(obj)){ note("هذه ليست نسخة احتياطية صالحة من رفيق الحصة."); return; }
+      ask("سيتم استبدال بيانات المساعد الحالية بالنسخة الاحتياطية. هل تريدين المتابعة؟", function(){
+        state = norm(obj); lastPicked = null; save(); $("bk").classList.remove("show"); render(); toast("تم الاسترجاع بنجاح");
+      });
     };
   }
   $("bkX").onclick = function(){ $("bk").classList.remove("show"); };
@@ -713,12 +733,13 @@ $("mgNew").onclick = function(){
   mgId = id; save(); fillMg(); $("mgName").focus(); $("mgName").select();
 };
 $("mgDel").onclick = function(){
-  if(state.classes.length < 2){ alert("لا يمكن حذف الفصل الوحيد. يمكنك تعديل اسمه وأسماء طالباته."); return; }
+  if(state.classes.length < 2){ note("لا يمكن حذف الفصل الوحيد. يمكنك تعديل اسمه وأسماء طالباته."); return; }
   var c = state.classes.filter(function(x){ return x.id===mgId; })[0];
-  if(!confirm("حذف فصل «"+c.name+"» وجميع نجوم طالباته؟")) return;
+  ask("حذف فصل «"+c.name+"» وجميع نجوم طالباته؟", function(){
   state.classes = state.classes.filter(function(x){ return x.id!==mgId; });
   if(state.current === mgId) state.current = state.classes[0].id;
   mgId = state.current; save(); fillMg(); render();
+});
 };
 })();
 </script>
