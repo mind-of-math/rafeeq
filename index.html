@@ -54,6 +54,8 @@ footer{text-align:center;font-size:.72em;color:var(--muted);padding:.25em}
 .card .crown{position:absolute;top:-.55em;inset-inline-start:.4em;font-size:1.2em}
 .card .minus{position:absolute;bottom:.3em;inset-inline-end:.3em;width:1.6em;height:1.6em;padding:0;border-radius:50%;background:var(--lav);color:var(--muted);font-size:.85em;opacity:.55}
 .card .minus:hover{opacity:1}
+.card .pt .mq{font-size:.62em;font-weight:700;color:var(--purple)}
+.card .tot{font-size:.8em;color:var(--muted);margin-top:.1em}
 .card.pop{animation:pop .45s}
 @keyframes pop{40%{transform:scale(1.1);border-color:var(--gold)}}
 
@@ -191,7 +193,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
       <h2 class="cal" style="font-size:1.05em">🔗 الربط مع موقع مُتقِن</h2>
       <input id="lnkTok" type="password" dir="ltr" autocomplete="off" placeholder="مفتاح الربط (من لوحة معلمة مُتقِن ← ⭐ ربط رفيق الحصة)">
       <label class="chk"><input type="checkbox" id="lnkAuto" style="width:auto"> إرسال النجوم إلى مُتقِن تلقائيًا</label>
-      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">⭐ إضافة نجوم مُتقِن</button></div>
+      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">📥 جلب نجوم مُتقِن</button></div>
       <div class="hint" id="lnkSt"></div>
     </div>
     <div class="acts">
@@ -335,7 +337,7 @@ function renderStars(){
     '<button class="danger" id="rst">تصفير النجوم</button></div><div class="grid">';
   list.forEach(function(s){
     h += '<div class="card" data-id="'+s.id+'">'+(max>0 && s.points===max ? '<span class="crown">👑</span>' : '')+
-      '<div class="nm">'+esc(s.name)+'</div><div class="pt">⭐ '+s.points+'</div>'+
+      '<div class="nm">'+esc(s.name)+'</div><div class="pt">⭐ '+s.points+(s.mq>0 ? ' <span class="mq">| 🎯 '+s.mq+'</span>' : '')+'</div>'+(s.mq>0 ? '<div class="tot">المجموع '+(s.points+s.mq)+'</div>' : '')+
       '<button class="minus" data-m="'+s.id+'" title="إنقاص نجمة">−</button></div>';
   });
   $("main").innerHTML = h + '</div>';
@@ -819,23 +821,24 @@ function importRoster(){
   }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذر الاستيراد"); });
 }
 function nrm(t){ return String(t||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/\s+/g," ").trim(); }
-// إضافة نجوم الدروس في مُتقِن إلى نجوم الطالبات هنا. تُضاف الزيادة فقط (لا تكرار)، ولا تُرسل نجوم مُتقِن إلى مُتقِن مرة أخرى.
+// جلب نجوم الدروس في مُتقِن وعرضها منفصلة على بطاقة كل طالبة (لا تُضاف إلى نجوم الحصة ولا تُرسل إلى مُتقِن).
 function importStars(){
   mqFetch("/api/rafeeq/stars").then(function(j){
-    var map = {}; (j.students || []).forEach(function(x){ map[nrm(x.name)] = +x.stars || 0; });
+    var map = {}, list = [];
+    (j.classes || []).forEach(function(c){ (c.students || []).forEach(function(x){ list.push(x); }); });
+    if(!list.length) list = j.students || [];
+    list.forEach(function(x){ var k = nrm(x.name); map[k] = Math.max(map[k] || 0, +x.stars || 0); });
     var who = 0, total = 0;
     state.classes.forEach(function(c){
       c.students.forEach(function(s){
-        var v = map[nrm(s.name)]; if(!(v > 0)) return;
-        var d = v - (s.mq || 0); if(d <= 0) return;
-        s.points = (s.points || 0) + d; s.mq = v;
-        c.log = c.log || []; c.log.push([s.id, 0, d, "mq"]);
-        who++; total += d;
+        var v = map[nrm(s.name)]; if(v === undefined) return;
+        if((s.mq || 0) !== v) s.mq = v;
+        if(v > 0){ who++; total += v; }
       });
     });
-    if(!who){ lnkMsg("لا توجد نجوم جديدة من مُتقِن."); toast("لا توجد نجوم جديدة من مُتقِن"); return; }
     save(); render();
-    var msg = "أُضيفت " + total + " نجمة من مُتقِن إلى " + who + " طالبة ✅"; lnkMsg(msg); toast(msg);
+    var msg = who ? "تم جلب نجوم مُتقِن (" + total + " نجمة لـ " + who + " طالبة) ✅" : "لا توجد نجوم لدى الطالبات في مُتقِن بعد.";
+    lnkMsg(msg); toast(msg);
   }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذّر جلب النجوم"); });
 }
 function fillLnk(){ $("lnkTok").value = lget(TK); $("lnkAuto").checked = lget(AK) === "1"; lnkMsg(lget(TK) ? "المفتاح محفوظ على هذا الجهاز." : ""); }
