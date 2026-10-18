@@ -182,7 +182,22 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 .attrow .cnt{font-size:.78em;color:var(--muted)}
 .attrow button{padding:.3em .5em;font-size:.85em;background:var(--lav);color:var(--muted)}
 .attrow button.onA{background:var(--red);color:#fff}
+.attrow button.onX{background:#6a5acd;color:#fff}
+.attrow.x{border-color:#6a5acd}
+.card .st{display:flex;gap:.25em;justify-content:center;margin-top:.35em}
+.card .st button{padding:.2em .45em;font-size:.8em;border-radius:.6em;background:var(--lav);color:var(--ink)}
+.card .st button.on{background:var(--red);color:#fff}
+.card .st button.on.l{background:var(--gold);color:#3b2a00}
+.card .st button.on.x{background:#6a5acd;color:#fff}
+.abtag.l{background:var(--gold);color:#3b2a00}
+.abtag.x{background:#6a5acd}
+.card.attm{cursor:default}
 .attrow button.onL{background:var(--gold);color:#3b2a00}
+.attrow.y{border-color:var(--green);background:var(--green-l)}
+.attrow.ab{opacity:.45}
+.attrow button.onY{background:var(--green);color:#fff}
+.attrow button.onN{background:var(--red);color:#fff}
+.hwt{font:inherit;padding:.4em .6em;border:1px solid var(--line);border-radius:.55em;background:#fff;color:var(--ink);min-width:14em;flex:1}
 .attrep td.dates{white-space:normal;text-align:start;font-size:.85em;color:var(--muted)}
 </style>
 </head>
@@ -197,6 +212,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
     <button data-tab="pick">🎲 عشوائي</button>
     <button data-tab="groups">👥 المجموعات</button>
     <button data-tab="att">📋 الغياب</button>
+    <button data-tab="hw">📚 الواجب</button>
     <button data-tab="timer">⏱ مؤقت</button>
     <button data-tab="prog">📈 التقدم</button>
   </nav>
@@ -262,7 +278,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 "use strict";
 var KEY = "rafeeq-alhessa-v1";
 var state = null, inOffice = false, started = false;
-var tab = "stars", sortMode = "name";
+var tab = "stars", sortMode = "name", attMode = false;
 var $ = function(id){ return document.getElementById(id); };
 var uid = function(){ return Math.random().toString(36).slice(2,10); };
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -277,7 +293,7 @@ function newest(a,b){ if(!valid(a)) return valid(b) ? b : null; if(!valid(b)) re
 function norm(s){
   s.classes.forEach(function(c){
     c.students = c.students || []; c.picked = c.picked || [];
-    c.groups = c.groups || {}; c.att = c.att || {}; if(!Array.isArray(c.days)) c.days = [0, 1, 2, 3, 4];
+    c.groups = c.groups || {}; c.att = c.att || {}; c.hw = c.hw || {}; if(!Array.isArray(c.days)) c.days = [0, 1, 2, 3, 4];
     ["orig", "diff"].forEach(function(k){ var g = c.groups[k] = c.groups[k] || {}; g.names = g.names || GDEF[k].slice(); g.map = g.map || {}; });
     if(!c.log){ c.log = []; c.students.forEach(function(st){ if(st.points > 0) c.log.push([st.id, 0, st.points]); }); }
     // نسخة سابقة كانت تدمج نجوم مُتقِن في نجوم الحصة: نُعيد ما أُضيف فقط (المسجّل بعلامة mq) ونُبقي بقية النجوم كما هي،
@@ -378,7 +394,7 @@ $("sndBtn").onclick = function(){ state.sound = !state.sound; save(); renderHead
 (function(){ var bs = document.querySelectorAll(".tabs button");
   for(var i=0;i<bs.length;i++) bs[i].onclick = function(){ tab = this.getAttribute("data-tab"); render(); }; })();
 
-function render(){ if(!state) return; renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="prog") renderProg(); else renderTimer(); }
+function render(){ if(!state) return; renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="hw") renderHw(); else if(tab==="prog") renderProg(); else renderTimer(); }
 
 function emptyView(){
   $("main").innerHTML = '<div class="empty"><div class="big">👩‍🎓</div><div>لا توجد أسماء طالبات في هذا الفصل بعد</div><button class="primary" id="goMg">أضيفي أسماء الطالبات</button></div>';
@@ -394,22 +410,29 @@ function renderStars(){
   var list = c.students.slice();
   if(sortMode === "points") list.sort(function(a,b){ return b.points - a.points || a.name.localeCompare(b.name,"ar"); });
   var h = '<div class="toolbar">'+
-    '<button id="srt">'+(sortMode==="name" ? "↕ ترتيب حسب النجوم" : "↕ الترتيب الأصلي")+'</button>'+
+    '<button id="attm"'+(attMode ? ' class="green"' : '')+'>'+(attMode ? "✔ إنهاء تسجيل الحضور" : "📋 تسجيل الحضور")+'</button><button id="srt">'+(sortMode==="name" ? "↕ ترتيب حسب النجوم" : "↕ الترتيب الأصلي")+'</button>'+
     '<button class="green" id="allUp">⭐ نجمة للجميع</button><span class="sp"></span>'+
-    '<span class="muted">اضغطي على اسم الطالبة لتعزيزها</span>'+
+    '<span class="muted">'+(attMode ? "اضغطي غائبة / متأخرة / خروج لكل طالبة (ضغطة ثانية تلغي)، والباقيات حاضرات" : "اضغطي على اسم الطالبة لتعزيزها")+'</span>'+
     '<button class="danger" id="rst">تصفير النجوم</button></div><div class="grid">';
+  var today = (c.att || {})[todayIso()] || {};
   list.forEach(function(s){
-    h += '<div class="card'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-id="'+s.id+'">'+(absentToday(c)[s.id] ? '<span class="abtag">غائبة</span>' : '')+(max>0 && s.points===max ? '<span class="crown">👑</span>' : '')+
+    var v = today[s.id] || "";
+    var tag = v === "a" ? '<span class="abtag">غائبة</span>' : v === "l" ? '<span class="abtag l">⏰ متأخرة</span>' : v === "x" ? '<span class="abtag x">🚪 خروج</span>' : '';
+    h += '<div class="card'+(v === "a" ? ' absent' : '')+(attMode ? ' attm' : '')+'" data-id="'+s.id+'">'+tag+(max>0 && s.points===max ? '<span class="crown">👑</span>' : '')+
       '<div class="nm">'+esc(s.name)+'</div><div class="pt">⭐ '+s.points+(s.mq>0 ? ' <span class="mq">| 🎯 '+s.mq+'</span>' : '')+'</div>'+(s.mq>0 ? '<div class="tot">المجموع '+(s.points+s.mq)+'</div>' : '')+
-      '<button class="minus" data-m="'+s.id+'" title="إنقاص نجمة">−</button></div>';
+      (attMode ? '<div class="st"><button data-a="'+s.id+'" data-v="a" class="'+(v==="a"?"on":"")+'">غائبة</button><button data-a="'+s.id+'" data-v="l" class="l '+(v==="l"?"on":"")+'">متأخرة</button><button data-a="'+s.id+'" data-v="x" class="x '+(v==="x"?"on":"")+'">خروج</button></div>' : '<button class="minus" data-m="'+s.id+'" title="إنقاص نجمة">−</button>')+'</div>';
   });
   $("main").innerHTML = h + '</div>';
+  $("attm").onclick = function(){ attMode = !attMode; renderStars(); };
   $("srt").onclick = function(){ sortMode = sortMode==="name" ? "points" : "name"; renderStars(); };
   $("allUp").onclick = function(){ var abA = absentToday(c); c.students.forEach(function(s){ if(abA[s.id]) return; s.points++; logAdd(c, s.id, 1); }); save(); renderStars(); celebrate("👏","أحسنتن جميعًا","نجمة لكل طالبة"); };
   $("rst").onclick = function(){ ask("هل تريدين تصفير نجوم جميع طالبات هذا الفصل؟ (سجل التقدم لا يُمسح)", function(){ c.students.forEach(function(s){ s.points = 0; }); save(); renderStars(); }); };
   var cards = document.querySelectorAll(".card");
   for(var i=0;i<cards.length;i++){
     cards[i].onclick = function(e){
+      var at = e.target.getAttribute("data-a");
+      if(at){ e.stopPropagation(); var r = c.att[todayIso()] = c.att[todayIso()] || {}, v = e.target.getAttribute("data-v"); if(r[at] === v) delete r[at]; else r[at] = v; if(!Object.keys(r).length) delete c.att[todayIso()]; save(); renderStars(); return; }
+      if(attMode) return;
       var m = e.target.getAttribute("data-m");
       if(m){ e.stopPropagation(); addPoint(m, -1); return; }
       addPoint(this.getAttribute("data-id"), 1);
@@ -583,10 +606,10 @@ function stepDay(c, iso, dir){
 }
 function attCounts(c){
   var o = {};
-  c.students.forEach(function(s){ o[s.id] = {a: 0, l: 0, ad: [], ld: []}; });
+  c.students.forEach(function(s){ o[s.id] = {a: 0, l: 0, x: 0, ad: [], ld: [], xd: []}; });
   Object.keys(c.att).sort().forEach(function(day){
     var rec = c.att[day];
-    Object.keys(rec).forEach(function(sid){ if(!o[sid]) return; if(rec[sid] === "a"){ o[sid].a++; o[sid].ad.push(day); } else if(rec[sid] === "l"){ o[sid].l++; o[sid].ld.push(day); } });
+    Object.keys(rec).forEach(function(sid){ if(!o[sid]) return; if(rec[sid] === "a"){ o[sid].a++; o[sid].ad.push(day); } else if(rec[sid] === "l"){ o[sid].l++; o[sid].ld.push(day); } else if(rec[sid] === "x"){ o[sid].x++; o[sid].xd.push(day); } });
   });
   return o;
 }
@@ -596,22 +619,22 @@ function renderAtt(){
   var wd = dateOf(attDate).getDay(), off = c.days.length && c.days.indexOf(wd) < 0;
   var h = '<div class="gtop"><div class="seg" id="attV"><button data-v="day"'+(attView==="day"?' class="on"':'')+'>تسجيل الغياب</button><button data-v="rep"'+(attView==="rep"?' class="on"':'')+'>سجل الغياب</button></div></div>';
   if(attView === "rep") return renderAttRep(c, h);
-  var rec = c.att[attDate] || {}, na = 0, nl = 0;
-  Object.keys(rec).forEach(function(k){ if(rec[k] === "a") na++; else if(rec[k] === "l") nl++; });
+  var rec = c.att[attDate] || {}, na = 0, nl = 0, nx = 0;
+  Object.keys(rec).forEach(function(k){ if(rec[k] === "a") na++; else if(rec[k] === "l") nl++; else if(rec[k] === "x") nx++; });
   var cnt = attCounts(c);
   h += '<div class="attbar"><button id="aPrev" title="اليوم السابق">▶</button><input type="date" id="aDate" value="'+attDate+'"><button id="aNext" title="اليوم التالي">◀</button>'+
        '<button id="aToday">اليوم</button><span class="dayl">'+esc(dayLabel(attDate))+'</span></div>';
   h += '<div class="days"><span class="muted">أيام حصص هذا الفصل:</span>'+[0,1,2,3,4,5,6].map(function(d){ return '<button data-d="'+d+'"'+(c.days.indexOf(d) >= 0 ? ' class="on"' : '')+'>'+WD[d]+'</button>'; }).join("")+'</div>';
   if(off) h += '<div class="muted" style="margin:.4em 0;color:var(--red)">⚠️ هذا اليوم ليس من أيام حصص هذا الفصل، ويمكنك التسجيل فيه مع ذلك.</div>';
-  h += '<div class="attsum"><span>👥 '+c.students.length+'</span><span style="color:var(--green)">✓ حاضرات '+(c.students.length - na)+'</span><span style="color:var(--red)">✗ غائبات '+na+'</span><span style="color:#b07d00">⏰ متأخرات '+nl+'</span>'+
+  h += '<div class="attsum"><span>👥 '+c.students.length+'</span><span style="color:var(--green)">✓ حاضرات '+(c.students.length - na)+'</span><span style="color:var(--red)">✗ غائبات '+na+'</span><span style="color:#b07d00">⏰ متأخرات '+nl+'</span><span style="color:#6a5acd">🚪 خروج '+nx+'</span>'+
        '<button id="aAll">✓ الكل حاضرات</button></div>';
   h += '<div class="attlist">';
   c.students.forEach(function(s){
     var v = rec[s.id] || "", k = cnt[s.id];
-    h += '<div class="attrow '+v+'"><div class="nm">'+esc(s.name)+'<div class="cnt">غياب: '+k.a+' • تأخر: '+k.l+'</div></div>'+
-         '<button data-s="'+s.id+'" data-v="a" class="'+(v==="a"?"onA":"")+'">✗ غائبة</button><button data-s="'+s.id+'" data-v="l" class="'+(v==="l"?"onL":"")+'">⏰ متأخرة</button></div>';
+    h += '<div class="attrow '+v+'"><div class="nm">'+esc(s.name)+'<div class="cnt">غياب: '+k.a+' • تأخر: '+k.l+' • خروج: '+k.x+'</div></div>'+
+         '<button data-s="'+s.id+'" data-v="a" class="'+(v==="a"?"onA":"")+'">✗ غائبة</button><button data-s="'+s.id+'" data-v="l" class="'+(v==="l"?"onL":"")+'">⏰ متأخرة</button><button data-s="'+s.id+'" data-v="x" class="'+(v==="x"?"onX":"")+'">🚪 خروج</button></div>';
   });
-  h += '</div><div class="muted" style="margin-top:.5em">الطالبات حاضرات تلقائيًا؛ اضغطي «غائبة» أو «متأخرة» عند الحاجة، واضغطي مرة أخرى للإلغاء. الغائبات اليوم لا يظهرن في العجلة.</div>';
+  h += '</div><div class="muted" style="margin-top:.5em">الطالبات حاضرات تلقائيًا؛ اضغطي «غائبة» أو «متأخرة» أو «خروج» عند الحاجة، واضغطي مرة أخرى للإلغاء. الغائبات اليوم لا يظهرن في العجلة.</div>';
   $("main").innerHTML = h; bindAttCommon(c);
   $("aDate").onchange = function(){ if(this.value){ attDate = this.value; renderAtt(); } };
   $("aPrev").onclick = function(){ attDate = stepDay(c, attDate, -1); renderAtt(); };
@@ -639,26 +662,124 @@ function bindAttCommon(c){
 function renderAttRep(c, h){
   var cnt = attCounts(c), days = Object.keys(c.att).sort();
   var rows = c.students.slice().sort(function(a, b){ return cnt[b.id].a - cnt[a.id].a || cnt[b.id].l - cnt[a.id].l; });
-  h += '<div class="toolbar"><span class="muted">أيام سُجّل فيها غياب أو تأخر: '+days.length+'</span><span class="sp"></span><button class="green" id="aXl">📥 تنزيل سجل الغياب (إكسل)</button></div>';
-  h += '<div class="tblwrap"><table class="prog attrep"><thead><tr><th>م</th><th>الاسم</th><th>أيام الغياب</th><th>التأخر</th><th>تواريخ الغياب</th></tr></thead><tbody>';
+  h += '<div class="toolbar"><span class="muted">أيام سُجّل فيها غياب أو تأخر أو خروج: '+days.length+'</span><span class="sp"></span><button class="green" id="aXl">📥 تنزيل سجل الغياب (إكسل)</button></div>';
+  h += '<div class="tblwrap"><table class="prog attrep"><thead><tr><th>م</th><th>الاسم</th><th>أيام الغياب</th><th>التأخر</th><th>الخروج</th><th>تواريخ الغياب</th></tr></thead><tbody>';
   rows.forEach(function(s, i){
     var k = cnt[s.id];
-    h += '<tr><td>'+(i+1)+'</td><td class="n">'+esc(s.name)+'</td><td'+(k.a ? ' style="color:var(--red);font-weight:800"' : '')+'>'+k.a+'</td><td>'+k.l+'</td><td class="dates">'+
+    h += '<tr><td>'+(i+1)+'</td><td class="n">'+esc(s.name)+'</td><td'+(k.a ? ' style="color:var(--red);font-weight:800"' : '')+'>'+k.a+'</td><td>'+k.l+'</td><td>'+k.x+'</td><td class="dates">'+
       (k.ad.length ? k.ad.map(function(d){ return '<bdi>' + WD[dateOf(d).getDay()] + ' <bdi dir="ltr">' + d + '</bdi></bdi>'; }).join("، ") : "—")+'</td></tr>';
   });
   h += '</tbody></table></div>';
   $("main").innerHTML = h; bindAttCommon(c);
   $("aXl").onclick = function(){
-    var sum = [["م", "الاسم", "أيام الغياب", "مرات التأخر", "تواريخ الغياب", "تواريخ التأخر"]].concat(rows.map(function(s, i){
-      var k = cnt[s.id]; return [i + 1, s.name, k.a, k.l, k.ad.join("، "), k.ld.join("، ")]; }));
+    var sum = [["م", "الاسم", "أيام الغياب", "مرات التأخر", "مرات الخروج", "تواريخ الغياب", "تواريخ التأخر"]].concat(rows.map(function(s, i){
+      var k = cnt[s.id]; return [i + 1, s.name, k.a, k.l, k.x, k.ad.join("، "), k.ld.join("، ")]; }));
     var daily = [["التاريخ", "اليوم", "الطالبة", "الحالة"]];
-    days.forEach(function(d){ var r = c.att[d]; c.students.forEach(function(s){ if(r[s.id]) daily.push([d, WD[dateOf(d).getDay()], s.name, r[s.id] === "a" ? "غائبة" : "متأخرة"]); }); });
+    days.forEach(function(d){ var r = c.att[d]; c.students.forEach(function(s){ if(r[s.id]) daily.push([d, WD[dateOf(d).getDay()], s.name, r[s.id] === "a" ? "غائبة" : r[s.id] === "x" ? "خروج" : "متأخرة"]); }); });
     var blob = makeXlsx([
-      {name: "ملخص الغياب", rows: [["سجل الغياب — " + c.name + " — " + todayIso()], []].concat(sum), bold: [0, 2], widths: [6, 28, 12, 12, 40, 30]},
+      {name: "ملخص الغياب", rows: [["سجل الغياب — " + c.name + " — " + todayIso()], []].concat(sum), bold: [0, 2], widths: [6, 28, 12, 12, 12, 40, 30]},
       {name: "السجل اليومي", rows: daily, bold: [0], widths: [13, 11, 28, 10]}
     ]);
     download("سجل الغياب - " + safeName(c.name) + " - " + todayIso() + ".xlsx", blob);
     toast("تم تنزيل سجل الغياب");
+  };
+}
+
+/* ---------- الواجب ---------- */
+var hwDate = null, hwView = "day";
+function hwCounts(c){
+  var o = {}; c.students.forEach(function(s){ o[s.id] = {y: 0, n: 0, nd: []}; });
+  Object.keys(c.hw || {}).sort().forEach(function(day){
+    var r = (c.hw[day] || {}).r || {};
+    Object.keys(r).forEach(function(sid){ if(!o[sid]) return; if(r[sid] === "y") o[sid].y++; else if(r[sid] === "n"){ o[sid].n++; o[sid].nd.push(day); } });
+  });
+  return o;
+}
+function hwEnsure(c){ c.hw = c.hw || {}; var x = c.hw[hwDate] = c.hw[hwDate] || {t: "", r: {}, a: {}}; x.r = x.r || {}; x.a = x.a || {}; return x; }
+function hwTidy(c){ var x = c.hw[hwDate]; if(x && !x.t && !Object.keys(x.r).length) delete c.hw[hwDate]; }
+function bindHwCommon(c){
+  var vb = document.querySelectorAll("#hwV button");
+  for(var i = 0; i < vb.length; i++) vb[i].onclick = function(){ hwView = this.getAttribute("data-v"); renderHw(); };
+}
+function renderHw(){
+  var c = cls(); if(!c.students.length) return emptyView();
+  c.hw = c.hw || {};
+  if(!hwDate) hwDate = todayIso();
+  var top = '<div class="gtop"><div class="seg" id="hwV"><button data-v="day"'+(hwView==="day"?' class="on"':'')+'>تسجيل الواجب</button><button data-v="rep"'+(hwView==="rep"?' class="on"':'')+'>سجل الواجبات</button></div></div>';
+  if(hwView === "rep") return renderHwRep(c, top);
+  var rec = c.hw[hwDate] || {t: "", r: {}, a: {}}, r = rec.r || {}, aw = rec.a || {}, ab = (c.att || {})[hwDate] || {};
+  var ny = 0, nn = 0, nu = 0, nab = 0;
+  c.students.forEach(function(s){ if(ab[s.id] === "a"){ nab++; return; } if(r[s.id] === "y") ny++; else if(r[s.id] === "n") nn++; else nu++; });
+  var cnt = hwCounts(c);
+  var h = top + '<div class="attbar"><button id="hPrev" title="اليوم السابق">▶</button><input type="date" id="hDate" value="'+hwDate+'"><button id="hNext" title="اليوم التالي">◀</button>'+
+    '<button id="hToday">اليوم</button><span class="dayl">'+esc(dayLabel(hwDate))+'</span></div>';
+  h += '<div class="attbar"><input class="hwt" id="hTitle" maxlength="80" placeholder="عنوان الواجب (اختياري) مثل: تمارين الدرس 3" value="'+esc(rec.t || "")+'"></div>';
+  h += '<div class="attsum"><span style="color:var(--green)">✅ حلّت '+ny+'</span><span style="color:var(--red)">❌ لم تحلّ '+nn+'</span><span>⬜ لم تُسجَّل '+nu+'</span>'+(nab ? '<span>🚫 غائبات '+nab+'</span>' : '')+
+    '<button id="hAll">✅ الكل حلّت</button><button class="green" id="hStar">🌟 نجمة لمن حلّت</button><button id="hCopy">📋 نسخ أسماء من لم تحلّ</button></div>';
+  h += '<div class="attlist">';
+  c.students.forEach(function(s){
+    var v = r[s.id] || "", k = cnt[s.id], isAb = ab[s.id] === "a";
+    h += '<div class="attrow '+(v === "y" ? "y" : v === "n" ? "a" : "")+(isAb ? " ab" : "")+'"><div class="nm">'+esc(s.name)+(aw[s.id] ? ' ⭐' : '')+(isAb ? ' <small>(غائبة)</small>' : '')+'<div class="cnt">حلّت: '+k.y+' • لم تحلّ: '+k.n+'</div></div>'+
+      '<button data-s="'+s.id+'" data-v="y" class="'+(v==="y"?"onY":"")+'">✅ حلّت</button><button data-s="'+s.id+'" data-v="n" class="'+(v==="n"?"onN":"")+'">❌ لم تحلّ</button></div>';
+  });
+  h += '</div><div class="muted" style="margin-top:.5em">اضغطي «حلّت» أو «لم تحلّ» لكل طالبة (والضغط مرة أخرى يلغي). «نجمة لمن حلّت» تمنح نجمة واحدة لكل طالبة حلّت الواجب مرة واحدة فقط لهذا اليوم.</div>';
+  $("main").innerHTML = h; bindHwCommon(c);
+  $("hDate").onchange = function(){ if(this.value){ hwDate = this.value; renderHw(); } };
+  $("hPrev").onclick = function(){ hwDate = stepDay(c, hwDate, -1); renderHw(); };
+  $("hNext").onclick = function(){ hwDate = stepDay(c, hwDate, 1); renderHw(); };
+  $("hToday").onclick = function(){ hwDate = todayIso(); renderHw(); };
+  $("hTitle").onchange = function(){ var x = hwEnsure(c); x.t = this.value.trim(); hwTidy(c); save(); };
+  $("hAll").onclick = function(){
+    var x = hwEnsure(c), abn = (c.att || {})[hwDate] || {};
+    c.students.forEach(function(s){ if(abn[s.id] === "a") return; if(!x.r[s.id]) x.r[s.id] = "y"; });
+    save(); renderHw();
+  };
+  $("hStar").onclick = function(){
+    var x = c.hw[hwDate]; if(!x){ toast("سجّلي من حلّت الواجب أولًا"); return; }
+    var abn = (c.att || {})[hwDate] || {}, n = 0;
+    c.students.forEach(function(s){ if(x.r[s.id] === "y" && !x.a[s.id] && abn[s.id] !== "a"){ s.points++; logAdd(c, s.id, 1); x.a[s.id] = 1; n++; } });
+    if(!n){ toast("لا توجد طالبات جديدات لمنحهن نجمة"); return; }
+    save(); renderHw(); celebrate("🌟", "أحسنتن", "نجمة لـ " + n + (n === 1 ? " طالبة حلّت" : " طالبات حللن") + " الواجب");
+  };
+  $("hCopy").onclick = function(){
+    var x = c.hw[hwDate] || {r: {}}, abn = (c.att || {})[hwDate] || {};
+    var names = c.students.filter(function(s){ return x.r[s.id] === "n" && abn[s.id] !== "a"; }).map(function(s){ return s.name; });
+    if(!names.length){ toast("لا توجد طالبات لم يحللن"); return; }
+    var txt = names.join("\n");
+    function ok(){ toast("تم نسخ " + names.length + " اسمًا"); }
+    try{ navigator.clipboard.writeText(txt).then(ok, function(){ prompt("انسخي الأسماء:", txt); }); }catch(e){ prompt("انسخي الأسماء:", txt); }
+  };
+  var bs = document.querySelectorAll(".attrow button");
+  for(var j = 0; j < bs.length; j++) bs[j].onclick = function(){
+    var sid = this.getAttribute("data-s"), v = this.getAttribute("data-v"), x = hwEnsure(c);
+    if(x.r[sid] === v) delete x.r[sid]; else x.r[sid] = v;
+    hwTidy(c); save(); renderHw();
+  };
+}
+function renderHwRep(c, h){
+  var cnt = hwCounts(c), days = Object.keys(c.hw || {}).sort();
+  var rows = c.students.slice().sort(function(a, b){ return cnt[b.id].n - cnt[a.id].n || a.name.localeCompare(b.name, "ar"); });
+  h += '<div class="toolbar"><span class="muted">أيام سُجّل فيها واجب: '+days.length+'</span><span class="sp"></span><button class="green" id="hXl">📥 تنزيل سجل الواجبات (إكسل)</button></div>';
+  if(!days.length){ $("main").innerHTML = h + '<div class="muted">لا توجد واجبات مسجّلة بعد.</div>'; bindHwCommon(c); $("hXl").onclick = function(){ toast("لا توجد بيانات"); }; return; }
+  h += '<div class="tblwrap"><table class="prog attrep"><thead><tr><th>م</th><th>الاسم</th><th>حلّت</th><th>لم تحلّ</th><th>النسبة</th><th>تواريخ عدم الحل</th></tr></thead><tbody>';
+  rows.forEach(function(s, i){
+    var k = cnt[s.id], t = k.y + k.n;
+    h += '<tr><td>'+(i+1)+'</td><td class="n">'+esc(s.name)+'</td><td>'+k.y+'</td><td'+(k.n ? ' style="color:var(--red);font-weight:800"' : '')+'>'+k.n+'</td><td>'+(t ? Math.round(100 * k.y / t) + "%" : "—")+'</td><td class="dates">'+
+      (k.nd.length ? k.nd.map(function(d){ return '<bdi>' + WD[dateOf(d).getDay()] + ' <bdi dir="ltr">' + d + '</bdi></bdi>'; }).join("، ") : "—")+'</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  $("main").innerHTML = h; bindHwCommon(c);
+  $("hXl").onclick = function(){
+    var sum = [["م", "الاسم", "حلّت", "لم تحلّ", "النسبة", "تواريخ عدم الحل"]].concat(rows.map(function(s, i){
+      var k = cnt[s.id], t = k.y + k.n; return [i + 1, s.name, k.y, k.n, t ? Math.round(100 * k.y / t) + "%" : "", k.nd.join("، ")]; }));
+    var daily = [["التاريخ", "اليوم", "عنوان الواجب", "الطالبة", "الحالة"]];
+    days.forEach(function(d){ var x = c.hw[d]; c.students.forEach(function(s){ var v = (x.r || {})[s.id]; if(v) daily.push([d, WD[dateOf(d).getDay()], x.t || "", s.name, v === "y" ? "حلّت" : "لم تحلّ"]); }); });
+    var blob = makeXlsx([
+      {name: "ملخص الواجبات", rows: [["سجل الواجبات — " + c.name + " — " + todayIso()], []].concat(sum), bold: [0, 2], widths: [6, 28, 10, 10, 10, 40]},
+      {name: "السجل اليومي", rows: daily, bold: [0], widths: [13, 11, 28, 28, 10]}
+    ]);
+    download("سجل الواجبات - " + safeName(c.name) + " - " + todayIso() + ".xlsx", blob);
+    toast("تم تنزيل سجل الواجبات");
   };
 }
 
