@@ -438,8 +438,10 @@ function renderGroups(){
   var c = cls(); if(!c.students.length) return emptyView();
   var g = gOf(c), cols = GCOL[gKind], any = Object.keys(g.map).some(function(id){ return findStu(id); });
   var h = '<div class="gtop"><div class="seg" id="gKind"><button data-k="orig"'+(gKind==="orig"?' class="on"':'')+'>المجموعات الأصلية</button><button data-k="diff"'+(gKind==="diff"?' class="on"':'')+'>مجموعات التمايز</button></div><span class="sp" style="flex:1"></span>'+
-    '<button class="primary" id="gDist">'+(gKind==="orig" ? "🔀 توزيع متوازن" : "📊 توزيع حسب المستوى")+'</button>'+
-    '<button id="gPick">🎲 مجموعة عشوائية</button><button id="gRen">✏️ الأسماء</button>'+(any ? '<button class="danger" id="gClr">مسح التوزيع</button>' : '')+'</div>';
+    (g.locked ? '' : '<button class="primary" id="gDist">'+(gKind==="orig" ? "🔀 توزيع متوازن" : "📊 توزيع حسب المستوى")+'</button>')+
+    '<button id="gPick">🎲 مجموعة عشوائية</button>'+(g.locked ? '' : '<button id="gRen">✏️ الأسماء</button>')+
+    (any ? '<button id="gLock" class="'+(g.locked ? 'green' : '')+'">'+(g.locked ? '🔒 المجموعات مثبّتة' : '🔓 تثبيت المجموعات')+'</button>' : '')+
+    (any && !g.locked ? '<button class="danger" id="gClr">مسح التوزيع</button>' : '')+'</div>';
   if(!any){
     h += '<div class="empty" style="height:auto;margin-top:2em"><div class="big">👥</div><div>'+(gKind==="orig"
       ? "وزّعي الطالبات على 4 مجموعات بمستويات مختلطة"
@@ -460,20 +462,24 @@ function renderGroups(){
   var un = c.students.filter(function(s){ var v = g.map[s.id]; return v === undefined || v === null; });
   if(un.length) h += '<div class="unas"><div class="muted" style="margin-bottom:.35em">بدون مجموعة ('+un.length+') — اضغطي على الاسم لإضافته:</div><div class="gm" style="display:flex;flex-wrap:wrap;gap:.35em">'+
     un.map(function(s){ return '<span class="chip" data-s="'+s.id+'">'+esc(shortName(s.name))+'<i>'+s.points+'</i></span>'; }).join("")+'</div></div>';
-  h += '<div class="muted" style="margin-top:.6em">اضغطي على اسم أي طالبة لنقلها إلى مجموعة أخرى.'+(gKind==="diff" ? " التوزيع حسب المستوى مبني على النجوم، فراجعيه بما تعرفينه عن طالباتك." : "")+'</div>';
+  h += '<div class="muted" style="margin-top:.6em">'+(g.locked ? '🔒 المجموعات مثبّتة: لا يمكن نقل الطالبات أو إعادة التوزيع حتى تلغي التثبيت.' : 'اضغطي على اسم أي طالبة لنقلها إلى مجموعة أخرى، ثم اضغطي «🔓 تثبيت المجموعات» لتثبيتها.')+(gKind==="diff" ? " التوزيع حسب المستوى مبني على النجوم، فراجعيه بما تعرفينه عن طالباتك." : "")+'</div>';
   $("main").innerHTML = h; bindG(c);
 }
 function bindG(c){
   var g = gOf(c);
   var kb = document.querySelectorAll("#gKind button");
   for(var i = 0; i < kb.length; i++) kb[i].onclick = function(){ gKind = this.getAttribute("data-k"); renderGroups(); };
-  $("gDist").onclick = function(){
+  if($("gLock")) $("gLock").onclick = function(){
+    if(g.locked) ask("إلغاء تثبيت " + (gKind==="orig" ? "المجموعات الأصلية" : "مجموعات التمايز") + "؟ سيصبح بالإمكان نقل الطالبات وإعادة التوزيع.", function(){ g.locked = false; save(); renderGroups(); });
+    else { g.locked = true; save(); renderGroups(); toast("تم تثبيت المجموعات 🔒"); }
+  };
+  if($("gDist")) $("gDist").onclick = function(){
     var any = Object.keys(g.map).length;
     var go = function(){ distribute(c, gKind); renderGroups(); toast("تم توزيع الطالبات على 4 مجموعات"); };
     if(any) ask("سيُعاد توزيع جميع الطالبات وتضيع التعديلات اليدوية. هل تريدين المتابعة؟", go); else go();
   };
   if($("gClr")) $("gClr").onclick = function(){ ask("مسح توزيع "+(gKind==="orig"?"المجموعات الأصلية":"مجموعات التمايز")+"؟ (النجوم لا تتأثر)", function(){ g.map = {}; save(); renderGroups(); }); };
-  $("gRen").onclick = function(){ openRename(c); };
+  if($("gRen")) $("gRen").onclick = function(){ openRename(c); };
   $("gPick").onclick = function(){
     var ks = [0,1,2,3].filter(function(k){ return c.students.some(function(s){ return g.map[s.id] === k; }); });
     if(!ks.length){ note("وزّعي الطالبات على المجموعات أولًا."); return; }
@@ -492,7 +498,7 @@ function bindG(c){
     save(); renderGroups(); celebrate("👏", "أحسنتنّ يا " + g.names[k].replace(/^المجموعة\s*/, "مجموعة "), "نجمة لكل طالبة في المجموعة");
   };
   var ch = document.querySelectorAll(".chip[data-s]");
-  for(var i3 = 0; i3 < ch.length; i3++) ch[i3].onclick = function(){ openMove(c, this.getAttribute("data-s")); };
+  for(var i3 = 0; i3 < ch.length; i3++) ch[i3].onclick = function(){ if(g.locked){ toast("المجموعات مثبّتة 🔒 ألغي التثبيت أولًا للنقل"); return; } openMove(c, this.getAttribute("data-s")); };
 }
 function openMove(c, sid){
   var g = gOf(c), s = findStu(sid); if(!s) return;
