@@ -191,7 +191,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
       <h2 class="cal" style="font-size:1.05em">🔗 الربط مع موقع مُتقِن</h2>
       <input id="lnkTok" type="password" dir="ltr" autocomplete="off" placeholder="مفتاح الربط (من لوحة معلمة مُتقِن ← ⭐ ربط رفيق الحصة)">
       <label class="chk"><input type="checkbox" id="lnkAuto" style="width:auto"> إرسال النجوم إلى مُتقِن تلقائيًا</label>
-      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button></div>
+      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">⭐ إضافة نجوم مُتقِن</button></div>
       <div class="hint" id="lnkSt"></div>
     </div>
     <div class="acts">
@@ -775,7 +775,7 @@ function syncEvents(c){
   var seen = {}, last = +lget(LK) || 0, out = [], names = {};
   c.students.forEach(function(s){ names[s.id] = s.name; });
   (c.log || []).forEach(function(e){
-    if(e[1] <= 0 || !names[e[0]]) return;
+    if(e[1] <= 0 || e[3] === "mq" || !names[e[0]]) return;
     var base = c.id + "|" + e[0] + "|" + e[1] + "|" + e[2]; seen[base] = (seen[base] || 0) + 1;
     if(e[1] >= last - 2) out.push({k: base + "|" + seen[base], c: c.name, n: names[e[0]], d: e[2], m: e[1]});
   });
@@ -818,10 +818,31 @@ function importRoster(){
     lnkMsg(msg); toast(msg);
   }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذر الاستيراد"); });
 }
+function nrm(t){ return String(t||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/\s+/g," ").trim(); }
+// إضافة نجوم الدروس في مُتقِن إلى نجوم الطالبات هنا. تُضاف الزيادة فقط (لا تكرار)، ولا تُرسل نجوم مُتقِن إلى مُتقِن مرة أخرى.
+function importStars(){
+  mqFetch("/api/rafeeq/stars").then(function(j){
+    var map = {}; (j.students || []).forEach(function(x){ map[nrm(x.name)] = +x.stars || 0; });
+    var who = 0, total = 0;
+    state.classes.forEach(function(c){
+      c.students.forEach(function(s){
+        var v = map[nrm(s.name)]; if(!(v > 0)) return;
+        var d = v - (s.mq || 0); if(d <= 0) return;
+        s.points = (s.points || 0) + d; s.mq = v;
+        c.log = c.log || []; c.log.push([s.id, 0, d, "mq"]);
+        who++; total += d;
+      });
+    });
+    if(!who){ lnkMsg("لا توجد نجوم جديدة من مُتقِن."); toast("لا توجد نجوم جديدة من مُتقِن"); return; }
+    save(); render();
+    var msg = "أُضيفت " + total + " نجمة من مُتقِن إلى " + who + " طالبة ✅"; lnkMsg(msg); toast(msg);
+  }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذّر جلب النجوم"); });
+}
 function fillLnk(){ $("lnkTok").value = lget(TK); $("lnkAuto").checked = lget(AK) === "1"; lnkMsg(lget(TK) ? "المفتاح محفوظ على هذا الجهاز." : ""); }
 $("lnkSave").onclick = function(){ var v = $("lnkTok").value.trim(); lset(TK, v); lset(LK, ""); lnkMsg(v ? "تم حفظ المفتاح على هذا الجهاز." : "حُذف المفتاح."); };
 $("lnkAuto").onchange = function(){ lset(AK, this.checked ? "1" : ""); if(this.checked) scheduleSync(); };
 $("lnkImp").onclick = function(){ if(!lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importRoster(); };
+$("lnkStars").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importStars(); };
 $("lnkSync").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); doSync(true); };
 })();
 </script>
