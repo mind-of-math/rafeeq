@@ -140,48 +140,6 @@ table.prog td.top{color:#b07d00;font-weight:800}
 #toast.show{display:block;animation:zoom .3s}
 body.slide{font-size:clamp(14px,3.6vmin,34px)}
 body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
-.wheelWrap{position:relative;width:min(62vmin,88vw,440px);aspect-ratio:1;margin:.3em auto 0}
-.wheelWrap canvas{width:100%;height:100%;display:block;filter:drop-shadow(0 .3em .6em rgba(0,0,0,.18))}
-.wheelWrap .pointer{position:absolute;top:-.35em;left:50%;transform:translateX(-50%);width:0;height:0;border-left:.9em solid transparent;border-right:.9em solid transparent;border-top:1.6em solid var(--red);filter:drop-shadow(0 2px 2px rgba(0,0,0,.3));z-index:2}
-.wheelWrap .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22%;aspect-ratio:1;border-radius:50%;background:#fff;color:var(--purple-d);font-size:1.15em;font-weight:800;box-shadow:0 .2em .6em rgba(0,0,0,.25);padding:0;border:4px solid var(--purple)}
-.wheelWrap .hub:disabled{opacity:.85;cursor:default}
-.pick .pickName{font-size:2.3em;min-width:50%}
-.gtop{display:flex;gap:.4em;flex-wrap:wrap;align-items:center;margin-bottom:.6em}
-.ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:.6em}
-.gcard{background:#fff;border:2px solid var(--line);border-radius:.9em;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
-.gcard.hl{transform:scale(1.03);box-shadow:0 0 0 4px var(--gold),0 .6em 1.4em rgba(0,0,0,.18)}
-.gcard .gh{color:#fff;padding:.45em .6em;display:flex;align-items:center;gap:.4em}
-.gcard .gh b{flex:1;font-family:Calibri,"Segoe UI",sans-serif;font-size:1.1em}
-.gcard .gh .gs{background:rgba(255,255,255,.25);border-radius:1em;padding:.1em .55em;font-weight:700;font-variant-numeric:tabular-nums}
-.gcard .gm{padding:.5em;display:flex;flex-wrap:wrap;gap:.35em;min-height:3em;align-content:flex-start;flex:1}
-.chip{background:var(--lav);color:var(--ink);border-radius:2em;padding:.25em .65em;font-size:.92em;cursor:pointer;border:1px solid transparent}
-.chip:hover{border-color:var(--purple)}
-.chip i{font-style:normal;color:#b07d00;font-weight:700;margin-inline-start:.3em}
-.gcard .gf{padding:.4em .5em;border-top:1px solid var(--line);display:flex;gap:.4em}
-.gcard .gf button{flex:1;padding:.4em}
-.unas{margin-top:.7em;background:#fff;border:2px dashed var(--line);border-radius:.9em;padding:.5em}
-.gmvb{text-align:start;color:#fff;font-weight:700;padding:.6em .8em}
-.card.absent{opacity:.45}
-.abtag{position:absolute;top:.3em;inset-inline-end:.4em;font-size:.7em;background:var(--red);color:#fff;border-radius:1em;padding:.05em .5em}
-.chip.absent{opacity:.45;text-decoration:line-through}
-.attbar{display:flex;gap:.4em;flex-wrap:wrap;align-items:center;margin-bottom:.5em}
-.attbar input[type=date]{font:inherit;padding:.35em .5em;border:1px solid var(--line);border-radius:.55em;background:#fff;color:var(--ink)}
-.dayl{font-family:Calibri,"Segoe UI",sans-serif;font-weight:700;color:var(--purple-d);font-size:1.05em}
-.days{display:flex;gap:.3em;flex-wrap:wrap;align-items:center}
-.days button{padding:.3em .6em;font-size:.88em}
-.days button.on{background:var(--purple);color:#fff}
-.attsum{display:flex;gap:.5em;flex-wrap:wrap;margin:.3em 0 .6em}
-.attsum span{background:#fff;border:1px solid var(--line);border-radius:2em;padding:.2em .8em;font-weight:700}
-.attlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(15em,1fr));gap:.4em}
-.attrow{display:flex;align-items:center;gap:.4em;background:#fff;border:2px solid var(--line);border-radius:.7em;padding:.35em .5em}
-.attrow.a{border-color:var(--red);background:#fdf0ef}
-.attrow.l{border-color:var(--gold);background:#fdf6e3}
-.attrow .nm{flex:1;font-weight:600;line-height:1.25}
-.attrow .cnt{font-size:.78em;color:var(--muted)}
-.attrow button{padding:.3em .5em;font-size:.85em;background:var(--lav);color:var(--muted)}
-.attrow button.onA{background:var(--red);color:#fff}
-.attrow button.onL{background:var(--gold);color:#3b2a00}
-.attrep td.dates{white-space:normal;text-align:start;font-size:.85em;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -193,8 +151,6 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
     <button data-tab="stars" class="on">⭐ تعزيز</button>
     <button data-tab="podium">🏆 المتميزات</button>
     <button data-tab="pick">🎲 عشوائي</button>
-    <button data-tab="groups">👥 المجموعات</button>
-    <button data-tab="att">📋 الغياب</button>
     <button data-tab="timer">⏱ مؤقت</button>
     <button data-tab="prog">📈 التقدم</button>
   </nav>
@@ -218,13 +174,6 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
   </div>
 </div>
 <div id="toast"></div>
-<div class="ov" id="gmv" style="background:rgba(46,38,64,.45);z-index:44">
-  <div class="modal" style="width:min(26em,94vw)">
-    <h2 class="cal" id="gmvT"></h2>
-    <div id="gmvB" style="display:flex;flex-direction:column;gap:.45em"></div>
-    <div class="acts"><span class="sp"></span><button class="ghost" id="gmvX">إغلاق</button></div>
-  </div>
-</div>
 <div class="ov" id="ask" style="background:rgba(46,38,64,.45);z-index:45">
   <div class="modal" style="width:min(24em,92vw);text-align:center">
     <div id="askT" style="font-size:1.05em;line-height:1.6"></div>
@@ -242,7 +191,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
       <h2 class="cal" style="font-size:1.05em">🔗 الربط مع موقع مُتقِن</h2>
       <input id="lnkTok" type="password" dir="ltr" autocomplete="off" placeholder="مفتاح الربط (من لوحة معلمة مُتقِن ← ⭐ ربط رفيق الحصة)">
       <label class="chk"><input type="checkbox" id="lnkAuto" style="width:auto"> إرسال النجوم إلى مُتقِن تلقائيًا</label>
-      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button></div>
+      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">⭐ إضافة نجوم مُتقِن</button></div>
       <div class="hint" id="lnkSt"></div>
     </div>
     <div class="acts">
@@ -275,15 +224,11 @@ function newest(a,b){ if(!valid(a)) return valid(b) ? b : null; if(!valid(b)) re
 function norm(s){
   s.classes.forEach(function(c){
     c.students = c.students || []; c.picked = c.picked || [];
-    c.groups = c.groups || {}; c.att = c.att || {}; if(!Array.isArray(c.days)) c.days = [0, 1, 2, 3, 4];
-    ["orig", "diff"].forEach(function(k){ var g = c.groups[k] = c.groups[k] || {}; g.names = g.names || GDEF[k].slice(); g.map = g.map || {}; });
     if(!c.log){ c.log = []; c.students.forEach(function(st){ if(st.points > 0) c.log.push([st.id, 0, st.points]); }); }
   });
   if(!s.classes.some(function(c){ return c.id === s.current; })) s.current = s.classes[0].id;
   return s;
 }
-var GDEF = {orig: ["المجموعة 1", "المجموعة 2", "المجموعة 3", "المجموعة 4"], diff: ["المجموعة الزرقاء", "المجموعة الخضراء", "المجموعة الصفراء", "المجموعة البرتقالية"]};
-var GCOL = {orig: ["#7c5cc4", "#3d9a9b", "#d9628c", "#4f86c6"], diff: ["#4f86c6", "#4f9a6c", "#d9a21b", "#e07a5f"]};
 function nowMin(){ return Math.floor(Date.now()/60000); }
 function logAdd(c, sid, d){
   c.log = c.log || []; c.log.push([sid, nowMin(), d]);
@@ -368,7 +313,7 @@ $("sndBtn").onclick = function(){ state.sound = !state.sound; save(); renderHead
 (function(){ var bs = document.querySelectorAll(".tabs button");
   for(var i=0;i<bs.length;i++) bs[i].onclick = function(){ tab = this.getAttribute("data-tab"); render(); }; })();
 
-function render(){ if(!state) return; renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="prog") renderProg(); else renderTimer(); }
+function render(){ if(!state) return; renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="prog") renderProg(); else renderTimer(); }
 
 function emptyView(){
   $("main").innerHTML = '<div class="empty"><div class="big">👩‍🎓</div><div>لا توجد أسماء طالبات في هذا الفصل بعد</div><button class="primary" id="goMg">أضيفي أسماء الطالبات</button></div>';
@@ -389,13 +334,13 @@ function renderStars(){
     '<span class="muted">اضغطي على اسم الطالبة لتعزيزها</span>'+
     '<button class="danger" id="rst">تصفير النجوم</button></div><div class="grid">';
   list.forEach(function(s){
-    h += '<div class="card'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-id="'+s.id+'">'+(absentToday(c)[s.id] ? '<span class="abtag">غائبة</span>' : '')+(max>0 && s.points===max ? '<span class="crown">👑</span>' : '')+
+    h += '<div class="card" data-id="'+s.id+'">'+(max>0 && s.points===max ? '<span class="crown">👑</span>' : '')+
       '<div class="nm">'+esc(s.name)+'</div><div class="pt">⭐ '+s.points+'</div>'+
       '<button class="minus" data-m="'+s.id+'" title="إنقاص نجمة">−</button></div>';
   });
   $("main").innerHTML = h + '</div>';
   $("srt").onclick = function(){ sortMode = sortMode==="name" ? "points" : "name"; renderStars(); };
-  $("allUp").onclick = function(){ var abA = absentToday(c); c.students.forEach(function(s){ if(abA[s.id]) return; s.points++; logAdd(c, s.id, 1); }); save(); renderStars(); celebrate("👏","أحسنتن جميعًا","نجمة لكل طالبة"); };
+  $("allUp").onclick = function(){ c.students.forEach(function(s){ s.points++; logAdd(c, s.id, 1); }); save(); renderStars(); celebrate("👏","أحسنتن جميعًا","نجمة لكل طالبة"); };
   $("rst").onclick = function(){ ask("هل تريدين تصفير نجوم جميع طالبات هذا الفصل؟ (سجل التقدم لا يُمسح)", function(){ c.students.forEach(function(s){ s.points = 0; }); save(); renderStars(); }); };
   var cards = document.querySelectorAll(".card");
   for(var i=0;i<cards.length;i++){
@@ -409,7 +354,6 @@ function renderStars(){
 function findStu(id){ var c = cls(); for(var i=0;i<c.students.length;i++) if(c.students[i].id===id) return c.students[i]; return null; }
 function addPoint(id, n){
   var s = findStu(id); if(!s) return;
-  if(n > 0 && absentToday(cls())[id]){ toast("لا يمكن إضافة نجوم لـ" + s.name.split(/\s+/)[0] + " — غائبة اليوم"); return; }
   var before = s.points; s.points = Math.max(0, s.points + n); if(s.points === before) return; logAdd(cls(), s.id, s.points - before); save();
   if(tab === "stars"){ renderStars(); var el = document.querySelector('.card[data-id="'+id+'"]'); if(el) el.classList.add("pop"); }
   if(n > 0){
@@ -443,298 +387,47 @@ function step(){
   if(parts.length) requestAnimationFrame(step); else { fxRun = false; ctx.clearRect(0,0,fx.width,fx.height); }
 }
 
-/* ---------- المجموعات (الأصلية والتمايز) ---------- */
-var gKind = "orig";
-function gOf(c){ return c.groups[gKind]; }
-function shuffle(a){ for(var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-function byStars(c){ return shuffle(c.students.slice()).sort(function(a, b){ return b.points - a.points; }); }
-function distribute(c, kind){
-  var g = c.groups[kind], list = byStars(c), n = list.length; g.map = {};
-  if(kind === "orig"){ // مستويات مختلطة: توزيع ثعباني 1-2-3-4-4-3-2-1 بعد الترتيب حسب النجوم
-    list.forEach(function(s, i){ var r = Math.floor(i / 4), k = i % 4; g.map[s.id] = r % 2 ? 3 - k : k; });
-  } else { // التمايز: أرباع متتالية حسب النجوم (الأعلى في المجموعة الأولى)
-    list.forEach(function(s, i){ g.map[s.id] = Math.min(3, Math.floor(i * 4 / n)); });
-  }
-  save();
-}
-function renderGroups(){
-  var c = cls(); if(!c.students.length) return emptyView();
-  var g = gOf(c), cols = GCOL[gKind], any = Object.keys(g.map).some(function(id){ return findStu(id); });
-  var h = '<div class="gtop"><div class="seg" id="gKind"><button data-k="orig"'+(gKind==="orig"?' class="on"':'')+'>المجموعات الأصلية</button><button data-k="diff"'+(gKind==="diff"?' class="on"':'')+'>مجموعات التمايز</button></div><span class="sp" style="flex:1"></span>'+
-    (g.locked ? '' : '<button class="primary" id="gDist">'+(gKind==="orig" ? "🔀 توزيع متوازن" : "📊 توزيع حسب المستوى")+'</button>')+
-    '<button id="gPick">🎲 مجموعة عشوائية</button>'+(g.locked ? '' : '<button id="gRen">✏️ الأسماء</button>')+
-    (any ? '<button id="gLock" class="'+(g.locked ? 'green' : '')+'">'+(g.locked ? '🔒 المجموعات مثبّتة' : '🔓 تثبيت المجموعات')+'</button>' : '')+
-    (any && !g.locked ? '<button class="danger" id="gClr">مسح التوزيع</button>' : '')+'</div>';
-  if(!any){
-    h += '<div class="empty" style="height:auto;margin-top:2em"><div class="big">👥</div><div>'+(gKind==="orig"
-      ? "وزّعي الطالبات على 4 مجموعات بمستويات مختلطة"
-      : "وزّعي الطالبات على 4 مجموعات حسب المستوى")+'</div><div class="muted">'+(gKind==="orig"
-      ? "يوزّع المساعد الطالبات بحيث تضم كل مجموعة مستويات مختلفة (حسب النجوم)، ويمكنك نقل أي طالبة بالضغط على اسمها."
-      : "يرتّب المساعد الطالبات حسب نجومهن ويقسمهن إلى 4 مستويات، ثم تعدّلين ما يلزم بالضغط على اسم الطالبة.")+'</div></div>';
-    $("main").innerHTML = h; bindG(c); return;
-  }
-  h += '<div class="ggrid">';
-  for(var k = 0; k < 4; k++){
-    var mem = c.students.filter(function(s){ return g.map[s.id] === k; }), tot = 0;
-    mem.forEach(function(s){ tot += s.points; });
-    h += '<div class="gcard" data-g="'+k+'" style="border-color:'+cols[k]+'"><div class="gh" style="background:'+cols[k]+'"><b>'+esc(g.names[k])+'</b><span class="gs">'+mem.length+' 👤</span><span class="gs">⭐ '+tot+'</span></div><div class="gm">'+
-      (mem.length ? mem.map(function(s){ return '<span class="chip'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-s="'+s.id+'">'+esc(shortName(s.name))+'<i>'+s.points+'</i></span>'; }).join("") : '<span class="muted">لا توجد طالبات</span>')+
-      '</div><div class="gf"><button class="green" data-gs="'+k+'"'+(mem.length?'':' disabled')+'>⭐ نجمة للمجموعة</button></div></div>';
-  }
-  h += '</div>';
-  var un = c.students.filter(function(s){ var v = g.map[s.id]; return v === undefined || v === null; });
-  if(un.length) h += '<div class="unas"><div class="muted" style="margin-bottom:.35em">بدون مجموعة ('+un.length+') — اضغطي على الاسم لإضافته:</div><div class="gm" style="display:flex;flex-wrap:wrap;gap:.35em">'+
-    un.map(function(s){ return '<span class="chip'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-s="'+s.id+'">'+esc(shortName(s.name))+'<i>'+s.points+'</i></span>'; }).join("")+'</div></div>';
-  h += '<div class="muted" style="margin-top:.6em">'+(g.locked ? '🔒 المجموعات مثبّتة: لا يمكن نقل الطالبات أو إعادة التوزيع حتى تلغي التثبيت.' : 'اضغطي على اسم أي طالبة لنقلها إلى مجموعة أخرى، ثم اضغطي «🔓 تثبيت المجموعات» لتثبيتها.')+(gKind==="diff" ? " التوزيع حسب المستوى مبني على النجوم، فراجعيه بما تعرفينه عن طالباتك." : "")+'</div>';
-  $("main").innerHTML = h; bindG(c);
-}
-function bindG(c){
-  var g = gOf(c);
-  var kb = document.querySelectorAll("#gKind button");
-  for(var i = 0; i < kb.length; i++) kb[i].onclick = function(){ gKind = this.getAttribute("data-k"); renderGroups(); };
-  if($("gLock")) $("gLock").onclick = function(){
-    if(g.locked) ask("إلغاء تثبيت " + (gKind==="orig" ? "المجموعات الأصلية" : "مجموعات التمايز") + "؟ سيصبح بالإمكان نقل الطالبات وإعادة التوزيع.", function(){ g.locked = false; save(); renderGroups(); });
-    else { g.locked = true; save(); renderGroups(); toast("تم تثبيت المجموعات 🔒"); }
-  };
-  if($("gDist")) $("gDist").onclick = function(){
-    var any = Object.keys(g.map).length;
-    var go = function(){ distribute(c, gKind); renderGroups(); toast("تم توزيع الطالبات على 4 مجموعات"); };
-    if(any) ask("سيُعاد توزيع جميع الطالبات وتضيع التعديلات اليدوية. هل تريدين المتابعة؟", go); else go();
-  };
-  if($("gClr")) $("gClr").onclick = function(){ ask("مسح توزيع "+(gKind==="orig"?"المجموعات الأصلية":"مجموعات التمايز")+"؟ (النجوم لا تتأثر)", function(){ g.map = {}; save(); renderGroups(); }); };
-  if($("gRen")) $("gRen").onclick = function(){ openRename(c); };
-  $("gPick").onclick = function(){
-    var ks = [0,1,2,3].filter(function(k){ return c.students.some(function(s){ return g.map[s.id] === k; }); });
-    if(!ks.length){ note("وزّعي الطالبات على المجموعات أولًا."); return; }
-    var cards = document.querySelectorAll(".gcard"), n = 0, total = 14 + Math.floor(Math.random() * 4), cur = -1;
-    (function spin(){
-      for(var j = 0; j < cards.length; j++) cards[j].classList.remove("hl");
-      cur = ks[n % ks.length]; var el = document.querySelector('.gcard[data-g="'+cur+'"]'); if(el) el.classList.add("hl"); tick();
-      if(++n < total) setTimeout(spin, 70 + n * n * 1.6);
-      else { tone(784,.2); tone(1046,.35,.12); celebrate("👥", g.names[cur], "دوركنّ يا بنات!"); }
-    })();
-  };
-  var gs = document.querySelectorAll("[data-gs]");
-  for(var i2 = 0; i2 < gs.length; i2++) gs[i2].onclick = function(){
-    var k = +this.getAttribute("data-gs");
-    var abG = absentToday(c); c.students.forEach(function(s){ if(g.map[s.id] === k && !abG[s.id]){ s.points++; logAdd(c, s.id, 1); } });
-    save(); renderGroups(); celebrate("👏", "أحسنتنّ يا " + g.names[k].replace(/^المجموعة\s*/, "مجموعة "), "نجمة لكل طالبة في المجموعة");
-  };
-  var ch = document.querySelectorAll(".chip[data-s]");
-  for(var i3 = 0; i3 < ch.length; i3++) ch[i3].onclick = function(){ if(g.locked){ toast("المجموعات مثبّتة 🔒 ألغي التثبيت أولًا للنقل"); return; } openMove(c, this.getAttribute("data-s")); };
-}
-function openMove(c, sid){
-  var g = gOf(c), s = findStu(sid); if(!s) return;
-  $("gmvT").textContent = "نقل: " + s.name;
-  var b = "";
-  for(var k = 0; k < 4; k++) b += '<button class="gmvb" data-to="'+k+'" style="background:'+GCOL[gKind][k]+'">'+(g.map[sid] === k ? "✓ " : "")+esc(g.names[k])+'</button>';
-  b += '<button data-to="-1">بدون مجموعة</button>';
-  $("gmvB").innerHTML = b;
-  var bs = $("gmvB").querySelectorAll("button");
-  for(var i = 0; i < bs.length; i++) bs[i].onclick = function(){
-    var to = +this.getAttribute("data-to");
-    if(to < 0) delete g.map[sid]; else g.map[sid] = to;
-    save(); $("gmv").classList.remove("show"); renderGroups();
-  };
-  $("gmv").classList.add("show");
-}
-function openRename(c){
-  var g = gOf(c);
-  $("gmvT").textContent = "أسماء " + (gKind === "orig" ? "المجموعات الأصلية" : "مجموعات التمايز");
-  var b = "";
-  for(var k = 0; k < 4; k++) b += '<input data-n="'+k+'" value="'+esc(g.names[k])+'" style="border-inline-start:6px solid '+GCOL[gKind][k]+'">';
-  b += '<div class="acts"><button class="primary" id="gRenOk">حفظ الأسماء</button><button id="gRenDef">الأسماء الافتراضية</button></div>';
-  $("gmvB").innerHTML = b;
-  $("gRenOk").onclick = function(){
-    var ins = $("gmvB").querySelectorAll("input[data-n]");
-    for(var i = 0; i < ins.length; i++){ var v = ins[i].value.trim(); g.names[+ins[i].getAttribute("data-n")] = v || GDEF[gKind][i]; }
-    save(); $("gmv").classList.remove("show"); renderGroups();
-  };
-  $("gRenDef").onclick = function(){ g.names = GDEF[gKind].slice(); save(); $("gmv").classList.remove("show"); renderGroups(); };
-  $("gmv").classList.add("show");
-}
-$("gmvX").onclick = function(){ $("gmv").classList.remove("show"); };
-
-/* ---------- الغياب ---------- */
-var WD = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-var attDate = null, attView = "day";
-function isoOf(d){ return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
-function dateOf(iso){ var p = iso.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
-function absentToday(c){ var o = {}, d = (c.att || {})[todayIso()] || {}; Object.keys(d).forEach(function(k){ if(d[k] === "a") o[k] = 1; }); return o; }
-function dayLabel(iso){
-  var d = dateOf(iso), hj = "";
-  try{ hj = d.toLocaleDateString("ar-SA-u-ca-islamic-umalqura-nu-latn", {day: "numeric", month: "long", year: "numeric"}); }catch(e){}
-  return WD[d.getDay()] + " " + hj + "  (" + iso + ")";
-}
-function stepDay(c, iso, dir){
-  var d = dateOf(iso);
-  for(var i = 0; i < 14; i++){ d.setDate(d.getDate() + dir); if(!c.days.length || c.days.indexOf(d.getDay()) >= 0) return isoOf(d); }
-  return iso;
-}
-function attCounts(c){
-  var o = {};
-  c.students.forEach(function(s){ o[s.id] = {a: 0, l: 0, ad: [], ld: []}; });
-  Object.keys(c.att).sort().forEach(function(day){
-    var rec = c.att[day];
-    Object.keys(rec).forEach(function(sid){ if(!o[sid]) return; if(rec[sid] === "a"){ o[sid].a++; o[sid].ad.push(day); } else if(rec[sid] === "l"){ o[sid].l++; o[sid].ld.push(day); } });
-  });
-  return o;
-}
-function renderAtt(){
-  var c = cls(); if(!c.students.length) return emptyView();
-  if(!attDate) attDate = todayIso();
-  var wd = dateOf(attDate).getDay(), off = c.days.length && c.days.indexOf(wd) < 0;
-  var h = '<div class="gtop"><div class="seg" id="attV"><button data-v="day"'+(attView==="day"?' class="on"':'')+'>تسجيل الغياب</button><button data-v="rep"'+(attView==="rep"?' class="on"':'')+'>سجل الغياب</button></div></div>';
-  if(attView === "rep") return renderAttRep(c, h);
-  var rec = c.att[attDate] || {}, na = 0, nl = 0;
-  Object.keys(rec).forEach(function(k){ if(rec[k] === "a") na++; else if(rec[k] === "l") nl++; });
-  var cnt = attCounts(c);
-  h += '<div class="attbar"><button id="aPrev" title="اليوم السابق">▶</button><input type="date" id="aDate" value="'+attDate+'"><button id="aNext" title="اليوم التالي">◀</button>'+
-       '<button id="aToday">اليوم</button><span class="dayl">'+esc(dayLabel(attDate))+'</span></div>';
-  h += '<div class="days"><span class="muted">أيام حصص هذا الفصل:</span>'+[0,1,2,3,4,5,6].map(function(d){ return '<button data-d="'+d+'"'+(c.days.indexOf(d) >= 0 ? ' class="on"' : '')+'>'+WD[d]+'</button>'; }).join("")+'</div>';
-  if(off) h += '<div class="muted" style="margin:.4em 0;color:var(--red)">⚠️ هذا اليوم ليس من أيام حصص هذا الفصل، ويمكنك التسجيل فيه مع ذلك.</div>';
-  h += '<div class="attsum"><span>👥 '+c.students.length+'</span><span style="color:var(--green)">✓ حاضرات '+(c.students.length - na)+'</span><span style="color:var(--red)">✗ غائبات '+na+'</span><span style="color:#b07d00">⏰ متأخرات '+nl+'</span>'+
-       '<button id="aAll">✓ الكل حاضرات</button></div>';
-  h += '<div class="attlist">';
-  c.students.forEach(function(s){
-    var v = rec[s.id] || "", k = cnt[s.id];
-    h += '<div class="attrow '+v+'"><div class="nm">'+esc(s.name)+'<div class="cnt">غياب: '+k.a+' • تأخر: '+k.l+'</div></div>'+
-         '<button data-s="'+s.id+'" data-v="a" class="'+(v==="a"?"onA":"")+'">✗ غائبة</button><button data-s="'+s.id+'" data-v="l" class="'+(v==="l"?"onL":"")+'">⏰ متأخرة</button></div>';
-  });
-  h += '</div><div class="muted" style="margin-top:.5em">الطالبات حاضرات تلقائيًا؛ اضغطي «غائبة» أو «متأخرة» عند الحاجة، واضغطي مرة أخرى للإلغاء. الغائبات اليوم لا يظهرن في العجلة.</div>';
-  $("main").innerHTML = h; bindAttCommon(c);
-  $("aDate").onchange = function(){ if(this.value){ attDate = this.value; renderAtt(); } };
-  $("aPrev").onclick = function(){ attDate = stepDay(c, attDate, -1); renderAtt(); };
-  $("aNext").onclick = function(){ attDate = stepDay(c, attDate, 1); renderAtt(); };
-  $("aToday").onclick = function(){ attDate = todayIso(); renderAtt(); };
-  $("aAll").onclick = function(){ delete c.att[attDate]; save(); renderAtt(); };
-  var db = document.querySelectorAll(".days button[data-d]");
-  for(var i = 0; i < db.length; i++) db[i].onclick = function(){
-    var d = +this.getAttribute("data-d"), ix = c.days.indexOf(d);
-    if(ix >= 0) c.days.splice(ix, 1); else { c.days.push(d); c.days.sort(); }
-    save(); renderAtt();
-  };
-  var bs = document.querySelectorAll(".attrow button");
-  for(var j = 0; j < bs.length; j++) bs[j].onclick = function(){
-    var sid = this.getAttribute("data-s"), v = this.getAttribute("data-v"), r = c.att[attDate] = c.att[attDate] || {};
-    if(r[sid] === v) delete r[sid]; else r[sid] = v;
-    if(!Object.keys(r).length) delete c.att[attDate];
-    save(); renderAtt();
-  };
-}
-function bindAttCommon(c){
-  var vb = document.querySelectorAll("#attV button");
-  for(var i = 0; i < vb.length; i++) vb[i].onclick = function(){ attView = this.getAttribute("data-v"); renderAtt(); };
-}
-function renderAttRep(c, h){
-  var cnt = attCounts(c), days = Object.keys(c.att).sort();
-  var rows = c.students.slice().sort(function(a, b){ return cnt[b.id].a - cnt[a.id].a || cnt[b.id].l - cnt[a.id].l; });
-  h += '<div class="toolbar"><span class="muted">أيام سُجّل فيها غياب أو تأخر: '+days.length+'</span><span class="sp"></span><button class="green" id="aXl">📥 تنزيل سجل الغياب (إكسل)</button></div>';
-  h += '<div class="tblwrap"><table class="prog attrep"><thead><tr><th>م</th><th>الاسم</th><th>أيام الغياب</th><th>التأخر</th><th>تواريخ الغياب</th></tr></thead><tbody>';
-  rows.forEach(function(s, i){
-    var k = cnt[s.id];
-    h += '<tr><td>'+(i+1)+'</td><td class="n">'+esc(s.name)+'</td><td'+(k.a ? ' style="color:var(--red);font-weight:800"' : '')+'>'+k.a+'</td><td>'+k.l+'</td><td class="dates">'+
-      (k.ad.length ? k.ad.map(function(d){ return '<bdi>' + WD[dateOf(d).getDay()] + ' <bdi dir="ltr">' + d + '</bdi></bdi>'; }).join("، ") : "—")+'</td></tr>';
-  });
-  h += '</tbody></table></div>';
-  $("main").innerHTML = h; bindAttCommon(c);
-  $("aXl").onclick = function(){
-    var sum = [["م", "الاسم", "أيام الغياب", "مرات التأخر", "تواريخ الغياب", "تواريخ التأخر"]].concat(rows.map(function(s, i){
-      var k = cnt[s.id]; return [i + 1, s.name, k.a, k.l, k.ad.join("، "), k.ld.join("، ")]; }));
-    var daily = [["التاريخ", "اليوم", "الطالبة", "الحالة"]];
-    days.forEach(function(d){ var r = c.att[d]; c.students.forEach(function(s){ if(r[s.id]) daily.push([d, WD[dateOf(d).getDay()], s.name, r[s.id] === "a" ? "غائبة" : "متأخرة"]); }); });
-    var blob = makeXlsx([
-      {name: "ملخص الغياب", rows: [["سجل الغياب — " + c.name + " — " + todayIso()], []].concat(sum), bold: [0, 2], widths: [6, 28, 12, 12, 40, 30]},
-      {name: "السجل اليومي", rows: daily, bold: [0], widths: [13, 11, 28, 10]}
-    ]);
-    download("سجل الغياب - " + safeName(c.name) + " - " + todayIso() + ".xlsx", blob);
-    toast("تم تنزيل سجل الغياب");
-  };
-}
-
 /* ---------- الاختيار العشوائي ---------- */
 var lastPicked = null, rolling = false;
-function pool(c){ var ab = absentToday(c); var base = c.students.filter(function(s){ return !ab[s.id]; }); if(!state.noRepeat) return base; return base.filter(function(s){ return c.picked.indexOf(s.id) < 0; }); }
-var wheelAng = 0, wheelNames = [];
-var WCOL = ["#7c5cc4","#e5ad22","#4f9a6c","#e98aa9","#5fa8d3","#e07a5f","#3d9a9b","#9b7fd4"];
-function shortName(n){ var w = n.split(/\s+/); return w.length > 1 ? w[0] + " " + w[1] : w[0]; }
-function drawWheel(win){
-  var cv = $("wh"); if(!cv) return;
-  var dpr = window.devicePixelRatio || 1, size = cv.clientWidth;
-  if(cv.width !== Math.round(size * dpr)){ cv.width = cv.height = Math.round(size * dpr); }
-  var ctx = cv.getContext("2d"), r = size / 2, n = wheelNames.length, seg = 2 * Math.PI / n;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, size, size);
-  ctx.save(); ctx.translate(r, r); ctx.rotate(wheelAng);
-  for(var k = 0; k < n; k++){
-    var a0 = -Math.PI / 2 + k * seg;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r - 4, a0, a0 + seg); ctx.closePath();
-    ctx.fillStyle = (n > 1 && k === n - 1 && n % WCOL.length === 1) ? WCOL[2] : WCOL[k % WCOL.length];
-    ctx.globalAlpha = (win == null || win === k) ? 1 : 0.35; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-    var mid = a0 + seg / 2, flip = Math.cos(mid + wheelAng) < 0;
-    ctx.save(); ctx.rotate(flip ? mid + Math.PI : mid);
-    var fs = Math.max(9, Math.min(18, r * seg * 0.42, r / 9));
-    ctx.font = "700 " + fs + "px Calibri, 'Segoe UI', Tahoma, sans-serif"; ctx.fillStyle = "#fff";
-    ctx.textAlign = flip ? "left" : "right"; ctx.textBaseline = "middle"; ctx.direction = "rtl";
-    var t = shortName(wheelNames[k]), maxW = r * 0.68;
-    while(ctx.measureText(t).width > maxW && t.length > 3) t = t.slice(0, -1);
-    ctx.fillText(t, flip ? -(r - 14) : r - 14, 0); ctx.restore();
-  }
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(r, r, r - 3, 0, 2 * Math.PI); ctx.strokeStyle = "#fff"; ctx.lineWidth = 5; ctx.stroke();
-}
-function segAt(ang, n){ var seg = 2 * Math.PI / n, x = ((-ang) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); return Math.floor(x / seg) % n; }
+function pool(c){ if(!state.noRepeat) return c.students.slice(); return c.students.filter(function(s){ return c.picked.indexOf(s.id) < 0; }); }
 function renderPick(){
   var c = cls(); if(!c.students.length) return emptyView();
   var p = pool(c), last = lastPicked ? findStu(lastPicked) : null;
-  var h = '<div class="pick">';
+  var h = '<div class="pick"><div class="pickName '+(last && !rolling ? "done" : "")+'" id="pn">'+(last ? esc(last.name) : "؟")+'</div>';
   if(!p.length && !rolling){
-    h += '<div class="pickName done" id="pn">'+(last ? esc(last.name) : "🎉")+'</div><div class="muted">اختيرت جميع طالبات الفصل في هذه الجولة 🎉</div><div class="row"><button class="primary" id="newRound">جولة جديدة</button>'+
+    h += '<div class="muted">اختيرت جميع طالبات الفصل في هذه الجولة 🎉</div><div class="row"><button class="primary" id="newRound">جولة جديدة</button>'+
       (last ? '<button class="green" id="pickStar">⭐ تعزيز '+esc(last.name.split(/\s+/)[0])+'</button>' : '')+'</div>';
   } else {
-    wheelNames = p.map(function(s){ return s.name; });
-    h += '<div class="wheelWrap"><canvas id="wh"></canvas><div class="pointer"></div><button class="hub" id="go">لفّي</button></div>'+
-      '<div class="pickName '+(last ? "done" : "")+'" id="pn">'+(last ? esc(last.name) : "اضغطي «لفّي»")+'</div>'+
-      (last ? '<div class="row"><button class="green" id="pickStar">⭐ تعزيز '+esc(last.name.split(/\s+/)[0])+'</button></div>' : '');
+    h += '<div class="row"><button class="primary" id="go" style="font-size:1.2em;padding:.55em 1.4em">🎲 اختاري طالبة</button>'+
+      (last && !rolling ? '<button class="green" id="pickStar">⭐ تعزيز</button>' : '')+'</div>';
   }
   h += '<div class="row"><label class="chk"><input type="checkbox" id="nr"'+(state.noRepeat?" checked":"")+'> عدم تكرار من اختيرت</label>'+
-    (state.noRepeat ? '<span class="muted">· المتبقيات: '+p.length+' من '+c.students.length+(Object.keys(absentToday(c)).length ? ' (غائبات اليوم: '+Object.keys(absentToday(c)).length+')' : '')+'</span> <button class="ghost muted" id="rr">↺ إعادة الجولة</button>' : '')+'</div></div>';
+    (state.noRepeat ? '<span class="muted">· المتبقيات: '+p.length+' من '+c.students.length+'</span> <button class="ghost muted" id="rr">↺ إعادة الجولة</button>' : '')+'</div></div>';
   $("main").innerHTML = h;
-  drawWheel();
   if($("go")) $("go").onclick = roll;
   if($("newRound")) $("newRound").onclick = function(){ c.picked = []; lastPicked = null; save(); renderPick(); };
-  if($("rr")) $("rr").onclick = function(){ c.picked = []; lastPicked = null; save(); renderPick(); };
+  if($("rr")) $("rr").onclick = function(){ c.picked = []; save(); renderPick(); };
   if($("pickStar")) $("pickStar").onclick = function(){ addPoint(lastPicked, 1); };
   $("nr").onchange = function(){ state.noRepeat = this.checked; save(); renderPick(); };
 }
-window.addEventListener("resize", function(){ if(tab === "pick" && !rolling) drawWheel(); });
 function roll(){
   if(rolling) return;
   var c = cls(), p = pool(c); if(!p.length) return;
   rolling = true; $("go").disabled = true;
-  var pn = $("pn"); pn.className = "pickName rolling"; pn.textContent = "…";
-  if($("pickStar")) $("pickStar").parentNode.style.visibility = "hidden";
-  var n = p.length, seg = 2 * Math.PI / n, wi = Math.floor(Math.random() * n), winner = p[wi];
-  var jitter = (Math.random() * 0.7 + 0.15) * seg;
-  var target = -(wi * seg + jitter);
-  while(target > wheelAng) target -= 2 * Math.PI;
-  target -= 2 * Math.PI * (5 + Math.floor(Math.random() * 2));
-  var from = wheelAng, dur = 4800, t0 = performance.now(), lastSeg = segAt(wheelAng, n);
-  (function frame(now){
-    var t = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - t, 4);
-    wheelAng = from + (target - from) * e;
-    drawWheel();
-    var sg = segAt(wheelAng, n);
-    if(sg !== lastSeg){ lastSeg = sg; tick(); pn.textContent = shortName(p[sg].name); }
-    if(t < 1) return requestAnimationFrame(frame);
-    wheelAng = ((wheelAng % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    drawWheel(wi);
-    rolling = false; lastPicked = winner.id;
-    if(c.picked.indexOf(winner.id) < 0) c.picked.push(winner.id);
-    save(); tone(784,.2); tone(1046,.35,.12); confetti();
-    setTimeout(function(){ if(tab === "pick" && !rolling){ renderPick(); } }, 1600);
-    pn.className = "pickName done"; pn.textContent = winner.name;
-  })(t0);
+  var pn = $("pn"); pn.className = "pickName rolling";
+  var winner = p[Math.floor(Math.random()*p.length)], n = 0, total = 18;
+  (function spin(){
+    n++;
+    if(n < total){
+      var r = c.students[Math.floor(Math.random()*c.students.length)];
+      pn.textContent = r.name; tick();
+      setTimeout(spin, 50 + n*n*0.9);
+    } else {
+      rolling = false; lastPicked = winner.id;
+      if(c.picked.indexOf(winner.id) < 0) c.picked.push(winner.id);
+      save(); renderPick(); tone(784,.2); tone(1046,.35,.12);
+    }
+  })();
 }
 
 /* ---------- المؤقت ---------- */
@@ -1082,7 +775,7 @@ function syncEvents(c){
   var seen = {}, last = +lget(LK) || 0, out = [], names = {};
   c.students.forEach(function(s){ names[s.id] = s.name; });
   (c.log || []).forEach(function(e){
-    if(e[1] <= 0 || !names[e[0]]) return;
+    if(e[1] <= 0 || e[3] === "mq" || !names[e[0]]) return;
     var base = c.id + "|" + e[0] + "|" + e[1] + "|" + e[2]; seen[base] = (seen[base] || 0) + 1;
     if(e[1] >= last - 2) out.push({k: base + "|" + seen[base], c: c.name, n: names[e[0]], d: e[2], m: e[1]});
   });
@@ -1125,10 +818,31 @@ function importRoster(){
     lnkMsg(msg); toast(msg);
   }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذر الاستيراد"); });
 }
+function nrm(t){ return String(t||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/\s+/g," ").trim(); }
+// إضافة نجوم الدروس في مُتقِن إلى نجوم الطالبات هنا. تُضاف الزيادة فقط (لا تكرار)، ولا تُرسل نجوم مُتقِن إلى مُتقِن مرة أخرى.
+function importStars(){
+  mqFetch("/api/rafeeq/stars").then(function(j){
+    var map = {}; (j.students || []).forEach(function(x){ map[nrm(x.name)] = +x.stars || 0; });
+    var who = 0, total = 0;
+    state.classes.forEach(function(c){
+      c.students.forEach(function(s){
+        var v = map[nrm(s.name)]; if(!(v > 0)) return;
+        var d = v - (s.mq || 0); if(d <= 0) return;
+        s.points = (s.points || 0) + d; s.mq = v;
+        c.log = c.log || []; c.log.push([s.id, 0, d, "mq"]);
+        who++; total += d;
+      });
+    });
+    if(!who){ lnkMsg("لا توجد نجوم جديدة من مُتقِن."); toast("لا توجد نجوم جديدة من مُتقِن"); return; }
+    save(); render();
+    var msg = "أُضيفت " + total + " نجمة من مُتقِن إلى " + who + " طالبة ✅"; lnkMsg(msg); toast(msg);
+  }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذّر جلب النجوم"); });
+}
 function fillLnk(){ $("lnkTok").value = lget(TK); $("lnkAuto").checked = lget(AK) === "1"; lnkMsg(lget(TK) ? "المفتاح محفوظ على هذا الجهاز." : ""); }
 $("lnkSave").onclick = function(){ var v = $("lnkTok").value.trim(); lset(TK, v); lset(LK, ""); lnkMsg(v ? "تم حفظ المفتاح على هذا الجهاز." : "حُذف المفتاح."); };
 $("lnkAuto").onchange = function(){ lset(AK, this.checked ? "1" : ""); if(this.checked) scheduleSync(); };
 $("lnkImp").onclick = function(){ if(!lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importRoster(); };
+$("lnkStars").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importStars(); };
 $("lnkSync").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); doSync(true); };
 })();
 </script>
