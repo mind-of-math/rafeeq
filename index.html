@@ -227,6 +227,14 @@ function norm(s){
   s.classes.forEach(function(c){
     c.students = c.students || []; c.picked = c.picked || [];
     if(!c.log){ c.log = []; c.students.forEach(function(st){ if(st.points > 0) c.log.push([st.id, 0, st.points]); }); }
+    // نسخة سابقة كانت تدمج نجوم مُتقِن في نجوم الحصة: نُعيد ما أُضيف فقط (المسجّل بعلامة mq) ونُبقي بقية النجوم كما هي،
+    // وتبقى نجوم مُتقِن ظاهرة منفصلة في الحقل mq.
+    var merged = {}, keep = [];
+    c.log.forEach(function(e){ if(e[3] === "mq") merged[e[0]] = (merged[e[0]] || 0) + e[2]; else keep.push(e); });
+    if(keep.length !== c.log.length){
+      c.students.forEach(function(st){ if(merged[st.id]) st.points = Math.max(0, (st.points || 0) - merged[st.id]); });
+      c.log = keep;
+    }
   });
   if(!s.classes.some(function(c){ return c.id === s.current; })) s.current = s.classes[0].id;
   return s;
