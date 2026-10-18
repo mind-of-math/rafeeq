@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<title>رفيق الحصة</title>
+<title>مُلهِم</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -144,7 +144,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 </head>
 <body>
 <header>
-  <h1 class="cal">⭐ رفيق الحصة</h1>
+  <h1 class="cal">⭐ مُلهِم</h1>
   <select id="clsSel" title="الفصل"></select>
   <span class="badge" id="tBadge" title="المؤقت يعمل"></span>
   <nav class="tabs">
@@ -187,13 +187,6 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
     <input id="mgName" placeholder="اسم الفصل، مثل: ٣/١ مسار عام">
     <textarea id="mgList" placeholder="اكتبي أو الصقي أسماء الطالبات، اسم في كل سطر"></textarea>
     <div class="hint">يمكنك نسخ عمود الأسماء من إكسل أو من نظام نور ولصقه هنا مباشرة. نجوم الطالبات الموجودات تبقى كما هي عند التعديل.</div>
-    <div style="border-top:1px solid var(--line);padding-top:.6em;display:flex;flex-direction:column;gap:.45em">
-      <h2 class="cal" style="font-size:1.05em">🔗 الربط مع موقع مُتقِن</h2>
-      <input id="lnkTok" type="password" dir="ltr" autocomplete="off" placeholder="مفتاح الربط (من لوحة معلمة مُتقِن ← ⭐ ربط رفيق الحصة)">
-      <label class="chk"><input type="checkbox" id="lnkAuto" style="width:auto"> إرسال النجوم إلى مُتقِن تلقائيًا</label>
-      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button></div>
-      <div class="hint" id="lnkSt"></div>
-    </div>
     <div class="acts">
       <button class="primary" id="mgSave">حفظ</button>
       <button id="mgNew">＋ فصل جديد</button>
@@ -242,7 +235,6 @@ function save(){
   state.updatedAt = Date.now();
   var s = JSON.stringify(state);
   try{ localStorage.setItem(KEY, s); }catch(e){}
-  scheduleSync();
   if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
 }
 function cls(){ for(var i=0;i<state.classes.length;i++){ if(state.classes[i].id === state.current) return state.classes[i]; } return state.classes[0]; }
@@ -681,7 +673,7 @@ function exportXlsx(){
       d.toLocaleTimeString("ar-SA", {hour:"numeric", minute:"2-digit"}), byId[e[0]] || "طالبة محذوفة", e[2]];
   });
   var blob = makeXlsx([
-    {name:"الملخص", rows:[["رفيق الحصة — " + c.name + " — " + todayIso()], []].concat([head], sum), bold:[0,2], widths:[6,28,9,10,10,13,15]},
+    {name:"الملخص", rows:[["مُلهِم — " + c.name + " — " + todayIso()], []].concat([head], sum), bold:[0,2], widths:[6,28,9,10,10,13,15]},
     {name:"سجل المشاركات", rows:[["التاريخ (هجري)","التاريخ (ميلادي)","الوقت","الطالبة","النجوم"]].concat(logRows), bold:[0], widths:[22,15,11,28,9]}
   ]);
   download("تقدم الطالبات - " + safeName(c.name) + " - " + todayIso() + ".xlsx", blob);
@@ -696,7 +688,7 @@ function openBk(mode){
     $("bkH").textContent = "تحتوي على جميع الفصول والأسماء والنجوم والسجل. نزّليها ملفًا أو انسخيها، ثم استرجعيها على أي جهاز من زر «استرجاع».";
     tx.value = JSON.stringify(state); tx.readOnly = true;
     acts.innerHTML = '<button class="green" id="bkDl">📥 تنزيل ملف</button><button id="bkCp">📋 نسخ</button><span class="sp"></span><button class="ghost" id="bkX">إغلاق</button>';
-    $("bkDl").onclick = function(){ download("رفيق الحصة - نسخة احتياطية - " + todayIso() + ".json", JSON.stringify(state), "application/json"); toast("تم تنزيل النسخة الاحتياطية"); };
+    $("bkDl").onclick = function(){ download("مُلهِم - نسخة احتياطية - " + todayIso() + ".json", JSON.stringify(state), "application/json"); toast("تم تنزيل النسخة الاحتياطية"); };
     $("bkCp").onclick = function(){ copyText(JSON.stringify(state), "تم نسخ النسخة الاحتياطية"); };
   } else {
     $("bkT").textContent = "♻️ استرجاع نسخة احتياطية";
@@ -707,7 +699,7 @@ function openBk(mode){
     $("bkF").onchange = function(){ var f = this.files && this.files[0]; if(!f) return; var r = new FileReader(); r.onload = function(){ tx.value = r.result; }; r.readAsText(f); };
     $("bkGo").onclick = function(){
       var obj = null; try{ obj = JSON.parse(tx.value.trim()); }catch(e){}
-      if(!valid(obj)){ note("هذه ليست نسخة احتياطية صالحة من رفيق الحصة."); return; }
+      if(!valid(obj)){ note("هذه ليست نسخة احتياطية صالحة من مُلهِم."); return; }
       ask("سيتم استبدال بيانات المساعد الحالية بالنسخة الاحتياطية. هل تريدين المتابعة؟", function(){
         state = norm(obj); lastPicked = null; save(); $("bk").classList.remove("show"); render(); toast("تم الاسترجاع بنجاح");
       });
@@ -719,7 +711,7 @@ function openBk(mode){
 
 /* ---------- إدارة الأسماء ---------- */
 var mgId = null;
-function openMg(){ mgId = state.current; fillMg(); fillLnk(); $("mg").classList.add("show"); }
+function openMg(){ mgId = state.current; fillMg(); $("mg").classList.add("show"); }
 function fillMg(){
   $("mgSel").innerHTML = state.classes.map(function(c){ return '<option value="'+c.id+'"'+(c.id===mgId?" selected":"")+'>'+esc(c.name)+' ('+c.students.length+')</option>'; }).join("");
   var c = state.classes.filter(function(x){ return x.id===mgId; })[0] || state.classes[0]; mgId = c.id;
@@ -754,75 +746,6 @@ $("mgDel").onclick = function(){
   mgId = state.current; save(); fillMg(); render();
 });
 };
-
-/* ---------- الربط مع مُتقِن ---------- */
-// المفتاح يُحفظ على هذا الجهاز فقط (وليس داخل ملف العرض) حتى لا ينتقل مع مشاركة الملف.
-var MQ = "https://rehlat.vercel.app", TK = "rafeeq-mutqin-token", AK = "rafeeq-mutqin-auto", LK = "rafeeq-mutqin-last";
-function lget(k){ try{ return localStorage.getItem(k) || ""; }catch(e){ return ""; } }
-function lset(k, v){ try{ if(v === "" || v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){} }
-function lnkMsg(t){ var e = $("lnkSt"); if(e) e.textContent = t || ""; }
-function mqFetch(path, opt){
-  opt = opt || {}; opt.headers = Object.assign({Authorization:"Bearer " + lget(TK)}, opt.headers || {});
-  return fetch(MQ + path, opt).then(function(r){
-    return r.json().catch(function(){ return {}; }).then(function(j){
-      if(!r.ok){ var m = r.status === 401 ? "مفتاح الربط غير صحيح أو أُوقف. أنشئي مفتاحًا جديدًا من لوحة مُتقِن." : (j && j.error) || ("تعذر الاتصال (رمز " + r.status + ")"); throw new Error(m); }
-      return j;
-    });
-  });
-}
-function syncEvents(c){
-  // مفتاح فريد لكل حدث يمنع التكرار حتى لو أُرسل مرتين
-  var seen = {}, last = +lget(LK) || 0, out = [], names = {};
-  c.students.forEach(function(s){ names[s.id] = s.name; });
-  (c.log || []).forEach(function(e){
-    if(e[1] <= 0 || !names[e[0]]) return;
-    var base = c.id + "|" + e[0] + "|" + e[1] + "|" + e[2]; seen[base] = (seen[base] || 0) + 1;
-    if(e[1] >= last - 2) out.push({k: base + "|" + seen[base], c: c.name, n: names[e[0]], d: e[2], m: e[1]});
-  });
-  return out;
-}
-var syncing = false, syncT = null;
-function doSync(manual){
-  if(!lget(TK)){ if(manual) lnkMsg("أدخلي مفتاح الربط أولًا ثم اضغطي «حفظ المفتاح»."); return Promise.resolve(); }
-  if(syncing) return Promise.resolve();
-  var evs = []; state.classes.forEach(function(c){ evs = evs.concat(syncEvents(c)); });
-  if(!evs.length){ if(manual) lnkMsg("لا توجد نجوم جديدة لإرسالها."); return Promise.resolve(); }
-  syncing = true; var maxMin = 0; evs.forEach(function(e){ if(e.m > maxMin) maxMin = e.m; });
-  var chunks = []; for(var i = 0; i < evs.length; i += 400) chunks.push(evs.slice(i, i + 400));
-  return chunks.reduce(function(p, ch){
-    return p.then(function(){ return mqFetch("/api/rafeeq/events", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({events: ch})}); });
-  }, Promise.resolve()).then(function(){
-    lset(LK, String(maxMin)); syncing = false; if(manual){ lnkMsg("تم إرسال النجوم إلى مُتقِن ✅"); toast("تم إرسال النجوم إلى مُتقِن"); }
-  }).catch(function(err){ syncing = false; lnkMsg(err.message || "تعذر الإرسال"); if(manual) note(err.message || "تعذر الإرسال"); });
-}
-function scheduleSync(){
-  if(!lget(TK) || lget(AK) !== "1") return;
-  clearTimeout(syncT); syncT = setTimeout(function(){ doSync(false); }, 4000);
-}
-function importRoster(){
-  mqFetch("/api/rafeeq/roster").then(function(j){
-    var list = j.classes || []; if(!list.length){ note("لا توجد أسماء في «قائمة الصف» بمُتقِن بعد."); return; }
-    var added = 0, made = 0;
-    list.forEach(function(rc){
-      var c = null; state.classes.forEach(function(x){ if(x.name === rc.name) c = x; });
-      if(!c){ // الفصل الافتراضي الفارغ يُستبدل بدل إنشاء فصل إضافي
-        if(state.classes.length === 1 && !state.classes[0].students.length && state.classes[0].name === "فصلي") c = state.classes[0];
-        else { c = {id:uid(), name:rc.name, students:[], picked:[]}; state.classes.push(c); }
-        c.name = rc.name; made++;
-      }
-      var have = {}; c.students.forEach(function(s){ have[s.name] = 1; });
-      rc.students.forEach(function(n){ if(n && !have[n]){ have[n] = 1; c.students.push({id:uid(), name:n, points:0}); added++; } });
-    });
-    save(); fillMg(); render();
-    var msg = "تم استيراد " + added + " اسمًا" + (made ? " في " + made + " فصل جديد" : "") + ". الأسماء الموجودة وأرصدتها لم تتغير.";
-    lnkMsg(msg); toast(msg);
-  }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذر الاستيراد"); });
-}
-function fillLnk(){ $("lnkTok").value = lget(TK); $("lnkAuto").checked = lget(AK) === "1"; lnkMsg(lget(TK) ? "المفتاح محفوظ على هذا الجهاز." : ""); }
-$("lnkSave").onclick = function(){ var v = $("lnkTok").value.trim(); lset(TK, v); lset(LK, ""); lnkMsg(v ? "تم حفظ المفتاح على هذا الجهاز." : "حُذف المفتاح."); };
-$("lnkAuto").onchange = function(){ lset(AK, this.checked ? "1" : ""); if(this.checked) scheduleSync(); };
-$("lnkImp").onclick = function(){ if(!lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importRoster(); };
-$("lnkSync").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); doSync(true); };
 })();
 </script>
 </body>
