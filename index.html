@@ -398,7 +398,54 @@ $("sndBtn").onclick = function(){ state.sound = !state.sound; save(); renderHead
 function render(){ if(!state) return; if(tab!=="live") lvStop(); renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="hw") renderHw(); else if(tab==="live") renderLive(); else if(tab==="prog") renderProg(); else renderTimer(); }
 
 /* ---------- 🗳️ أسئلة الشرائح المباشرة (جوالات الطالبات عبر مُتقِن) ---------- */
-var lv = {code: "", q: null, ans: [], timer: null, awarded: {}, draft: {p: "", o: ["", "", "", ""], c: 0}};
+var LQK = "rafeeq-live-queue";
+var lv = {queue: lvLoadQ(), imgs: {}, busy: {}, code: "", q: null, ans: [], timer: null, awarded: {}, draft: {p: "", o: ["", "", "", ""], c: 0, k: "mcq", img: ""}, names: true, compose: true};
+function lvLoadQ(){ try{ var j = JSON.parse(localStorage.getItem(LQK) || "[]"); return Array.isArray(j) ? j : []; }catch(e){ return []; } }
+function lvSaveQ(){ try{ localStorage.setItem(LQK, JSON.stringify(lv.queue)); }catch(e){ toast("تعذّر حفظ القائمة على الجهاز (الصور كبيرة). القائمة تعمل حتى إغلاق مُلهِم."); } }
+// يتحقق من المسودة ويبني جسم الطلب. يرجع {err} أو {body, q}
+function lvBuild(d, code){
+  var opts = [], map = [];
+  if(d.k === "mcq"){
+    d.o.forEach(function(o, i){ if(o){ map[i] = opts.length; opts.push(o); } });
+    if((!d.p && !d.img) || opts.length < 2) return {err: "اكتبي السؤال (أو أدرجي صورة) وخيارين على الأقل"};
+    if(map[d.c] === undefined) return {err: "حدّدي إجابة صحيحة من الخيارات المكتوبة"};
+  } else if(!d.p && !d.img) return {err: "اكتبي نص السؤال أو أدرجي صورة"};
+  var body = {code: code || undefined, kind: d.k, prompt: d.p, img: d.img || undefined};
+  if(d.k === "mcq"){ body.options = opts; body.correct = map[d.c]; }
+  return {body: body, q: {kind: d.k, prompt: d.p, options: opts, correct: d.k === "mcq" ? map[d.c] : null, open: true}};
+}
+function lvSendNow(d, item){
+  var b = lvBuild(d, lv.code); if(b.err){ toast(b.err); return Promise.resolve(false); }
+  return mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(b.body)}).then(function(j){
+    lv.code = j.code; lv.compose = false; b.q.id = j.id; lv.q = b.q; lv.ans = [];
+    if(item){ item.sent = true; lvSaveQ(); }
+    renderLive(); lvStop(); lv.timer = setInterval(lvPoll, 2500); lvPoll(); return true;
+  }).catch(function(e){ toast(e.message); return false; });
+}
+function lvNext(){ for(var i = 0; i < lv.queue.length; i++) if(!lv.queue[i].sent) return lv.queue[i]; return null; }
+function lvPending(){ return lv.queue.filter(function(x){ return !x.sent; }).length; }
+var LKI = {mcq: "🔘", open: "💭", photo: "📷"};
+function lvBlank(k){ return {p: "", o: ["", "", "", ""], c: 0, k: k || "mcq", img: ""}; }
+function lvImg(file, cb){
+  var fr = new FileReader();
+  fr.onload = function(){
+    var im = new Image();
+    im.onload = function(){
+      var mx = 800, q = 0.62, out = "";
+      for(var t = 0; t < 4; t++){
+        var r = Math.min(1, mx / Math.max(im.width, im.height)), cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(im.width * r)); cv.height = Math.max(1, Math.round(im.height * r));
+        var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(im, 0, 0, cv.width, cv.height);
+        out = cv.toDataURL("image/jpeg", q); if(out.length <= 330000) break; mx = Math.round(mx * 0.75); q = Math.max(0.4, q - 0.08);
+      }
+      if(out.length > 340000){ toast("الصورة كبيرة جدًا، جرّبي صورة أصغر"); return; }
+      cb(out);
+    };
+    im.onerror = function(){ toast("تعذّر قراءة الصورة"); };
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
 function lvNrm(s){ return String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/[^؀-ۿ\w\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
 function lvMatch(a, b){
   if(!a || !b) return false; if(a === b) return true;
@@ -418,32 +465,54 @@ function lvResolve(c, name){
 }
 function lvStop(){ if(lv && lv.timer){ clearInterval(lv.timer); lv.timer = null; } }
 function lvPoll(){
-  if(tab !== "live" || !lv.code){ lvStop(); return; }
-  mqFetch("/api/rafeeq/live?code=" + lv.code).then(function(j){ lv.q = j.q || null; lv.ans = j.answers || []; lvRes(); }).catch(function(){});
+  if(tab !== "live" || !lv.code || lv.compose){ lvStop(); return; }
+  mqFetch("/api/rafeeq/live?code=" + lv.code).then(function(j){ lv.q = j.q || null; lv.ans = j.answers || []; lvRes(); lvFetchImgs(); }).catch(function(){});
+}
+function lvFetchImgs(){
+  lv.ans.forEach(function(a){
+    if(!a.has_img || lv.imgs[a.id] || lv.busy[a.id]) return;
+    lv.busy[a.id] = 1;
+    mqFetch("/api/rafeeq/live?img=" + a.id).then(function(j){ if(j.img){ lv.imgs[a.id] = j.img; lvRes(); } }).catch(function(){}).then(function(){ delete lv.busy[a.id]; });
+  });
+}
+function lvBig(u){
+  var o = document.createElement("div"); o.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out";
+  o.innerHTML = '<img src="'+u+'" style="max-width:96%;max-height:96%;border-radius:.5em;background:#fff">'; o.onclick = function(){ o.remove(); }; document.body.appendChild(o);
 }
 function lvRes(){
   var el = $("lvRes"); if(!el) return;
-  var q = lv.q; if(!q){ el.innerHTML = ""; return; }
-  var c = cls(), cnt = q.options.map(function(){ return 0; });
-  lv.ans.forEach(function(a){ if(a.choice >= 0 && a.choice < cnt.length) cnt[a.choice]++; });
-  var tot = lv.ans.length, mx = Math.max.apply(null, cnt.concat([1])), L = ["أ", "ب", "ج", "د"];
-  var h = '<div class="attsum"><span>👥 أجابت '+tot+'</span><span>'+(q.open ? "🟢 السؤال مفتوح" : "🔒 مغلق")+'</span></div>';
-  q.options.forEach(function(o, i){
-    var ok = !q.open && i === q.correct;
-    h += '<div style="margin:.35em 0"><div>'+L[i]+' — '+esc(o)+(ok ? " ✅" : "")+' <b>('+cnt[i]+')</b></div><div style="background:#eee;border-radius:.5em;height:1.1em"><div style="height:100%;border-radius:.5em;width:'+Math.round(cnt[i] * 100 / mx)+'%;background:'+(ok ? "var(--green)" : "var(--purple)")+'"></div></div></div>';
-  });
+  var q = lv.q; if(!q || lv.compose){ el.innerHTML = ""; return; }
+  var c = cls(), L = ["أ", "ب", "ج", "د"], isOpen = q.kind !== "mcq", isPh = q.kind === "photo", tot = lv.ans.length, h = "";
+  if(isOpen){
+    var who = {}; lv.ans.forEach(function(a){ who[lvNrm(a.name)] = 1; });
+    h += '<div class="attsum"><span>👥 شاركت '+Object.keys(who).length+'</span><span>'+(isPh ? "📷 " + tot + " صورة" : "💭 " + tot + " إجابة")+'</span><span>'+(q.open ? "🟢 مفتوح" : "🔒 مغلق")+'</span><button id="lvNm">'+(lv.names ? "🙈 إخفاء الأسماء" : "👁 إظهار الأسماء")+'</button></div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:.5em">';
+    lv.ans.forEach(function(a){ h += '<div style="background:#fff;border:2px solid var(--line);border-radius:.8em;padding:.45em .8em;max-width:100%">'+(isPh ? (lv.imgs[a.id] ? '<img class="lvTh" data-i="'+a.id+'" src="'+lv.imgs[a.id]+'" style="height:9em;border-radius:.5em;cursor:zoom-in;display:block">' : '<div class="muted">⏳ جارٍ تحميل الصورة…</div>') : '')+(a.text ? '<div style="font-size:1.1em">'+esc(a.text)+'</div>' : '')+(lv.names ? '<div class="muted" style="font-size:.75em">'+esc(a.name)+'</div>' : '')+'</div>'; });
+    h += '</div>';
+  } else {
+    var cnt = q.options.map(function(){ return 0; });
+    lv.ans.forEach(function(a){ if(a.choice >= 0 && a.choice < cnt.length) cnt[a.choice]++; });
+    var mx = Math.max.apply(null, cnt.concat([1]));
+    h += '<div class="attsum"><span>👥 أجابت '+tot+'</span><span>'+(q.open ? "🟢 السؤال مفتوح" : "🔒 مغلق")+'</span></div>';
+    q.options.forEach(function(o, i){
+      var ok = !q.open && i === q.correct;
+      h += '<div style="margin:.35em 0"><div>'+L[i]+' — '+esc(o)+(ok ? " ✅" : "")+' <b>('+cnt[i]+')</b></div><div style="background:#eee;border-radius:.5em;height:1.1em"><div style="height:100%;border-radius:.5em;width:'+Math.round(cnt[i] * 100 / mx)+'%;background:'+(ok ? "var(--green)" : "var(--purple)")+'"></div></div></div>';
+    });
+  }
   h += '<div style="display:flex;gap:.5em;flex-wrap:wrap;margin-top:.8em">'+
-    (q.open ? '<button class="primary" id="lvClose">🔒 إغلاق وإظهار الإجابة</button>' : '<button class="green" id="lvStar">🌟 نجمة لمن أجبن صح</button>')+
-    '<button id="lvNew">➕ سؤال جديد</button><button id="lvEnd">🆕 حصة جديدة (رمز جديد)</button></div><div id="lvMsg" class="muted" style="margin-top:.5em"></div>';
+    (q.open ? '<button class="primary" id="lvClose">'+(isOpen ? "🔒 إغلاق باب الإجابات" : "🔒 إغلاق وإظهار الإجابة")+'</button>' : '<button class="green" id="lvStar">'+(isOpen ? "🌟 نجمة لكل من شاركت" : "🌟 نجمة لمن أجبن صح")+'</button>')+
+    (lvPending() ? '<button class="primary" id="lvNxt">⏭ السؤال التالي ('+lvPending()+' في القائمة)</button>' : '')+'<button id="lvNew">➕ سؤال جديد</button><button id="lvEnd">🆕 حصة جديدة (رمز جديد)</button></div><div id="lvMsg" class="muted" style="margin-top:.5em"></div>';
   el.innerHTML = h;
+  var ths = el.querySelectorAll(".lvTh"); for(var ti = 0; ti < ths.length; ti++) ths[ti].onclick = function(){ lvBig(lv.imgs[this.getAttribute("data-i")]); };
+  if($("lvNm")) $("lvNm").onclick = function(){ lv.names = !lv.names; lvRes(); };
   if($("lvClose")) $("lvClose").onclick = function(){ mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({action:"close", code: lv.code})}).then(lvPoll).catch(function(e){ toast(e.message); }); };
   if($("lvStar")) $("lvStar").onclick = function(){
     if(lv.awarded[q.id]){ toast("مُنحت النجوم لهذا السؤال من قبل"); return; }
     var got = {}, unk = [], amb = [], n = 0;
     lv.ans.forEach(function(a){
-      if(a.choice !== q.correct) return;
+      if(!isOpen && a.choice !== q.correct) return;
       var r = lvResolve(c, a.name);
-      if(!r.ids.length){ (r.amb ? amb : unk).push(a.name); return; }
+      if(!r.ids.length){ if(unk.indexOf(a.name) < 0 && amb.indexOf(a.name) < 0) (r.amb ? amb : unk).push(a.name); return; }
       r.ids.forEach(function(id){ if(!got[id]) got[id] = 1; });
     });
     Object.keys(got).forEach(function(id){ var s = findStu(id); if(s){ s.points++; logAdd(c, s.id, 1); n++; } });
@@ -454,8 +523,9 @@ function lvRes(){
     var mm = $("lvMsg"); if(mm) mm.textContent = m;
     celebrate("🌟", "أحسنتن", "نجمة لـ " + n + (n === 1 ? " طالبة" : " طالبات"));
   };
-  $("lvNew").onclick = function(){ lv.q = null; lv.ans = []; lv.draft = {p: "", o: ["", "", "", ""], c: 0}; renderLive(); };
-  $("lvEnd").onclick = function(){ lvStop(); lv = {code: "", q: null, ans: [], timer: null, awarded: {}, draft: lv.draft}; renderLive(); };
+  if($("lvNxt")) $("lvNxt").onclick = function(){ var it = lvNext(); if(it) lvSendNow(it, it); };
+  $("lvNew").onclick = function(){ lv.q = null; lv.ans = []; lv.compose = true; lv.draft = lvBlank(lv.draft.k); renderLive(); };
+  $("lvEnd").onclick = function(){ lvStop(); lv = {queue: lv.queue, imgs: {}, busy: {}, code: "", q: null, ans: [], timer: null, awarded: {}, draft: lvBlank(lv.draft.k), names: lv.names, compose: true}; renderLive(); };
 }
 function renderLive(){
   var c = cls(); if(!c.students.length){ lvStop(); return emptyView(); }
@@ -466,25 +536,45 @@ function renderLive(){
       '<div style="font-size:3.2em;font-weight:800;letter-spacing:.2em;direction:ltr">'+lv.code+'</div>'+
       '<img alt="QR" style="width:11em;height:11em" src="'+MQ+'/api/join/qr?c='+lv.code+'"><div class="muted">أو امسحي رمز QR بكاميرا الجوال</div></div>';
   }
-  if(!lv.q || lv.q.open === undefined || !lv.code){
-    h += '<div class="attbar"><textarea class="hwt" id="lvP" rows="2" maxlength="400" placeholder="اكتبي سؤال الشريحة (اختيار من متعدد)">'+esc(d.p)+'</textarea></div>';
-    for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
-    h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال السؤال للطالبات</button></div>'+
-      '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.</div>';
+  if(lv.compose || !lv.code){
+    h += '<div class="seg" id="lvK" style="margin-bottom:.6em"><button data-k="mcq"'+(d.k==="mcq"?' class="on"':'')+'>🔘 اختيار من متعدد</button><button data-k="open"'+(d.k==="open"?' class="on"':'')+'>💭 إجابات حرة (عصف ذهني)</button><button data-k="photo"'+(d.k==="photo"?' class="on"':'')+'>📷 صورة الحل</button></div>';
+    h += '<div class="attbar"><textarea class="hwt" id="lvP" rows="2" maxlength="400" placeholder="'+(d.k==="open" ? "اكتبي سؤال العصف الذهني" : d.k==="photo" ? "اكتبي المسألة التي ستصوّر الطالبات حلّها" : "اكتبي سؤال الشريحة")+'">'+esc(d.p)+'</textarea></div>';
+    h += '<div class="attbar"><label class="muted" style="cursor:pointer">🖼️ <input type="file" id="lvF" accept="image/*" style="max-width:14em"></label>'+(d.img ? '<img src="'+d.img+'" style="height:5em;border-radius:.5em"><button id="lvRmI">✖ حذف الصورة</button>' : '<span class="muted">(اختياري) أدرجي صورة للسؤال</span>')+'</div>';
+    if(d.k === "mcq") for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
+    h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال الآن</button><button id="lvAdd">➕ أضيفيه للقائمة</button></div>'+
+      '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.'+(d.k==="open" ? " في العصف الذهني يمكن لكل طالبة إرسال حتى 3 أفكار." : d.k==="photo" ? " تصوّر الطالبة حلّها بجوالها وترسله (حتى صورتين)، وتظهر لكِ الصور هنا، ويمكنكِ تكبير أي صورة بالضغط عليها." : "")+'</div>';
+  }
+  if(lv.compose || !lv.code){
+    h += '<div style="margin-top:.8em"><b>📋 قائمة الأسئلة ('+lv.queue.length+')</b>'+(lv.queue.length ? ' <button id="lvQClr" class="danger">مسح القائمة</button>' : '')+'</div>';
+    if(!lv.queue.length) h += '<div class="muted">أضيفي عدة أسئلة (من أي صيغة) ثم أرسليها بالتتابع بزر «السؤال التالي».</div>';
+    lv.queue.forEach(function(it, i){
+      h += '<div class="attrow'+(it.sent ? " y" : "")+'" style="align-items:center"><div class="nm">'+(i + 1)+'. '+LKI[it.k]+' '+esc((it.p || "(صورة)").slice(0, 60))+(it.img ? " 🖼️" : "")+(it.sent ? ' <small>(أُرسل)</small>' : '')+'</div><div style="display:flex;gap:.3em">'+
+        '<button data-q="'+i+'" data-a="go" title="إرسال هذا السؤال">▶</button><button data-q="'+i+'" data-a="up">▲</button><button data-q="'+i+'" data-a="dn">▼</button><button data-q="'+i+'" data-a="rm">✖</button></div></div>';
+    });
+    if(lv.queue.length && lvPending()) h += '<div class="attbar" style="margin-top:.5em"><button class="green" id="lvGoQ">▶ ابدئي من أول سؤال لم يُرسل</button></div>';
   }
   h += '<div id="lvRes"></div>';
   $("main").innerHTML = h;
-  if($("lvSend")) $("lvSend").onclick = function(){
-    d.p = $("lvP").value.trim(); d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); });
-    var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0;
-    var opts = [], map = [];
-    d.o.forEach(function(o, i){ if(o){ map[i] = opts.length; opts.push(o); } });
-    if(!d.p || opts.length < 2){ toast("اكتبي السؤال وخيارين على الأقل"); return; }
-    if(map[d.c] === undefined){ toast("حدّدي إجابة صحيحة من الخيارات المكتوبة"); return; }
-    $("lvSend").disabled = true;
-    mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({code: lv.code || undefined, prompt: d.p, options: opts, correct: map[d.c]})}).then(function(j){
-      lv.code = j.code; lv.q = {id: j.id, prompt: d.p, options: opts, correct: map[d.c], open: true}; lv.ans = []; renderLive(); lvStop(); lv.timer = setInterval(lvPoll, 2500); lvPoll();
-    }).catch(function(e){ toast(e.message); $("lvSend").disabled = false; });
+  function keep(){ if($("lvP")) d.p = $("lvP").value.trim(); if(d.k === "mcq" && $("lvO0")){ d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); }); var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0; } }
+  if($("lvK")){ var kb = $("lvK").querySelectorAll("button"); for(var z = 0; z < kb.length; z++) kb[z].onclick = function(){ keep(); d.k = this.getAttribute("data-k"); renderLive(); }; }
+  if($("lvF")) $("lvF").onchange = function(){ var f = this.files && this.files[0]; if(!f) return; keep(); lvImg(f, function(u){ d.img = u; renderLive(); }); };
+  if($("lvRmI")) $("lvRmI").onclick = function(){ keep(); d.img = ""; renderLive(); };
+  if($("lvSend")) $("lvSend").onclick = function(){ keep(); var btn = $("lvSend"); btn.disabled = true; lvSendNow(d, null).then(function(ok){ if(!ok && $("lvSend")) $("lvSend").disabled = false; }); };
+  if($("lvAdd")) $("lvAdd").onclick = function(){
+    keep(); var b = lvBuild(d, ""); if(b.err){ toast(b.err); return; }
+    lv.queue.push({k: d.k, p: d.p, o: d.o.slice(), c: d.c, img: d.img, sent: false}); lvSaveQ();
+    lv.draft = lvBlank(d.k); toast("أُضيف للقائمة (" + lv.queue.length + ")"); renderLive();
+  };
+  if($("lvQClr")) $("lvQClr").onclick = function(){ if(confirm("مسح كل أسئلة القائمة؟")){ lv.queue = []; lvSaveQ(); renderLive(); } };
+  if($("lvGoQ")) $("lvGoQ").onclick = function(){ var it = lvNext(); if(it) lvSendNow(it, it); };
+  var qb = document.querySelectorAll("[data-q]");
+  for(var qi = 0; qi < qb.length; qi++) qb[qi].onclick = function(){
+    var k = +this.getAttribute("data-q"), a = this.getAttribute("data-a"), it = lv.queue[k]; if(!it) return;
+    if(a === "go"){ lvSendNow(it, it); return; }
+    if(a === "rm") lv.queue.splice(k, 1);
+    else if(a === "up" && k > 0){ lv.queue[k] = lv.queue[k - 1]; lv.queue[k - 1] = it; }
+    else if(a === "dn" && k < lv.queue.length - 1){ lv.queue[k] = lv.queue[k + 1]; lv.queue[k + 1] = it; }
+    lvSaveQ(); renderLive();
   };
   lvStop(); if(lv.code){ lv.timer = setInterval(lvPoll, 2500); lvPoll(); } lvRes();
 }
