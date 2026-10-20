@@ -213,6 +213,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
     <button data-tab="groups">👥 المجموعات</button>
     <button data-tab="att">📋 الغياب</button>
     <button data-tab="hw">📚 الواجب</button>
+    <button data-tab="live">🗳️ سؤال</button>
     <button data-tab="timer">⏱ مؤقت</button>
     <button data-tab="prog">📈 التقدم</button>
   </nav>
@@ -394,7 +395,99 @@ $("sndBtn").onclick = function(){ state.sound = !state.sound; save(); renderHead
 (function(){ var bs = document.querySelectorAll(".tabs button");
   for(var i=0;i<bs.length;i++) bs[i].onclick = function(){ tab = this.getAttribute("data-tab"); render(); }; })();
 
-function render(){ if(!state) return; renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="hw") renderHw(); else if(tab==="prog") renderProg(); else renderTimer(); }
+function render(){ if(!state) return; if(tab!=="live") lvStop(); renderHeader(); if(tab==="stars") renderStars(); else if(tab==="podium") renderPodium(); else if(tab==="pick") renderPick(); else if(tab==="groups") renderGroups(); else if(tab==="att") renderAtt(); else if(tab==="hw") renderHw(); else if(tab==="live") renderLive(); else if(tab==="prog") renderProg(); else renderTimer(); }
+
+/* ---------- 🗳️ أسئلة الشرائح المباشرة (جوالات الطالبات عبر مُتقِن) ---------- */
+var lv = {code: "", q: null, ans: [], timer: null, awarded: {}, draft: {p: "", o: ["", "", "", ""], c: 0}};
+function lvNrm(s){ return String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/[^؀-ۿ\w\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
+function lvMatch(a, b){
+  if(!a || !b) return false; if(a === b) return true;
+  var A = a.split(" "), B = b.split(" "), s = A.length <= B.length ? A : B, l = A.length <= B.length ? B : A;
+  return s.length >= 2 && s.every(function(t){ return l.indexOf(t) >= 0; });
+}
+// يحوّل اسم المجيبة إلى طالبات الفصل: اسم مجموعة ← كل أعضائها، وإلا اسم طالبة
+function lvResolve(c, name){
+  var n = lvNrm(name), out = [];
+  ["orig", "diff"].forEach(function(k){
+    var g = c.groups[k]; if(!g) return;
+    g.names.forEach(function(gn, i){ if(lvNrm(gn) === n) c.students.forEach(function(s){ if(g.map[s.id] === i && out.indexOf(s.id) < 0) out.push(s.id); }); });
+  });
+  if(out.length) return {ids: out, group: true};
+  c.students.forEach(function(s){ if(lvMatch(lvNrm(s.name), n)) out.push(s.id); });
+  return {ids: out.length === 1 ? out : [], group: false, amb: out.length > 1};
+}
+function lvStop(){ if(lv && lv.timer){ clearInterval(lv.timer); lv.timer = null; } }
+function lvPoll(){
+  if(tab !== "live" || !lv.code){ lvStop(); return; }
+  mqFetch("/api/rafeeq/live?code=" + lv.code).then(function(j){ lv.q = j.q || null; lv.ans = j.answers || []; lvRes(); }).catch(function(){});
+}
+function lvRes(){
+  var el = $("lvRes"); if(!el) return;
+  var q = lv.q; if(!q){ el.innerHTML = ""; return; }
+  var c = cls(), cnt = q.options.map(function(){ return 0; });
+  lv.ans.forEach(function(a){ if(a.choice >= 0 && a.choice < cnt.length) cnt[a.choice]++; });
+  var tot = lv.ans.length, mx = Math.max.apply(null, cnt.concat([1])), L = ["أ", "ب", "ج", "د"];
+  var h = '<div class="attsum"><span>👥 أجابت '+tot+'</span><span>'+(q.open ? "🟢 السؤال مفتوح" : "🔒 مغلق")+'</span></div>';
+  q.options.forEach(function(o, i){
+    var ok = !q.open && i === q.correct;
+    h += '<div style="margin:.35em 0"><div>'+L[i]+' — '+esc(o)+(ok ? " ✅" : "")+' <b>('+cnt[i]+')</b></div><div style="background:#eee;border-radius:.5em;height:1.1em"><div style="height:100%;border-radius:.5em;width:'+Math.round(cnt[i] * 100 / mx)+'%;background:'+(ok ? "var(--green)" : "var(--purple)")+'"></div></div></div>';
+  });
+  h += '<div style="display:flex;gap:.5em;flex-wrap:wrap;margin-top:.8em">'+
+    (q.open ? '<button class="primary" id="lvClose">🔒 إغلاق وإظهار الإجابة</button>' : '<button class="green" id="lvStar">🌟 نجمة لمن أجبن صح</button>')+
+    '<button id="lvNew">➕ سؤال جديد</button><button id="lvEnd">🆕 حصة جديدة (رمز جديد)</button></div><div id="lvMsg" class="muted" style="margin-top:.5em"></div>';
+  el.innerHTML = h;
+  if($("lvClose")) $("lvClose").onclick = function(){ mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({action:"close", code: lv.code})}).then(lvPoll).catch(function(e){ toast(e.message); }); };
+  if($("lvStar")) $("lvStar").onclick = function(){
+    if(lv.awarded[q.id]){ toast("مُنحت النجوم لهذا السؤال من قبل"); return; }
+    var got = {}, unk = [], amb = [], n = 0;
+    lv.ans.forEach(function(a){
+      if(a.choice !== q.correct) return;
+      var r = lvResolve(c, a.name);
+      if(!r.ids.length){ (r.amb ? amb : unk).push(a.name); return; }
+      r.ids.forEach(function(id){ if(!got[id]) got[id] = 1; });
+    });
+    Object.keys(got).forEach(function(id){ var s = findStu(id); if(s){ s.points++; logAdd(c, s.id, 1); n++; } });
+    lv.awarded[q.id] = 1; save();
+    var m = "🌟 نجمة لـ " + n + (n === 1 ? " طالبة" : " طالبات");
+    if(unk.length) m += " — لم تُطابَق أسماء: " + unk.join("، ");
+    if(amb.length) m += " — أسماء مشتبهة (تطابق أكثر من طالبة): " + amb.join("، ");
+    var mm = $("lvMsg"); if(mm) mm.textContent = m;
+    celebrate("🌟", "أحسنتن", "نجمة لـ " + n + (n === 1 ? " طالبة" : " طالبات"));
+  };
+  $("lvNew").onclick = function(){ lv.q = null; lv.ans = []; lv.draft = {p: "", o: ["", "", "", ""], c: 0}; renderLive(); };
+  $("lvEnd").onclick = function(){ lvStop(); lv = {code: "", q: null, ans: [], timer: null, awarded: {}, draft: lv.draft}; renderLive(); };
+}
+function renderLive(){
+  var c = cls(); if(!c.students.length){ lvStop(); return emptyView(); }
+  if(!lget(TK)){ lvStop(); $("main").innerHTML = '<div class="empty"><div class="big">🔗</div><div>اربطي مُلهِم بمُتقِن أولًا (مفتاح الربط في إعدادات الربط) لتستعملي أسئلة الشرائح.</div></div>'; return; }
+  var d = lv.draft, L = ["أ", "ب", "ج", "د"], h = '';
+  if(lv.code){
+    h += '<div style="text-align:center;margin:.3em 0 .6em"><div class="muted">تدخل الطالبات من جوالاتهن: <b>rehlat.vercel.app/join</b> ثم الرمز</div>'+
+      '<div style="font-size:3.2em;font-weight:800;letter-spacing:.2em;direction:ltr">'+lv.code+'</div>'+
+      '<img alt="QR" style="width:11em;height:11em" src="'+MQ+'/api/join/qr?c='+lv.code+'"><div class="muted">أو امسحي رمز QR بكاميرا الجوال</div></div>';
+  }
+  if(!lv.q || lv.q.open === undefined || !lv.code){
+    h += '<div class="attbar"><textarea class="hwt" id="lvP" rows="2" maxlength="400" placeholder="اكتبي سؤال الشريحة (اختيار من متعدد)">'+esc(d.p)+'</textarea></div>';
+    for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
+    h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال السؤال للطالبات</button></div>'+
+      '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.</div>';
+  }
+  h += '<div id="lvRes"></div>';
+  $("main").innerHTML = h;
+  if($("lvSend")) $("lvSend").onclick = function(){
+    d.p = $("lvP").value.trim(); d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); });
+    var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0;
+    var opts = [], map = [];
+    d.o.forEach(function(o, i){ if(o){ map[i] = opts.length; opts.push(o); } });
+    if(!d.p || opts.length < 2){ toast("اكتبي السؤال وخيارين على الأقل"); return; }
+    if(map[d.c] === undefined){ toast("حدّدي إجابة صحيحة من الخيارات المكتوبة"); return; }
+    $("lvSend").disabled = true;
+    mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({code: lv.code || undefined, prompt: d.p, options: opts, correct: map[d.c]})}).then(function(j){
+      lv.code = j.code; lv.q = {id: j.id, prompt: d.p, options: opts, correct: map[d.c], open: true}; lv.ans = []; renderLive(); lvStop(); lv.timer = setInterval(lvPoll, 2500); lvPoll();
+    }).catch(function(e){ toast(e.message); $("lvSend").disabled = false; });
+  };
+  lvStop(); if(lv.code){ lv.timer = setInterval(lvPoll, 2500); lvPoll(); } lvRes();
+}
 
 function emptyView(){
   $("main").innerHTML = '<div class="empty"><div class="big">👩‍🎓</div><div>لا توجد أسماء طالبات في هذا الفصل بعد</div><button class="primary" id="goMg">أضيفي أسماء الطالبات</button></div>';
