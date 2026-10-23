@@ -49,7 +49,7 @@ th{background:var(--hd);position:sticky;top:0;z-index:1}
 <div class="bar"><span id="gb" class="bar"></span><span class="sep"></span><span id="tb" class="bar"></span><span class="sep"></span><span id="pb" class="bar"></span><span class="sep"></span>
 <label class="mut">العام الدراسي (هجري) <input id="yr" value="1448"></label><span class="sep"></span><span id="status" class="mut"></span></div></header>
 <nav id="tabs"></nav><main id="app"></main><div id="toast"></div>
-<div id="gate"><form id="gf" class="card"><div style="font-size:34px">📊</div><h2 style="margin:6px 0">تحليل نتائج المرحلة الثانوية</h2><p class="mut">أدخلي رمز الدخول الخاص بالمدرسة</p><input id="gc" autocomplete="off" autocapitalize="off" placeholder="رمز الدخول"><button class="on" type="submit">دخول</button><p id="gm" style="color:var(--bt);font-weight:700;min-height:1.2em;margin:4px 0 0"></p></form></div>
+<div id="gate"><form id="gf" class="card"><div style="font-size:34px">📊</div><h2 style="margin:6px 0">تحليل نتائج المرحلة الثانوية</h2><p class="mut">أدخلي رمز الدخول الخاص بالمدرسة</p><input id="gc" inputmode="numeric" autocomplete="off" autocapitalize="off" placeholder="رمز الدخول"><button class="on" type="submit">دخول</button><p id="gm" style="color:var(--bt);font-weight:700;min-height:1.2em;margin:4px 0 0"></p></form></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -191,7 +191,7 @@ async function start(){if(!CODE)return gate();flash("جارٍ التحقق…");
  renderTabs();if(!typing())renderView();
  clearInterval(polling);polling=setInterval(()=>pull().catch(()=>flash("تعذر الاتصال بالقاعدة")),15000);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull().catch(()=>{});});}
-$("#gf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#gc").value.trim().toLowerCase();if(!v)return;$("#gm").textContent="جارٍ التحقق…";
+$("#gf").addEventListener("submit",async e=>{e.preventDefault();const v=nz($("#gc").value).toLowerCase();if(!v)return;$("#gm").textContent="جارٍ التحقق…";
  try{if(await rpc("ra_check",{c:v})){CODE=v;try{localStorage.setItem("ra_code",v);}catch(x){}start();}else $("#gm").textContent="رمز الدخول غير صحيح";}catch(x){$("#gm").textContent="تعذر الاتصال، حاولي مرة أخرى";}});
 window.addEventListener("beforeunload",e=>{if(Object.keys(timers).length){e.preventDefault();e.returnValue="";}});
 renderBars();renderView();start();
