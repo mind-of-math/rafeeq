@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحليل نتائج المرحلة الثانوية</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fafcff;--card:#fff;--tx:#2b3445;--mut:#7d879a;--bd:#e3e9f3;--pri:#7fb2e8;--pt:#fff;--hd:#eef4fb;--ok:#eaf6df;--okt:#3d7a12;--bad:#ffe6e6;--bt:#b4232a;--inp:#fffdf0;color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:15px}
+header{background:var(--card);border-bottom:1px solid var(--bd);padding:12px 14px}
+h1{margin:0 0 8px;font-size:19px}
+.bar,#tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#tabs{padding:10px 14px;overflow-x:auto}
+button,.pill{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--pri);color:var(--pt);border-color:var(--pri)}
+.sep{width:1px;height:22px;background:var(--bd);margin:0 4px}
+#yr{width:78px;text-align:center}
+input{font:inherit;color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:5px 7px;background:var(--card)}
+main{padding:0 14px 40px;max-width:1150px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.form input{background:var(--inp)}
+.wrap2{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:12px;align-items:start}
+@media(max-width:820px){.wrap2{grid-template-columns:1fr}}
+.sc{overflow:auto;max-height:70vh}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--bd);padding:4px;text-align:center}
+th{background:var(--hd);position:sticky;top:0;z-index:1}
+.g input{width:62px;text-align:center;background:var(--inp);border-radius:0;border:0;padding:5px 2px}
+.g input.bad,.bad{background:var(--bad)!important;color:var(--bt);font-weight:700}
+.g td:first-child{background:var(--hd);font-weight:700;width:34px}
+.st th{text-align:start;width:62%;font-weight:600}
+.st td{font-weight:700}
+.st tr.k td,.st tr.k th{background:var(--ok)}
+.msg{margin-top:10px;padding:10px;border-radius:8px;text-align:center;font-weight:700;background:var(--ok);color:var(--okt)}
+.msg.bad{background:var(--bad);color:var(--bt)}
+.sum{overflow:auto}
+.sum th:first-child{position:sticky;right:0;min-width:230px;text-align:start}
+.mut{color:var(--mut);font-size:13px}.g input.sn{background:transparent;font-weight:700;border:1px dashed var(--bd);border-radius:4px;width:72px}.st2 th,.st2 td{font-size:12px;padding:3px}.bst td,th.bst{background:var(--ok)!important;font-weight:700}.xb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 0}
+.ch{margin:8px 0 18px}.br{display:flex;align-items:center;gap:8px;margin:6px 0}.br span{width:120px;font-size:13px}.br b{width:66px;font-size:13px}
+.tr{flex:1;height:22px;background:var(--hd);border-radius:6px;overflow:hidden;display:flex}.tr i{display:block;height:100%;background:var(--pri);color:#2b3445;font-size:11px;font-style:normal;text-align:center;line-height:22px}
+.lg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px}.lg u{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:4px;vertical-align:middle}
+#toast{position:fixed;inset:auto 14px calc(18px + env(safe-area-inset-bottom,0px)) 14px;margin:auto;max-width:520px;padding:12px 14px;border-radius:10px;background:#ffe6e6;color:#b4232a;border:1px solid #f3b9b9;font-weight:700;text-align:center;display:none;box-shadow:0 4px 18px #0002;z-index:9}
+#gate{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}#gate form{width:100%;max-width:360px;text-align:center;display:flex;flex-direction:column;gap:10px;padding:22px}#gate input{text-align:center;font-size:17px;padding:10px}#gate button{padding:10px;font-size:16px}
+</style></head>
+<body>
+<header><h1>📊 تحليل نتائج المرحلة الثانوية</h1>
+<div class="bar"><span id="gb" class="bar"></span><span class="sep"></span><span id="tb" class="bar"></span><span class="sep"></span><span id="pb" class="bar"></span><span class="sep"></span>
+<label class="mut">العام الدراسي (هجري) <input id="yr" value="1448"></label><span class="sep"></span><span id="status" class="mut"></span></div></header>
+<nav id="tabs"></nav><main id="app"></main><div id="toast"></div>
+<div id="gate"><form id="gf" class="card"><div style="font-size:34px">📊</div><h2 style="margin:6px 0">تحليل نتائج المرحلة الثانوية</h2><p class="mut">أدخلي رمز الدخول الخاص بالمدرسة</p><input id="gc" autocomplete="off" autocapitalize="off" placeholder="رمز الدخول"><button class="on" type="submit">دخول</button><p id="gm" style="color:var(--bt);font-weight:700;min-height:1.2em;margin:4px 0 0"></p></form></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const NS=10,NC=5,NR=25;const defFM=p=>p==3?40:20,docFM=(d,p=st.p)=>+d.fm>0?+d.fm:defFM(p),bands=fm=>[.9,.8,.75,.7,.5,0].map(x=>Math.round(x*fm*100)/100);
+const BN=["ممتاز","جيد جدًا","جيد مرتفع","جيد","مقبول","ضعيف"];
+const GN=["","أول ثانوي","ثاني ثانوي","ثالث ثانوي"],TN=["","الأول","الثاني"];
+const $=s=>document.querySelector(s);
+const st={y:"1448",g:1,t:1,p:1,v:"sum"},PN=["","الفترة الأولى","الفترة الثانية","الاختبار النهائي"];
+let docs={},db=null,dl=null,timers={},tt;
+const kk=(g,t,p,i)=>p==3?`${st.y}_g${g}_t${t}_s${i}`:`${st.y}_g${g}_t${t}_p${p}_s${i}`;
+const key=(i,p=st.p)=>kk(st.g,st.t,p,i);
+const MATH="الرياضيات";function getDoc(i){const d=getDoc0(i);return i==1&&d.name!==MATH?{...d,name:MATH}:d;}
+function getDoc0(i){const d=docs[key(i)];if(d&&d.name)return d;for(const q of [1,2,3]){const o=docs[key(i,q)];if(o&&o.name)return {...(d||blank()),name:o.name,teacher:(d&&d.teacher)||o.teacher};}return d||blank();}
+const blank=()=>({name:"",teacher:"",total:0,avg:"",sc:JSON.stringify(Array.from({length:NC},()=>Array(NR).fill("")))});
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nz=s=>String(s).replace(/[٠-٩]/g,d=>d.charCodeAt(0)-1632).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-1776).replace(/[٫,]/g,".").trim();
+const chk=(s,fm)=>{s=nz(s);if(s==="")return"";const n=Number(s);if(!isFinite(n))return"القيمة غير رقمية، أدخلي رقمًا فقط";if(n<0)return"الدرجة لا يمكن أن تكون سالبة";if(n>fm)return`الدرجة ${n} أكبر من الدرجة الكاملة (${fm})`;return"";};
+const f2=x=>x===""?"":(+x).toFixed(2),pc=x=>x===""?"":(x*100).toFixed(2)+"%";
+function calc(d,p=st.p){const fm=docFM(d,p),LO=bands(fm);const v=[];let bad=0;JSON.parse(d.sc).slice(0,NC).forEach(c=>c.slice(0,NR).forEach(x=>{if(nz(x)==="")return;if(chk(x,fm))bad++;else v.push(Number(nz(x)));}));
+ const t=+d.total||0,n=v.length,r={n,bad,t,fm};r.full=v.filter(x=>x===fm).length;r.max=n?Math.max(...v):"";r.min=n?Math.min(...v):"";
+ r.cnt=LO.map((lo,k)=>v.filter(x=>x>=lo&&(k?x<LO[k-1]:true)).length);r.pct=r.cnt.map(c=>t?c/t:"");
+ const m=n?v.reduce((a,b)=>a+b,0)/n:"";r.mean=m;r.mp=n?m/fm:"";r.sd=n>1?Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/(n-1)):"";
+ r.weak=t?(r.cnt[3]+r.cnt[4]+r.cnt[5])/t:"";
+ r.msg=!n&&!bad?"":bad?`⚠ توجد ${bad} قيمة غير صحيحة (أكبر من ${fm} أو سالبة أو غير رقمية) — مظللة بالأحمر`:!t?"⚠ أدخلي عدد الطالبات الكلي":n>t?`⚠ عدد الدرجات المدخلة (${n}) أكبر من عدد الطالبات (${t})`:"✓ البيانات سليمة";
+ return r;}
+const rows=fm=>[["عدد الطالبات المختبرات (حسب الدرجات المدخلة)",r=>r.n],["عدد الطالبات غير المختبرات",r=>r.t?Math.max(r.t-r.n,0):""],[`عدد الحاصلات على الدرجة الكاملة${fm?` (${fm})`:""}`,r=>r.full],["أعلى درجة في الاختبار",r=>f2(r.max)],["أدنى درجة في الاختبار",r=>f2(r.min)],
+ ...BN.map((n,k)=>[`نسبة الحاصلات على ${n}`,r=>pc(r.pct[k])]),["الانحراف المعياري لدرجات الاختبار",r=>f2(r.sd),1],["نسبة الضعف النوعي (جيد + مقبول + ضعيف)",r=>pc(r.weak),1],
+ [`متوسط درجات الاختبار${fm?` من ${fm}`:""}`,r=>f2(r.mean),1],[`النسبة المئوية للمتوسط${fm?` من ${fm}`:" من الدرجة الكاملة"}`,r=>pc(r.mp),1]];
+const secKey=g=>`${st.y}_g${g}_secs`;
+const secName=(g,c)=>{try{return JSON.parse(docs[secKey(g)].sn)[c]||"فصل "+(c+1);}catch(e){return"فصل "+(c+1);}};
+function secStats(d,p=st.p){const fm=docFM(d,p),LO=bands(fm);return JSON.parse(d.sc).slice(0,NC).map(col=>{const v=[];col.slice(0,NR).forEach(x=>{if(nz(x)!==""&&!chk(x,fm))v.push(Number(nz(x)));});
+ const n=v.length,m=n?v.reduce((a,b)=>a+b,0)/n:"",cnt=LO.map((lo,k)=>v.filter(x=>x>=lo&&(k?x<LO[k-1]:true)).length);
+ return{n,mean:m,mp:n?m/fm:"",ex:n?cnt[0]/n:"",weak:n?(cnt[3]+cnt[4]+cnt[5])/n:"",max:n?Math.max(...v):"",min:n?Math.min(...v):""};});}
+function secCmpHtml(d){const S=secStats(d);if(!S.some(x=>x.n))return"";const best=Math.max(...S.filter(x=>x.n).map(x=>x.mp));
+ return `<h4 style="margin:14px 0 6px">مقارنة الفصول في هذه المادة</h4><table class="st2"><tr><th>الفصل</th><th>المختبرات</th><th>المتوسط</th><th>ممتاز</th><th>ضعف نوعي</th></tr>${S.map((x,c)=>x.n?`<tr class="${x.mp===best?"bst":""}"><td>${esc(secName(st.g,c))}</td><td>${x.n}</td><td>${pc(x.mp)}</td><td>${pc(x.ex)}</td><td>${pc(x.weak)}</td></tr>`:"").join("")}</table><p class="mut">الأعلى متوسطًا مظلل بالأخضر. النسب من عدد المختبرات في كل فصل.</p>`;}
+function secMatrix(cols){const M=cols.map(([d])=>secStats(d)),used=[...Array(NC).keys()].filter(c=>M.some(m=>m[c].n));if(!used.length)return"";
+ const A=used.map(c=>{const v=M.map(m=>m[c].mp).filter(x=>x!=="");return v.length?v.reduce((a,b)=>a+b,0)/v.length:"";}),best=Math.max(...A.filter(x=>x!==""));
+ return `<div class="card"><b>مقارنة الفصول بين المواد — ${GN[st.g]}</b> <span class="mut">(النسبة المئوية لمتوسط كل فصل في كل مادة)</span><div class="sum"><table><tr><th>المادة</th>${used.map(c=>`<th>${esc(secName(st.g,c))}</th>`).join("")}</tr>${cols.map(([d],j)=>`<tr><td>${esc(d.name)}</td>${used.map(c=>`<td>${pc(M[j][c].mp)}</td>`).join("")}</tr>`).join("")}<tr><th>متوسط الفصل في كل المواد</th>${A.map(x=>`<th class="${x!==""&&x===best?"bst":""}">${pc(x)}</th>`).join("")}</tr></table></div><p class="mut">يُحسب متوسط كل فصل من درجات طالباته في كل مادة، وتُقارَن الفصول بالنسبة المئوية لتكون المقارنة عادلة بين المواد.</p></div>`;}
+function statsHtml(d){const r=calc(d);return `<table class="st">`+rows(r.fm).map(([l,f,k])=>`<tr class="${k?"k":""}"><th>${l}</th><td>${f(r)}</td></tr>`).join("")
+ +`<tr class="k"><th>متوسط الدرجات لإجمالي النتيجة من 100</th><td>${esc(d.avg)}</td></tr></table><div class="msg ${r.msg[0]==="⚠"?"bad":""}">${r.msg||"أدخلي الدرجات ليظهر الفحص"}</div>${secCmpHtml(d)}`;}
+function flash(t){$("#status").textContent=t;}
+function toast(t){const e=$("#toast");e.textContent="⚠ "+t;e.style.display="block";clearTimeout(tt);tt=setTimeout(()=>e.style.display="none",3500);}
+function renderBars(){$("#gb").innerHTML=[1,2,3].map(g=>`<button data-g="${g}" class="${st.g==g?"on":""}">${GN[g]}</button>`).join("");
+ $("#tb").innerHTML=[1,2].map(t=>`<button data-t="${t}" class="${st.t==t?"on":""}">الفصل ${TN[t]}</button>`).join("");
+ $("#pb").innerHTML=[1,2,3].map(q=>`<button data-p="${q}" class="${st.p==q?"on":""}">${["","فترة 1","فترة 2","نهائي"][q]}</button>`).join("");renderTabs();}
+function renderTabs(){let h=`<button data-v="sum" class="${st.v=="sum"?"on":""}">📋 النتائج</button><button data-v="cmp" class="${st.v=="cmp"?"on":""}">📈 الرسوم والمقارنة</button>`;
+ for(let i=1;i<=NS;i++){const d=getDoc(i);h+=`<button data-v="${i}" class="${st.v==i?"on":""}">${esc(d&&d.name)||"مادة "+i}</button>`;}$("#tabs").innerHTML=h;}
+function renderView(){st.v==="sum"?renderSum():st.v==="cmp"?renderCmp():renderSubj(+st.v);}
+function renderSubj(i){const d=getDoc(i),sc=JSON.parse(d.sc);
+ let h=`<div class="card"><div class="form"><label>المادة<input data-f="name" value="${esc(d.name)}" ${i==1?'readonly title="مادة مثبتة" style="background:var(--hd);font-weight:700"':''}></label><label>اسم المعلمة<input data-f="teacher" value="${esc(d.teacher)}"></label>
+ <label>عدد الطالبات الكلي<input data-f="total" type="number" min="0" max="125" value="${d.total||""}"></label>
+ <label>الدرجة الكاملة للمادة<input data-f="fm" list="fml" type="number" min="1" max="1000" step="any" placeholder="${defFM(st.p)}" value="${d.fm||""}"><datalist id="fml"><option value="20"><option value="30"><option value="40"><option value="10"><option value="50"></datalist></label><label>متوسط الدرجات من 100<input data-f="avg" type="number" min="0" max="100" step="any" value="${esc(d.avg)}"></label></div>
+ <p class="mut"><b>${PN[st.p]} — ${GN[st.g]} — الفصل ${TN[st.t]}</b><br>أدخلي درجات الاختبار (من <span id="fmh">${docFM(d)}</span>) — كل عمود يمثل فصلاً (شعبة) وكل صف طالبة. تُحفظ البيانات تلقائيًا.</p>${exportBar()}</div>
+ <div class="wrap2"><div class="card sc"><table class="g"><thead><tr><th>م</th>${Array.from({length:NC},(_,c)=>`<th><input class="sn" data-sn="${c}" value="${esc(secName(st.g,c))}" title="اضغطي لتعديل اسم الفصل"></th>`).join("")}</tr></thead><tbody>`;
+ for(let r=0;r<NR;r++){h+=`<tr><td>${r+1}</td>`;for(let c=0;c<NC;c++){const x=sc[c][r];h+=`<td><input class="${chk(x,docFM(d))?"bad":""}" inputmode="decimal" data-c="${c}" data-r="${r}" value="${esc(x)}"></td>`;}h+="</tr>";}
+ $("#app").innerHTML=h+`</tbody></table></div><div class="card" id="stats">${statsHtml(d)}</div></div>`;}
+function renderSum(){const cols=[];for(let i=1;i<=NS;i++){const d=getDoc(i);if(d.name)cols.push(d);}
+ if(!cols.length){$("#app").innerHTML=`<div class="card">لا توجد مواد بعد. اختاري تبويب مادة وأدخلي اسمها ودرجاتها، وستظهر هنا تلقائيًا.</div>`+legend();return;}
+ const rs=cols.map(d=>calc(d)),th=(a)=>`<th>${a}</th>`,td=(a)=>`<td>${a}</td>`;
+ let h=`<div class="card sum"><h3 style="margin-top:0">بيان بتحليل نتائج الطالبات في ${PN[st.p]} للفصل الدراسي ${TN[st.t]} للمرحلة الثانوية للعام الدراسي ${esc(st.y)}ه، الصف: ${GN[st.g]}</h3><table id="sumt"><thead><tr>${th("المادة")}${cols.map(d=>th(esc(d.name))).join("")}</tr></thead><tbody>`;
+ const row=(l,fn)=>`<tr><th>${l}</th>${cols.map((d,j)=>td(fn(d,rs[j]))).join("")}</tr>`;
+ h+=row("اسم المعلمة",d=>esc(d.teacher))+row("عدد طالبات الصف",d=>d.total||"")+row("الدرجة الكاملة للمادة",(d,r)=>r.fm)+rows().map(([l,f])=>row(l,(d,r)=>f(r))).join("")+row("متوسط الدرجات لإجمالي النتيجة من 100",d=>esc(d.avg))
+  +row("فحص صحة البيانات",(d,r)=>r.msg[0]==="⚠"?`<span class="bad">⚠ راجعي</span>`:r.msg?"✓":"");
+ $("#app").innerHTML=h+`</tbody></table>${exportBar()}</div>`+legend();}
+const BC=["#8fd49a","#b3e0a0","#dbe9a0","#f6e39b","#f7c59a","#f1a7a7"];
+function mp(g,t,nm,p=st.p){for(let i=1;i<=NS;i++){const d=docs[kk(g,t,p,i)];if(d&&d.name===nm){const r=calc(d,p);if(r.n)return r.mp;}}return"";}
+function names(f){const s=new Set();for(const k in docs){const m=k.match(/^(.+)_g(\d)_t(\d)(?:_p\d)?_s\d+$/);if(m&&m[1]===st.y&&docs[k].name&&f(+m[2],+m[3]))s.add(docs[k].name);}return[...s];}
+const delta=(a,b)=>{if(a===""||b==="")return"";const x=(b-a)*100;return `<b style="color:var(--${x>=0?"okt":"bt"})">${x>=0?"▲":"▼"} ${Math.abs(x).toFixed(1)}</b>`;};
+function cmpTable(head,nms,cells){return nms.length?`<div class="sum"><table><tr><th>المادة</th>${head.map(x=>`<th>${x}</th>`).join("")}<th>الفرق</th></tr>${nms.map(n=>{const v=cells(n);return `<tr><td>${esc(n)}</td>${v.map(x=>`<td>${pc(x)}</td>`).join("")}<td>${delta(v.find(x=>x!==""),[...v].reverse().find(x=>x!==""))}</td></tr>`;}).join("")}</table></div>`:`<p class="mut">لا توجد بيانات بعد.</p>`;}
+function subjCmp(cols){if(cols.length<2)return"";const S=[...cols].sort((a,b)=>b[1].mp-a[1].mp),avg=S.reduce((s,x)=>s+x[1].mp,0)/S.length;
+ return `<div class="card"><b>ترتيب المواد ومقارنتها</b> <span class="mut">(حسب النسبة المئوية للمتوسط، ومتوسط كل المواد ${pc(avg)})</span><div class="sum"><table><tr><th>#</th><th>المادة</th><th>المعلمة</th><th>المختبرات</th><th>المتوسط</th><th>الفرق عن متوسط المواد</th><th>ممتاز</th><th>الضعف النوعي</th><th>أعلى درجة</th><th>أدنى درجة</th></tr>${S.map(([d,r],i)=>`<tr><td>${i==0?"🥇":i==1?"🥈":i==2?"🥉":i+1}</td><td>${esc(d.name)}</td><td>${esc(d.teacher)}</td><td>${r.n}</td><td>${pc(r.mp)}</td><td>${delta(avg,r.mp)}</td><td>${pc(r.pct[0])}</td><td>${pc(r.weak)}</td><td>${f2(r.max)}</td><td>${f2(r.min)}</td></tr>`).join("")}</table></div><p class="mut">الأعلى متوسطًا: ${esc(S[0][0].name)} — الأقل متوسطًا: ${esc(S[S.length-1][0].name)}</p></div>`;}
+function renderCmp(){const cols=[];for(let i=1;i<=NS;i++){const d=getDoc(i);if(d.name){const r=calc(d);if(r.n)cols.push([d,r]);}}
+ let h=`<div class="card"><h3 style="margin-top:0">${GN[st.g]} — الفصل ${TN[st.t]} — ${PN[st.p]}</h3>`;
+ if(!cols.length)h+=`<p class="mut">لا توجد درجات مدخلة لهذا الصف والفصل بعد.</p>`;
+ else h+=`<b>النسبة المئوية لمتوسط الدرجات في كل مادة</b><div class="ch">${cols.map(([d,r])=>`<div class="br"><span>${esc(d.name)}</span><div class="tr"><i style="width:${Math.min(r.mp*100,100)}%"></i></div><b>${pc(r.mp)}</b></div>`).join("")}</div>
+ <b>توزيع التقديرات (من عدد المختبرات)</b><div class="ch">${cols.map(([d,r])=>`<div class="br"><span>${esc(d.name)}</span><div class="tr">${r.cnt.map((c,k)=>c?`<i style="width:${c/r.n*100}%;background:${BC[k]}" title="${BN[k]}: ${c}">${c}</i>`:"").join("")}</div></div>`).join("")}</div>
+ <div class="lg">${BN.map((n,k)=>`<span><u style="background:${BC[k]}"></u>${n}</span>`).join("")}</div>`;
+ h+=`</div>${subjCmp(cols)}${secMatrix(cols)}<div class="card"><b>مقارنة الفصل الأول بالثاني (${PN[st.p]}) — ${GN[st.g]}</b> <span class="mut">(النسبة المئوية للمتوسط، والفرق بالنقاط المئوية)</span>${cmpTable(["الفصل الأول","الفصل الثاني"],names(g=>g===st.g),n=>[mp(st.g,1,n),mp(st.g,2,n)])}</div>`;
+ h+=`<div class="card"><b>مقارنة الصفوف (${PN[st.p]}) — الفصل ${TN[st.t]}</b> <span class="mut">(من الأول إلى الثالث؛ تُطابق المواد بالاسم نفسه)</span>${cmpTable(["أول ثانوي","ثاني ثانوي","ثالث ثانوي"],names((g,t)=>t===st.t),n=>[1,2,3].map(g=>mp(g,st.t,n)))}</div>`;
+ h+=`<div class="card"><b>مقارنة الفترات — ${GN[st.g]} — الفصل ${TN[st.t]}</b> <span class="mut">(الفترة الأولى ثم الثانية ثم النهائي؛ الفرق من أول فترة إلى آخرها)</span>${cmpTable([PN[1],PN[2],PN[3]],names((g,t)=>g===st.g&&t===st.t),n=>[1,2,3].map(q=>mp(st.g,st.t,n,q)))}</div>`;
+ $("#app").innerHTML=h;}
+function legend(){return `<div class="card"><b>معايير التقدير</b><table style="margin-top:8px"><tr><th>التقدير</th><th>النسبة</th><th>مثال: من 20</th><th>مثال: من 40</th></tr>${BN.map((n,k)=>{const P=["90% فأكثر","80% - أقل من 90%","75% - أقل من 80%","70% - أقل من 75%","50% - أقل من 70%","أقل من 50%"][k],R=f=>{const b=bands(f);return k==0?`${b[0]} - ${f}`:k==5?`أقل من ${b[4]}`:`${b[k]} - أقل من ${b[k-1]}`};return `<tr><td>${n}</td><td>${P}</td><td>${R(20)}</td><td>${R(40)}</td></tr>`}).join("")}</table>
+ <p class="mut">نسبة الحاصلات = عدد الحاصلات في التقدير ÷ عدد الطالبات الكلي. نسبة الضعف النوعي = (جيد + مقبول + ضعيف). الانحراف المعياري للعينة. الحدود بنسب ثابتة من الدرجة الكاملة (90% و80% و75% و70% و50%)، وتتغير تلقائيًا مع الفترة (فترة 1 وفترة 2 من 20، والنهائي من 40).</p></div>`;}
+function sched(id){if(/_s1$/.test(id)&&docs[id])docs[id].name=MATH;clearTimeout(timers[id]);flash("جارٍ الحفظ…");timers[id]=setTimeout(async()=>{delete timers[id];
+ try{if(db)await db.doc("results/"+id).set(docs[id]);else localStorage.setItem("res_"+id,JSON.stringify(docs[id]));flash("تم الحفظ ✓");}catch(e){flash("تعذر الحفظ");}},700);}
+const app=$("#app");
+app.addEventListener("input",e=>{const el=e.target,i=+st.v;if(!i)return;
+ if(el.dataset.sn!==undefined){const k=secKey(st.g);let a=[];try{a=JSON.parse(docs[k].sn);}catch(x){}a[+el.dataset.sn]=el.value;docs[k]={sn:JSON.stringify(a)};$("#stats").innerHTML=statsHtml(getDoc(i));sched(k);return;}const id=key(i);const d=docs[id]=docs[id]||blank();
+ if(el.dataset.f){d[el.dataset.f]=["total","fm"].includes(el.dataset.f)?+el.value:el.value;if(el.dataset.f=="total"&&+el.value>NC*NR)toast(`عدد الطالبات الكلي يتجاوز الحد الأقصى (${NC} فصول × ${NR} طالبة = ${NC*NR})`);if(el.dataset.f=="name")renderTabs();if(el.dataset.f=="fm"){const fm=docFM(d);$("#fmh").textContent=fm;document.querySelectorAll("input[data-c]").forEach(x=>x.classList.toggle("bad",!!chk(x.value,fm)));}
+  if(el.dataset.f=="name"||el.dataset.f=="teacher")[1,2,3].forEach(q=>{if(q!==st.p){const k2=key(i,q),d2=docs[k2]=docs[k2]||blank();d2[el.dataset.f]=el.value;sched(k2);}});}
+ else if(el.dataset.c!==undefined){const sc=JSON.parse(d.sc);sc[el.dataset.c][el.dataset.r]=el.value;d.sc=JSON.stringify(sc);
+  const m=chk(el.value,docFM(d));el.classList.toggle("bad",!!m);if(m)toast(m);}
+ else return;$("#stats").innerHTML=statsHtml(d);sched(id);});
+app.addEventListener("keydown",e=>{const t=e.target;if(t.dataset.c===undefined)return;let c=+t.dataset.c,r=+t.dataset.r;const k=e.key;
+ if(k==="Enter"||k==="ArrowDown")r++;else if(k==="ArrowUp")r--;else if(k==="ArrowRight")c--;else if(k==="ArrowLeft")c++;else return;
+ e.preventDefault();const n=document.querySelector(`[data-c="${c}"][data-r="${r}"]`);if(n){n.focus();n.select();}});
+app.addEventListener("focusin",e=>{if(e.target.dataset.c!==undefined)e.target.select();});
+const exportBar=()=>dl?`<p class="xb"><b>⬇ تصدير:</b><button data-x="xlsx">Excel</button><button data-x="doc">Word</button><button data-x="pdf">PDF</button></p>`:"";
+const fname=t=>t.replace(/[\\/:*?"<>|]/g,"-");
+function aoaOf(){if(st.v==="sum")return{title:`نتائج ${PN[st.p]} — ${GN[st.g]} — الفصل ${TN[st.t]} — ${st.y}ه`,land:1,aoa:[...document.querySelectorAll("#sumt tr")].map(r=>[...r.children].map(c=>c.textContent.trim()))};
+ const i=+st.v,d=getDoc(i),r=calc(d),sc=JSON.parse(d.sc).slice(0,NC);let last=-1;sc.forEach(c=>c.slice(0,NR).forEach((x,k)=>{if(nz(x)!=="")last=Math.max(last,k);}));
+ const num=x=>{const n=Number(nz(x));return nz(x)===""?"":isFinite(n)?n:x;};
+ const aoa=[["المادة",d.name||"","المعلمة",d.teacher||""],["الصف",GN[st.g],"الفصل الدراسي",TN[st.t]],["الفترة",PN[st.p],"العام الدراسي",st.y+"ه"],["الدرجة الكاملة",r.fm,"عدد الطالبات الكلي",d.total||""],[],["م",...sc.map((_,c)=>secName(st.g,c))]];
+ for(let k=0;k<=last;k++)aoa.push([k+1,...sc.map(c=>num(c[k]??""))]);
+ aoa.push([],["الإحصاءات"],...rows(r.fm).map(([l,f])=>[l,f(r)]),["متوسط الدرجات لإجمالي النتيجة من 100",d.avg||""],["فحص البيانات",r.msg]);
+ return{title:`${d.name||"مادة "+i} — ${PN[st.p]} — ${GN[st.g]} — الفصل ${TN[st.t]}`,aoa};}
+function thtml(aoa){const w=Math.max(...aoa.map(r=>r.length));return `<table style="border-collapse:collapse;width:100%;font-size:13px">`+aoa.map((r,i)=>!r.length?`<tr><td colspan="${w}" style="height:10px"></td></tr>`:`<tr>`+Array.from({length:w},(_,j)=>`<td style="border:1px solid #999;padding:4px 6px;text-align:center;${j==0||(st.v==="sum"&&i==0)?"background:#eef4fb;font-weight:bold":""}">${esc(r[j]??"")}</td>`).join("")+`</tr>`).join("")+`</table>`;}
+async function doExport(kind){const{title,aoa,land}=aoaOf(),fn=fname(title);
+ try{
+  if(kind==="xlsx"){if(typeof XLSX==="undefined")throw{m:"مكتبة Excel لم تُحمَّل"};const ws=XLSX.utils.aoa_to_sheet(aoa),wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};ws["!cols"]=[{wch:46}];XLSX.utils.book_append_sheet(wb,ws,"النتائج");await dl.save({filename:fn+".xlsx",data:XLSX.write(wb,{bookType:"xlsx",type:"array"})});}
+  else if(kind==="doc"){const h=`<html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${esc(title)}</title></head><body dir="rtl" style="font-family:Arial"><h3 style="text-align:center">${esc(title)}</h3>${thtml(aoa)}</body></html>`;await dl.save({filename:fn+".doc",data:new Blob(["\ufeff"+h],{type:"application/msword"})});}
+  else{if(typeof html2canvas==="undefined"||!window.jspdf)throw{m:"مكتبة PDF لم تُحمَّل"};
+   const el=document.createElement("div");el.dir="rtl";el.style.cssText=`position:absolute;left:-10000px;top:0;width:${land?1100:720}px;background:#fff;color:#000;padding:16px;font-family:Arial,Tahoma,sans-serif`;
+   el.innerHTML=`<h3 style="text-align:center;margin:0 0 10px">${esc(title)}</h3>${thtml(aoa)}`;document.body.appendChild(el);
+   const cv=await html2canvas(el,{scale:2,backgroundColor:"#fff"});el.remove();
+   const doc=new window.jspdf.jsPDF({orientation:land?"l":"p",unit:"pt",format:"a4"}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),m=24,iw=W-2*m,ph=Math.floor((H-2*m)*cv.width/iw);
+   for(let y=0,pg=0;y<cv.height;y+=ph,pg++){const c=document.createElement("canvas");c.width=cv.width;c.height=Math.min(ph,cv.height-y);c.getContext("2d").drawImage(cv,0,y,cv.width,c.height,0,0,cv.width,c.height);if(pg)doc.addPage();doc.addImage(c.toDataURL("image/jpeg",.92),"JPEG",m,m,iw,c.height*iw/cv.width);}
+   await dl.save({filename:fn+".pdf",data:doc.output("arraybuffer")});}
+ }catch(e){if(!e||e.code!=="declined")toast("تعذر التصدير"+(e&&(e.m||e.message)?": "+(e.m||e.message):""));}}
+app.addEventListener("click",e=>{const x=e.target.dataset.x;if(x)doExport(x);});
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const D=b.dataset;
+ if(D.g)st.g=+D.g;else if(D.t)st.t=+D.t;else if(D.p)st.p=+D.p;else if(D.v)st.v=isNaN(+D.v)?D.v:+D.v;else return;renderBars();renderView();});
+$("#yr").addEventListener("change",e=>{st.y=nz(e.target.value).replace(/\D/g,"")||"1448";e.target.value=st.y;renderBars();renderView();});
+const SB="https://geruvshyzwgjcmcakpfs.supabase.co",SK="sb_publishable_NSbjHh8mhylyHBDc6i5-GA_wvvE54gn";
+let CODE="",last=null,polling=null;try{CODE=localStorage.getItem("ra_code")||"";}catch(e){}
+async function rpc(fn,body){const r=await fetch(SB+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SK,"Content-Type":"application/json"},body:JSON.stringify(body)});const t=await r.text();if(!r.ok)throw new Error(t.includes("bad_code")?"bad_code":"net");return t?JSON.parse(t):null;}
+const typing=()=>app.contains(document.activeElement)&&document.activeElement.tagName==="INPUT";
+async function pull(){const rs=await rpc("ra_get",{c:CODE,since:last});let cur=false,any=false;
+ (rs||[]).forEach(x=>{if(!last||x.updated_at>last)last=x.updated_at;if(timers[x.id]||((x.id===key(st.v)||x.id===secKey(st.g))&&typing()))return;
+  if(JSON.stringify(docs[x.id])!==JSON.stringify(x.data)){docs[x.id]=x.data;any=true;if(x.id===key(st.v)||x.id===secKey(st.g))cur=true;}});
+ if(any){renderTabs();if((st.v==="sum"||st.v==="cmp"||cur)&&!typing())renderView();}}
+dl={save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data]);const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}};
+function gate(msg){const g=$("#gate");g.style.display="flex";$("#gm").textContent=msg||"";$("#gc").value="";setTimeout(()=>$("#gc").focus(),50);}
+async function start(){if(!CODE)return gate();flash("جارٍ التحقق…");
+ try{if(!(await rpc("ra_check",{c:CODE})))return gate("رمز الدخول غير صحيح");}catch(e){flash("تعذر الاتصال بالقاعدة — تأكدي من الإنترنت");setTimeout(start,8000);return;}
+ $("#gate").style.display="none";db={doc:p=>({set:d=>rpc("ra_save",{c:CODE,p_id:p.slice(8),p_data:d})})};
+ flash("جارٍ تحميل البيانات…");try{await pull();flash("البيانات محفوظة على الإنترنت ✓");}catch(e){flash("تعذر تحميل البيانات");}
+ renderTabs();if(!typing())renderView();
+ clearInterval(polling);polling=setInterval(()=>pull().catch(()=>flash("تعذر الاتصال بالقاعدة")),15000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull().catch(()=>{});});}
+$("#gf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#gc").value.trim().toLowerCase();if(!v)return;$("#gm").textContent="جارٍ التحقق…";
+ try{if(await rpc("ra_check",{c:v})){CODE=v;try{localStorage.setItem("ra_code",v);}catch(x){}start();}else $("#gm").textContent="رمز الدخول غير صحيح";}catch(x){$("#gm").textContent="تعذر الاتصال، حاولي مرة أخرى";}});
+window.addEventListener("beforeunload",e=>{if(Object.keys(timers).length){e.preventDefault();e.returnValue="";}});
+renderBars();renderView();start();
+</script></body></html>
