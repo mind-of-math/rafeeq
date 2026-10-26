@@ -32,9 +32,10 @@ button.danger{background:#fbe6e4;color:var(--red)}
 header{display:flex;align-items:center;gap:.5em;padding:.45em .7em;background:var(--purple);color:#fff;flex-wrap:wrap}
 header h1{font-size:1.15em;font-weight:700;white-space:nowrap}
 header select{font:inherit;border:0;border-radius:.5em;padding:.25em .5em;background:#fff;color:var(--ink);max-width:12em}
-.tabs{display:flex;gap:.3em;margin-inline-start:auto;flex-wrap:wrap}
+.tabs{display:flex;gap:.3em;order:10;width:100%;margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+#sndBtn{margin-inline-start:auto}
 @media (max-width:480px){body{font-size:14px}.tabs{order:9;width:100%;margin:0}.tabs button{flex:1;padding:.4em .3em}.grid{grid-template-columns:repeat(auto-fill,minmax(7em,1fr))}.pickName{font-size:2.2em}}
-.tabs button{background:rgba(255,255,255,.16);color:#fff;padding:.4em .8em}
+.tabs button{background:rgba(255,255,255,.16);color:#fff;padding:.45em .5em;flex:1 0 auto;white-space:nowrap;font-size:.95em}
 .tabs button.on{background:#fff;color:var(--purple-d)}
 .hbtn{background:rgba(255,255,255,.16);color:#fff;padding:.4em .6em}
 .badge{background:var(--gold);color:#3b2a00;border-radius:2em;padding:.15em .6em;font-weight:700;font-variant-numeric:tabular-nums;display:none}
