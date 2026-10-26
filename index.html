@@ -32,10 +32,12 @@ button.danger{background:#fbe6e4;color:var(--red)}
 header{display:flex;align-items:center;gap:.5em;padding:.45em .7em;background:var(--purple);color:#fff;flex-wrap:wrap}
 header h1{font-size:1.15em;font-weight:700;white-space:nowrap}
 header select{font:inherit;border:0;border-radius:.5em;padding:.25em .5em;background:#fff;color:var(--ink);max-width:12em}
-.tabs{display:flex;gap:.3em;order:10;width:100%;margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+.tabs{display:flex;gap:.3em;order:10;width:100%;margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
 #sndBtn{margin-inline-start:auto}
 @media (max-width:480px){body{font-size:14px}.tabs{order:9;width:100%;margin:0}.tabs button{flex:1;padding:.4em .3em}.grid{grid-template-columns:repeat(auto-fill,minmax(7em,1fr))}.pickName{font-size:2.2em}}
-.tabs button{background:rgba(255,255,255,.16);color:#fff;padding:.45em .5em;flex:1 0 auto;white-space:nowrap;font-size:.95em}
+.tabs button{background:rgba(255,255,255,.16);color:#fff;padding:.35em .15em;flex:1 1 0;min-width:3.4em;white-space:nowrap;font-size:clamp(10px,1.2vw,15px);display:flex;flex-direction:column;align-items:center;gap:.05em;line-height:1.15}
+.tabs button i{font-style:normal;font-size:1.55em;line-height:1}
 .tabs button.on{background:#fff;color:var(--purple-d)}
 .hbtn{background:rgba(255,255,255,.16);color:#fff;padding:.4em .6em}
 .badge{background:var(--gold);color:#3b2a00;border-radius:2em;padding:.15em .6em;font-weight:700;font-variant-numeric:tabular-nums;display:none}
@@ -208,17 +210,17 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
   <select id="clsSel" title="الفصل"></select>
   <span class="badge" id="tBadge" title="المؤقت يعمل"></span>
   <nav class="tabs">
-    <button data-tab="stars" class="on">⭐ تعزيز</button>
-    <button data-tab="podium">🏆 المتميزات</button>
-    <button data-tab="pick">🎲 عشوائي</button>
-    <button data-tab="groups">👥 المجموعات</button>
-    <button data-tab="att">📋 الغياب</button>
-    <button data-tab="hw">📚 الواجب</button>
-    <button data-tab="live">🗳️ سؤال</button>
-    <button data-tab="exit">🚪 الخروج</button>
-    <button data-tab="sheet">📄 السجل</button>
-    <button data-tab="timer">⏱ مؤقت</button>
-    <button data-tab="prog">📈 التقدم</button>
+    <button data-tab="stars" class="on"><i>⭐</i><span>تعزيز</span></button>
+    <button data-tab="podium"><i>🏆</i><span>المتميزات</span></button>
+    <button data-tab="pick"><i>🎲</i><span>عشوائي</span></button>
+    <button data-tab="groups"><i>👥</i><span>المجموعات</span></button>
+    <button data-tab="att"><i>📋</i><span>الغياب</span></button>
+    <button data-tab="hw"><i>📚</i><span>الواجب</span></button>
+    <button data-tab="live"><i>🗳️</i><span>سؤال</span></button>
+    <button data-tab="exit"><i>🚪</i><span>الخروج</span></button>
+    <button data-tab="sheet"><i>📄</i><span>السجل</span></button>
+    <button data-tab="timer"><i>⏱</i><span>مؤقت</span></button>
+    <button data-tab="prog"><i>📈</i><span>التقدم</span></button>
   </nav>
   <button class="hbtn" id="sndBtn" title="الصوت">🔊</button>
   <button class="hbtn" id="flBtn" title="نافذة عائمة تبقى ظاهرة أثناء العرض" style="display:none">🗗</button>
