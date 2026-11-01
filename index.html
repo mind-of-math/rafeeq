@@ -494,6 +494,12 @@ function lvResolve(c, name){
   c.students.forEach(function(s){ if(lvMatch(lvNrm(s.name), n)) out.push(s.id); });
   return {ids: out.length === 1 ? out : [], group: false, amb: out.length > 1};
 }
+var lvPaste = null;
+document.addEventListener("paste", function(e){
+  if(!lvPaste || tab !== "live") return;
+  var it = e.clipboardData && e.clipboardData.items; if(!it) return;
+  for(var i = 0; i < it.length; i++){ if(it[i].kind === "file" && /^image\//.test(it[i].type)){ var f = it[i].getAsFile(); if(f){ e.preventDefault(); lvPaste(f); return; } } }
+});
 function lvStop(){ if(lv && lv.timer){ clearInterval(lv.timer); lv.timer = null; } }
 function lvPoll(){
   if(tab !== "live" || !lv.code || lv.compose){ lvStop(); return; }
@@ -570,7 +576,7 @@ function renderLive(){
   if(lv.compose || !lv.code){
     h += '<div class="seg" id="lvK" style="margin-bottom:.6em"><button data-k="mcq"'+(d.k==="mcq"?' class="on"':'')+'>🔘 اختيار من متعدد</button><button data-k="open"'+(d.k==="open"?' class="on"':'')+'>💭 إجابات حرة (عصف ذهني)</button><button data-k="photo"'+(d.k==="photo"?' class="on"':'')+'>📷 صورة الحل</button></div>';
     h += '<div class="attbar"><textarea class="hwt" id="lvP" rows="2" maxlength="400" placeholder="'+(d.k==="open" ? "اكتبي سؤال العصف الذهني" : d.k==="photo" ? "اكتبي المسألة التي ستصوّر الطالبات حلّها" : "اكتبي سؤال الشريحة")+'">'+esc(d.p)+'</textarea></div>';
-    h += '<div class="attbar"><label class="muted" style="cursor:pointer">🖼️ <input type="file" id="lvF" accept="image/*" style="max-width:14em"></label>'+(d.img ? '<img src="'+d.img+'" style="height:5em;border-radius:.5em"><button id="lvRmI">✖ حذف الصورة</button>' : '<span class="muted">(اختياري) أدرجي صورة للسؤال</span>')+'</div>';
+    h += '<div class="attbar"><label class="muted" style="cursor:pointer">🖼️ <input type="file" id="lvF" accept="image/*" style="max-width:14em"></label>'+(d.img ? '<img src="'+d.img+'" style="height:5em;border-radius:.5em"><button id="lvRmI">✖ حذف الصورة</button>' : '<span class="muted">(اختياري) أدرجي صورة للسؤال، أو اسحبيها وأفلتيها هنا، أو الصقيها (Ctrl+V)</span>')+'</div>';
     if(d.k === "mcq") for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
     h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال الآن</button><button id="lvAdd">➕ أضيفيه للقائمة</button></div>'+
       '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.'+(d.k==="open" ? " في العصف الذهني يمكن لكل طالبة إرسال حتى 3 أفكار." : d.k==="photo" ? " تصوّر الطالبة حلّها بجوالها وترسله (حتى صورتين)، وتظهر لكِ الصور هنا، ويمكنكِ تكبير أي صورة بالضغط عليها." : "")+'</div>';
@@ -589,6 +595,15 @@ function renderLive(){
   function keep(){ if($("lvP")) d.p = $("lvP").value.trim(); if(d.k === "mcq" && $("lvO0")){ d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); }); var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0; } }
   if($("lvK")){ var kb = $("lvK").querySelectorAll("button"); for(var z = 0; z < kb.length; z++) kb[z].onclick = function(){ keep(); d.k = this.getAttribute("data-k"); renderLive(); }; }
   if($("lvF")) $("lvF").onchange = function(){ var f = this.files && this.files[0]; if(!f) return; keep(); lvImg(f, function(u){ d.img = u; renderLive(); }); };
+  lvPaste = null;
+  if($("lvP")){
+    var take = function(f){ if(!f || !/^image\//.test(f.type)){ toast("اسحبي ملف صورة فقط"); return; } keep(); lvImg(f, function(u){ d.img = u; renderLive(); }); };
+    lvPaste = take;
+    var mn = $("main");
+    mn.ondragover = function(e){ e.preventDefault(); mn.style.outline = "3px dashed var(--pur,#7c5cc4)"; };
+    mn.ondragleave = function(){ mn.style.outline = ""; };
+    mn.ondrop = function(e){ e.preventDefault(); mn.style.outline = ""; var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) take(f); };
+  }
   if($("lvRmI")) $("lvRmI").onclick = function(){ keep(); d.img = ""; renderLive(); };
   if($("lvSend")) $("lvSend").onclick = function(){ keep(); var btn = $("lvSend"); btn.disabled = true; lvSendNow(d, null).then(function(ok){ if(!ok && $("lvSend")) $("lvSend").disabled = false; }); };
   if($("lvAdd")) $("lvAdd").onclick = function(){
