@@ -321,7 +321,7 @@ function ser(){
 function norm(s){
   s.classes.forEach(function(c){
     c.students = c.students || []; c.picked = c.picked || [];
-    c.groups = c.groups || {}; c.att = c.att || {}; c.hw = c.hw || {}; c.exits = c.exits || {}; if(!Array.isArray(c.days)) c.days = [0, 1, 2, 3, 4];
+    c.qs = c.qs || []; c.part = c.part || {}; c.groups = c.groups || {}; c.att = c.att || {}; c.hw = c.hw || {}; c.exits = c.exits || {}; if(!Array.isArray(c.days)) c.days = [0, 1, 2, 3, 4];
     ["orig", "diff"].forEach(function(k){ var g = c.groups[k] = c.groups[k] || {}; g.names = g.names || GDEF[k].slice(); g.map = g.map || {}; });
     if(!c.log){ c.log = []; c.students.forEach(function(st){ if(st.points > 0) c.log.push([st.id, 0, st.points]); }); }
     // نسخة سابقة كانت تدمج نجوم مُتقِن في نجوم الحصة: نُعيد ما أُضيف فقط (المسجّل بعلامة mq) ونُبقي بقية النجوم كما هي،
@@ -449,6 +449,7 @@ function lvSendNow(d, item){
   var b = lvBuild(d, lv.code); if(b.err){ toast(b.err); return Promise.resolve(false); }
   return mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(b.body)}).then(function(j){
     lv.code = j.code; lv.compose = false; b.q.id = j.id; lv.q = b.q; lv.ans = [];
+    lv.meta = lv.meta || {}; lv.meta[j.id] = {tag: d.tag || "", fast: +d.fast || 0, end: (+d.fast ? Date.now() + d.fast * 1000 : 0)}; lv.clsId = state.current;
     if(item){ item.sent = true; lvSaveQ(); }
     renderLive(); lvStop(); lv.timer = setInterval(lvPoll, 2500); lvPoll(); return true;
   }).catch(function(e){ toast(e.message); return false; });
@@ -500,6 +501,85 @@ document.addEventListener("paste", function(e){
   var it = e.clipboardData && e.clipboardData.items; if(!it) return;
   for(var i = 0; i < it.length; i++){ if(it[i].kind === "file" && /^image\//.test(it[i].type)){ var f = it[i].getAsFile(); if(f){ e.preventDefault(); lvPaste(f); return; } } }
 });
+/* ---------- أدوات الحصة الأونلاين: سجل الأسئلة، المشاركة، تحدي سريع، لم تجب بعد، الملخص ---------- */
+function lvM(id){ lv.meta = lv.meta || {}; return lv.meta[id] || {}; }
+function lvCls(){ var id = lv.clsId || state.current, r = state.classes.filter(function(x){ return x.id === id; })[0] || cls(); if(r.virt) fillVirt(state); return r; }
+function lvLog(q){
+  var cc = lvCls(); cc.qs = cc.qs || []; cc.part = cc.part || {};
+  var day = todayIso(), m = lvM(q.id), e = null, ch = false;
+  for(var i = 0; i < cc.qs.length; i++) if(cc.qs[i].id === q.id){ e = cc.qs[i]; break; }
+  if(!e){ e = {id: q.id, day: day, t: Date.now(), k: q.kind, tag: m.tag || "", p: q.prompt || "", o: q.options || [], ok: null, n: 0, g: 0}; cc.qs.push(e); if(cc.qs.length > 300) cc.qs.shift(); ch = true; }
+  var seen = {}, good = {}, pt = cc.part[day] = cc.part[day] || {};
+  lv.ans.forEach(function(a){
+    var k = lvNrm(a.name); seen[k] = 1; if(q.kind === "mcq" && q.correct != null && a.choice === q.correct) good[k] = 1;
+    lvResolve(cc, a.name).ids.forEach(function(id){ if(!pt[id]){ pt[id] = 1; ch = true; } });
+  });
+  var n = Object.keys(seen).length, g = Object.keys(good).length, ok = (q.kind === "mcq" && q.correct != null) ? q.correct : null;
+  if(e.n !== n || e.g !== g || e.ok !== ok){ e.n = n; e.g = g; e.ok = ok; ch = true; }
+  if(!Object.keys(pt).length) delete cc.part[day];
+  if(ch){ save(); var pe = $("lvPnl"); if(pe){ pe.innerHTML = lvPanel(cls()); if(lv._pb) lv._pb(); } }
+}
+function lvCloseQ(){ return mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({action:"close", code: lv.code})}).then(lvPoll).catch(function(e){ toast(e.message); }); }
+function lvCdStart(q){
+  if(lv.cdQ === q.id && lv.cdT) return;
+  clearInterval(lv.cdT); lv.cdQ = q.id;
+  lv.cdT = setInterval(function(){
+    var m = lvM(q.id), el = $("lvCd");
+    if(tab !== "live" || !m.end || !lv.q || lv.q.id !== q.id){ clearInterval(lv.cdT); lv.cdT = null; return; }
+    var r = Math.ceil((m.end - Date.now()) / 1000);
+    if(r <= 0){ clearInterval(lv.cdT); lv.cdT = null; m.end = 0; if(el) el.textContent = "⏰ انتهى الوقت!"; alarm(); lvCloseQ(); return; }
+    if(el) el.textContent = "⏱️ " + r + " ث";
+  }, 250);
+}
+function lvPct(list, tag){ var n = 0, g = 0; list.forEach(function(e){ if(e.tag === tag && e.ok != null && e.n){ n += e.n; g += e.g; } }); return n ? Math.round(g * 100 / n) : null; }
+function lvCmp(list){
+  var a = lvPct(list, "in"), b = lvPct(list, "out");
+  if(a == null && b == null) return "";
+  var t = (a != null ? "🚪 الدخول " + a + "%" : "") + (a != null && b != null ? " ← " : "") + (b != null ? "🏁 الخروج " + b + "%" : "");
+  if(a != null && b != null){ var df = b - a; t += " (" + (df >= 0 ? "ارتفع الفهم " : "انخفض ") + Math.abs(df) + " نقطة)"; }
+  return t;
+}
+function lvPanel(c){
+  var today = todayIso(), list = (c.qs || []).filter(function(e){ return e.day === today; }), TG = {"in": "🚪 ", "out": "🏁 ", "": ""};
+  var h = '<div style="margin-top:1em;border-top:1px solid var(--line);padding-top:.6em"><h2 class="cal" style="font-size:1.05em">📊 نسبة الفهم والمشاركة (اليوم)</h2>';
+  if(!list.length) h += '<div class="muted">تظهر هنا نتائج أسئلة اليوم بعد إرسالها. اختاري نوع السؤال «دخول» أو «خروج» لمقارنة الفهم قبل الحصة وبعدها.</div>';
+  else {
+    list.forEach(function(e){ h += '<div class="muted" style="margin:.2em 0">• '+TG[e.tag || ""]+esc((e.p || "(صورة)").slice(0, 55))+' — أجابت '+e.n+(e.ok != null && e.n ? ' — صحيح <b>'+Math.round(e.g * 100 / e.n)+'%</b>' : '')+'</div>'; });
+    var cp = lvCmp(list); if(cp) h += '<div style="margin-top:.4em;font-weight:700">'+cp+'</div>';
+  }
+  var days = {}; (c.qs || []).forEach(function(e){ if(e.day !== today && e.tag) (days[e.day] = days[e.day] || []).push(e); });
+  var dk = Object.keys(days).sort().reverse().slice(0, 7);
+  if(dk.length){ h += '<div style="margin-top:.5em"><b>الأيام السابقة</b></div>'; dk.forEach(function(d){ var t = lvCmp(days[d]); if(t) h += '<div class="muted">'+esc(dayLabel(d))+': '+t+'</div>'; }); }
+  var pt = (c.part || {})[today] || {}, ab = absentToday(c), el = c.students.filter(function(s){ return !ab[s.id]; });
+  var jn = el.filter(function(s){ return pt[s.id]; }), nt = el.filter(function(s){ return !pt[s.id]; });
+  h += '<h2 class="cal" style="font-size:1.05em;margin-top:.8em">📋 الحضور الأونلاين (من تفاعل اليوم)</h2>';
+  h += '<div class="muted">شاركت <b>'+jn.length+'</b> من '+el.length+(Object.keys(ab).length ? ' (غائبات مسجّلات: '+Object.keys(ab).length+')' : '')+'</div>';
+  if(nt.length && jn.length) h += '<div class="muted">لم تشاركن بعد: '+esc(nt.map(function(s){ return shortName(s.name); }).join("، "))+'</div>';
+  h += '<div class="acts" style="margin-top:.4em">'+(nt.length && jn.length ? '<button id="lvAbs">✅ سجّلي غير المشاركات غائبات</button>' : '')+'<button id="lvSum">📄 تنزيل ملخص الحصة</button></div></div>';
+  lv._pb = function(){
+    if($("lvAbs")) $("lvAbs").onclick = function(){ ask("تسجيل " + nt.length + " طالبة غائبات اليوم لأنهن لم يشاركن في أي سؤال؟ (يمكنك تعديل ذلك من تبويب الغياب)", function(){ var r = c.att[today] = c.att[today] || {}; nt.forEach(function(x){ if(!r[x.id]) r[x.id] = "a"; }); save(); renderLive(); toast("تم تسجيل الغياب"); }); };
+    if($("lvSum")) $("lvSum").onclick = function(){ lvSummary(c, list, jn, nt, ab); };
+  };
+  return h;
+}
+function lvSummary(c, list, jn, nt, ab){
+  var L = ["أ", "ب", "ج", "د"], day = todayIso();
+  var h = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ملخص حصة</title><style>body{font-family:"Segoe UI",Tahoma,sans-serif;background:#f7f2e8;color:#2b2540;max-width:760px;margin:auto;padding:16px;line-height:1.7}h1{color:#6b46c1}.q{background:#fff;border:1px solid #e3dcf0;border-radius:12px;padding:10px 14px;margin:10px 0}.ok{color:#1a7f4b;font-weight:700}.m{color:#6a6580;font-size:.9em}footer{text-align:center;color:#6a6580;margin-top:24px;font-size:.85em}</style></head><body>';
+  h += '<h1>ملخص الحصة — '+esc(c.name)+'</h1><div class="m">'+esc(dayLabel(day))+'</div>';
+  var cp = lvCmp(list); if(cp) h += '<p><b>'+cp+'</b></p>';
+  if(!list.length) h += '<p class="m">لم تُرسل أسئلة اليوم.</p>';
+  list.forEach(function(e, i){
+    h += '<div class="q"><b>'+(i + 1)+'. '+(e.tag === "in" ? "🚪 " : e.tag === "out" ? "🏁 " : "")+esc(e.p || "(سؤال بصورة)")+'</b>';
+    if(e.k === "mcq") (e.o || []).forEach(function(o, j){ h += '<div'+(j === e.ok ? ' class="ok"' : '')+'>'+L[j]+') '+esc(o)+(j === e.ok ? ' ✔' : '')+'</div>'; });
+    h += '<div class="m">أجابت '+e.n+(e.ok != null && e.n ? ' — نسبة الصحيح '+Math.round(e.g * 100 / e.n)+'%' : '')+'</div></div>';
+  });
+  h += '<h2>المشاركة</h2><p>شاركت '+jn.length+' من '+(jn.length + nt.length)+' طالبة.</p>';
+  if(jn.length) h += '<p><b>شاركن:</b> '+esc(jn.map(function(x){ return x.name; }).join("، "))+'</p>';
+  if(nt.length) h += '<p><b>لم يشاركن:</b> '+esc(nt.map(function(x){ return x.name; }).join("، "))+'</p>';
+  h += '<footer>مملوك للمعلمة: عهود يزيد جويهر</footer></body></html>';
+  download("ملخص حصة - " + c.name + " - " + day + ".html", h, "text/html");
+  toast("تم تنزيل ملخص الحصة");
+}
 function lvStop(){ if(lv && lv.timer){ clearInterval(lv.timer); lv.timer = null; } }
 function lvPoll(){
   if(tab !== "live" || !lv.code || lv.compose){ lvStop(); return; }
@@ -519,7 +599,9 @@ function lvBig(u){
 function lvRes(){
   var el = $("lvRes"); if(!el) return;
   var q = lv.q; if(!q || lv.compose){ el.innerHTML = ""; return; }
-  var c = cls(), L = ["أ", "ب", "ج", "د"], isOpen = q.kind !== "mcq", isPh = q.kind === "photo", tot = lv.ans.length, h = "";
+  var c = cls(), L = ["أ", "ب", "ج", "د"], isOpen = q.kind !== "mcq", isPh = q.kind === "photo", tot = lv.ans.length, h = "", qm = lvM(q.id);
+  lvLog(q);
+  if(qm.end && q.open) h += '<div id="lvCd" style="font-size:2.6em;font-weight:800;text-align:center;color:var(--red,#c0392b)">⏱️</div>';
   if(isOpen){
     var who = {}; lv.ans.forEach(function(a){ who[lvNrm(a.name)] = 1; });
     h += '<div class="attsum"><span>👥 شاركت '+Object.keys(who).length+'</span><span>'+(isPh ? "📷 " + tot + " صورة" : "💭 " + tot + " إجابة")+'</span><span>'+(q.open ? "🟢 مفتوح" : "🔒 مغلق")+'</span><button id="lvNm">'+(lv.names ? "🙈 إخفاء الأسماء" : "👁 إظهار الأسماء")+'</button></div>';
@@ -536,13 +618,34 @@ function lvRes(){
       h += '<div style="margin:.35em 0"><div>'+L[i]+' — '+esc(o)+(ok ? " ✅" : "")+' <b>('+cnt[i]+')</b></div><div style="background:#eee;border-radius:.5em;height:1.1em"><div style="height:100%;border-radius:.5em;width:'+Math.round(cnt[i] * 100 / mx)+'%;background:'+(ok ? "var(--green)" : "var(--purple)")+'"></div></div></div>';
     });
   }
+  var ansSet = {}; lv.ans.forEach(function(a){ lvResolve(c, a.name).ids.forEach(function(id){ ansSet[id] = 1; }); });
+  var abs = absentToday(c), pcl = lvCls(), ptd = (pcl.part || {})[todayIso()] || {};
+  var notYet = c.students.filter(function(x){ return !ansSet[x.id] && !abs[x.id]; }), noPart = c.students.filter(function(x){ return !ptd[x.id] && !abs[x.id]; });
+  h += '<div style="margin-top:.7em"><b>🙋 لم تجب بعد ('+notYet.length+')</b> '+(notYet.length ? '<button id="lvWho">🎲 اختاري واحدة</button>' : '')+(notYet.length ? '<div class="muted">'+esc(notYet.slice(0, 14).map(function(x){ return shortName(x.name); }).join("، "))+(notYet.length > 14 ? " …" : "")+'</div>' : '')+
+    '<div style="margin-top:.3em"><b>🔕 لم تشارك في أي سؤال اليوم ('+noPart.length+')</b> '+(noPart.length ? '<button id="lvWho2">🎲 اختاري واحدة</button>' : '')+'</div></div>';
   h += '<div style="display:flex;gap:.5em;flex-wrap:wrap;margin-top:.8em">'+
+    (!isOpen && qm.fast && !q.open ? '<button id="lvFastB">🏆 نجمة إضافية لأسرع 3 إجابات صحيحة</button>' : '')+
     (q.open ? '<button class="primary" id="lvClose">'+(isOpen ? "🔒 إغلاق باب الإجابات" : "🔒 إغلاق وإظهار الإجابة")+'</button>' : '<button class="green" id="lvStar">'+(isOpen ? "🌟 نجمة لكل من شاركت" : "🌟 نجمة لمن أجبن صح")+'</button>')+
     (lvPending() ? '<button class="primary" id="lvNxt">⏭ السؤال التالي ('+lvPending()+' في القائمة)</button>' : '')+'<button id="lvNew">➕ سؤال جديد</button><button id="lvEnd">🆕 حصة جديدة (رمز جديد)</button></div><div id="lvMsg" class="muted" style="margin-top:.5em"></div>';
   el.innerHTML = h;
   var ths = el.querySelectorAll(".lvTh"); for(var ti = 0; ti < ths.length; ti++) ths[ti].onclick = function(){ lvBig(lv.imgs[this.getAttribute("data-i")]); };
   if($("lvNm")) $("lvNm").onclick = function(){ lv.names = !lv.names; lvRes(); };
-  if($("lvClose")) $("lvClose").onclick = function(){ mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({action:"close", code: lv.code})}).then(lvPoll).catch(function(e){ toast(e.message); }); };
+  if($("lvClose")) $("lvClose").onclick = function(){ lvCloseQ(); };
+  if(qm.end && q.open) lvCdStart(q);
+  var pick = function(arr){ if(!arr.length) return; var x = arr[Math.floor(Math.random() * arr.length)]; tone(784,.2); tone(1046,.35,.12); celebrate("🎯", x.name, "دورك في الإجابة!"); };
+  if($("lvWho")) $("lvWho").onclick = function(){ pick(notYet); };
+  if($("lvWho2")) $("lvWho2").onclick = function(){ pick(noPart); };
+  if($("lvFastB")) $("lvFastB").onclick = function(){
+    lv.fastDone = lv.fastDone || {}; if(lv.fastDone[q.id]){ toast("مُنحت النجمة الإضافية لهذا السؤال من قبل"); return; }
+    var win = [], got = {}, n = 0;
+    lv.ans.forEach(function(a){ if(win.length < 3 && a.choice === q.correct) win.push(a); });
+    if(!win.length){ toast("لا توجد إجابات صحيحة بعد"); return; }
+    win.forEach(function(a){ lvResolve(c, a.name).ids.forEach(function(id){ got[id] = 1; }); });
+    var names = [];
+    Object.keys(got).forEach(function(id){ var x = findStu(id); if(x){ x.points++; logAdd(c, x.id, 1); n++; names.push(shortName(x.name)); } });
+    lv.fastDone[q.id] = 1; save();
+    celebrate("🏆", "الأسرع!", names.join("، "));
+  };
   if($("lvStar")) $("lvStar").onclick = function(){
     if(lv.awarded[q.id]){ toast("مُنحت النجوم لهذا السؤال من قبل"); return; }
     var got = {}, unk = [], amb = [], n = 0;
@@ -577,6 +680,9 @@ function renderLive(){
     h += '<div class="seg" id="lvK" style="margin-bottom:.6em"><button data-k="mcq"'+(d.k==="mcq"?' class="on"':'')+'>🔘 اختيار من متعدد</button><button data-k="open"'+(d.k==="open"?' class="on"':'')+'>💭 إجابات حرة (عصف ذهني)</button><button data-k="photo"'+(d.k==="photo"?' class="on"':'')+'>📷 صورة الحل</button></div>';
     h += '<div class="attbar"><textarea class="hwt" id="lvP" rows="2" maxlength="400" placeholder="'+(d.k==="open" ? "اكتبي سؤال العصف الذهني" : d.k==="photo" ? "اكتبي المسألة التي ستصوّر الطالبات حلّها" : "اكتبي سؤال الشريحة")+'">'+esc(d.p)+'</textarea></div>';
     h += '<div class="attbar"><label class="muted" style="cursor:pointer">🖼️ <input type="file" id="lvF" accept="image/*" style="max-width:14em"></label>'+(d.img ? '<img src="'+d.img+'" style="height:5em;border-radius:.5em"><button id="lvRmI">✖ حذف الصورة</button>' : '<span class="muted">(اختياري) أدرجي صورة للسؤال، أو اسحبيها وأفلتيها هنا، أو الصقيها (Ctrl+V)</span>')+'</div>';
+    var sel = 'style="font:inherit;padding:.25em;border:1px solid var(--line);border-radius:.4em"';
+    h += '<div class="attbar"><label class="muted">نوع السؤال: <select id="lvTag" '+sel+'><option value="">عادي</option><option value="in"'+(d.tag==="in"?" selected":"")+'>🚪 سؤال دخول (بداية الحصة)</option><option value="out"'+(d.tag==="out"?" selected":"")+'>🏁 سؤال خروج (نهاية الحصة)</option></select></label>'+
+      '<label class="muted">⏱️ تحدي سريع: <select id="lvFast" '+sel+'><option value="0">بدون</option>'+[30, 60, 90, 120].map(function(v){ return '<option value="'+v+'"'+(+d.fast===v?" selected":"")+'>'+v+' ثانية</option>'; }).join("")+'</select></label></div>';
     if(d.k === "mcq") for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
     h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال الآن</button><button id="lvAdd">➕ أضيفيه للقائمة</button></div>'+
       '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.'+(d.k==="open" ? " في العصف الذهني يمكن لكل طالبة إرسال حتى 3 أفكار." : d.k==="photo" ? " تصوّر الطالبة حلّها بجوالها وترسله (حتى صورتين)، وتظهر لكِ الصور هنا، ويمكنكِ تكبير أي صورة بالضغط عليها." : "")+'</div>';
@@ -591,8 +697,10 @@ function renderLive(){
     if(lv.queue.length && lvPending()) h += '<div class="attbar" style="margin-top:.5em"><button class="green" id="lvGoQ">▶ ابدئي من أول سؤال لم يُرسل</button></div>';
   }
   h += '<div id="lvRes"></div>';
+  h += '<div id="lvPnl">' + lvPanel(c) + '</div>';
   $("main").innerHTML = h;
-  function keep(){ if($("lvP")) d.p = $("lvP").value.trim(); if(d.k === "mcq" && $("lvO0")){ d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); }); var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0; } }
+  if(lv._pb) lv._pb();
+  function keep(){ if($("lvTag")) d.tag = $("lvTag").value; if($("lvFast")) d.fast = +$("lvFast").value; if($("lvP")) d.p = $("lvP").value.trim(); if(d.k === "mcq" && $("lvO0")){ d.o = [0, 1, 2, 3].map(function(i){ return $("lvO" + i).value.trim(); }); var r = document.querySelector('input[name="lvC"]:checked'); d.c = r ? +r.value : 0; } }
   if($("lvK")){ var kb = $("lvK").querySelectorAll("button"); for(var z = 0; z < kb.length; z++) kb[z].onclick = function(){ keep(); d.k = this.getAttribute("data-k"); renderLive(); }; }
   if($("lvF")) $("lvF").onchange = function(){ var f = this.files && this.files[0]; if(!f) return; keep(); lvImg(f, function(u){ d.img = u; renderLive(); }); };
   lvPaste = null;
@@ -608,7 +716,7 @@ function renderLive(){
   if($("lvSend")) $("lvSend").onclick = function(){ keep(); var btn = $("lvSend"); btn.disabled = true; lvSendNow(d, null).then(function(ok){ if(!ok && $("lvSend")) $("lvSend").disabled = false; }); };
   if($("lvAdd")) $("lvAdd").onclick = function(){
     keep(); var b = lvBuild(d, ""); if(b.err){ toast(b.err); return; }
-    lv.queue.push({k: d.k, p: d.p, o: d.o.slice(), c: d.c, img: d.img, sent: false}); lvSaveQ();
+    lv.queue.push({k: d.k, p: d.p, o: d.o.slice(), c: d.c, img: d.img, tag: d.tag || "", fast: +d.fast || 0, sent: false}); lvSaveQ();
     lv.draft = lvBlank(d.k); toast("أُضيف للقائمة (" + lv.queue.length + ")"); renderLive();
   };
   if($("lvQClr")) $("lvQClr").onclick = function(){ if(confirm("مسح كل أسئلة القائمة؟")){ lv.queue = []; lvSaveQ(); renderLive(); } };
@@ -939,6 +1047,7 @@ function distribute(c, kind){
   }
   save();
 }
+var gCh = [0, 0, 0, 0], rmN = 4, rmHtml = "";
 function renderGroups(){
   var c = cls(); if(!c.students.length) return emptyView();
   var g = gOf(c), cols = GCOL[gKind], any = Object.keys(g.map).some(function(id){ return findStu(id); });
@@ -967,6 +1076,10 @@ function renderGroups(){
   var un = c.students.filter(function(s){ var v = g.map[s.id]; return v === undefined || v === null; });
   if(un.length) h += '<div class="unas"><div class="muted" style="margin-bottom:.35em">بدون مجموعة ('+un.length+') — اضغطي على الاسم لإضافته:</div><div class="gm" style="display:flex;flex-wrap:wrap;gap:.35em">'+
     un.map(function(s){ return '<span class="chip'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-s="'+s.id+'">'+esc(shortName(s.name))+'<i>'+s.points+'</i></span>'; }).join("")+'</div></div>';
+  h += '<div style="margin-top:.8em;border-top:1px solid var(--line);padding-top:.6em"><b>🏁 تحدي المجموعات</b> <span class="muted">(نقاط الحصة، منفصلة عن النجوم)</span><div style="display:flex;flex-wrap:wrap;gap:.5em;margin:.4em 0">'+
+    [0, 1, 2, 3].map(function(k){ return '<div style="border:2px solid '+cols[k]+';border-radius:.8em;padding:.3em .6em;display:flex;align-items:center;gap:.4em"><b style="color:'+cols[k]+'">'+esc(g.names[k])+'</b><button data-cm="'+k+'" data-d="-1">➖</button><b style="min-width:1.6em;text-align:center">'+gCh[k]+'</b><button data-cm="'+k+'" data-d="1">➕</button></div>'; }).join("")+
+    '</div><div class="acts"><button class="green" id="gcWin">🏆 إعلان الفائزة ونجمة لأعضائها</button><button id="gcClr">↺ تصفير</button></div></div>'+
+    '<div style="margin-top:.8em;border-top:1px solid var(--line);padding-top:.6em"><b>🏠 غرف صغيرة</b> <label class="muted">عدد الغرف <input id="rmN" type="number" min="2" max="8" value="'+rmN+'" style="width:3.5em;font:inherit;padding:.2em;border:1px solid var(--line);border-radius:.4em"></label> <button id="rmGo">🔀 قسّمي عشوائيًا</button><div id="rmOut">'+rmHtml+'</div></div>';
   h += '<div class="muted" style="margin-top:.6em">'+(g.locked ? '🔒 المجموعات مثبّتة: لا يمكن نقل الطالبات أو إعادة التوزيع حتى تلغي التثبيت.' : 'اضغطي على اسم أي طالبة لنقلها إلى مجموعة أخرى، ثم اضغطي «🔓 تثبيت المجموعات» لتثبيتها.')+(gKind==="diff" ? " التوزيع حسب المستوى مبني على النجوم، فراجعيه بما تعرفينه عن طالباتك." : "")+'</div>';
   $("main").innerHTML = h; bindG(c);
 }
@@ -985,6 +1098,24 @@ function bindG(c){
   };
   if($("gClr")) $("gClr").onclick = function(){ ask("مسح توزيع "+(gKind==="orig"?"المجموعات الأصلية":"مجموعات التمايز")+"؟ (النجوم لا تتأثر)", function(){ g.map = {}; save(); renderGroups(); }); };
   if($("gRen")) $("gRen").onclick = function(){ openRename(c); };
+  var cm = document.querySelectorAll("[data-cm]");
+  for(var ci = 0; ci < cm.length; ci++) cm[ci].onclick = function(){ var k = +this.getAttribute("data-cm"); gCh[k] = Math.max(0, gCh[k] + (+this.getAttribute("data-d"))); renderGroups(); };
+  if($("gcClr")) $("gcClr").onclick = function(){ gCh = [0, 0, 0, 0]; renderGroups(); };
+  if($("gcWin")) $("gcWin").onclick = function(){
+    var mx = Math.max.apply(null, gCh); if(mx <= 0){ toast("لا توجد نقاط بعد"); return; }
+    var ab = absentToday(c), wn = [], n = 0;
+    [0, 1, 2, 3].forEach(function(k){ if(gCh[k] === mx){ wn.push(g.names[k]); c.students.forEach(function(x){ if(g.map[x.id] === k && !ab[x.id]){ x.points++; logAdd(c, x.id, 1); n++; } }); } });
+    save(); gCh = [0, 0, 0, 0]; renderGroups(); celebrate("🏆", wn.join(" و "), "نجمة لكل عضوة (" + n + " طالبة)");
+  };
+  if($("rmGo")) $("rmGo").onclick = function(){
+    rmN = Math.max(2, Math.min(8, +$("rmN").value || 4)); var ab = absentToday(c);
+    var ar = c.students.filter(function(x){ return !ab[x.id]; }).map(function(x){ return x.name; });
+    for(var i = ar.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = ar[i]; ar[i] = ar[j]; ar[j] = t; }
+    var rooms = []; for(var r = 0; r < rmN; r++) rooms.push([]);
+    ar.forEach(function(nm, i){ rooms[i % rmN].push(nm); });
+    rmHtml = rooms.map(function(rm, i){ return '<div style="margin:.3em 0"><b>غرفة '+(i + 1)+' ('+rm.length+'):</b> '+esc(rm.map(shortName).join("، "))+'</div>'; }).join("");
+    $("rmOut").innerHTML = rmHtml;
+  };
   $("gPick").onclick = function(){
     var ks = [0,1,2,3].filter(function(k){ return c.students.some(function(s){ return g.map[s.id] === k; }); });
     if(!ks.length){ note("وزّعي الطالبات على المجموعات أولًا."); return; }
