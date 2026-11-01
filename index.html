@@ -297,6 +297,27 @@ function valid(s){ return s && Array.isArray(s.classes) && s.classes.length > 0;
 function readLocal(){ try{ var s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
 function readDoc(){ try{ if(inOffice){ var s = Office.context.document.settings.get(KEY); return s ? JSON.parse(s) : null; } }catch(e){} return null; }
 function newest(a,b){ if(!valid(a)) return valid(b) ? b : null; if(!valid(b)) return a; return (a.updatedAt||0) >= (b.updatedAt||0) ? a : b; }
+/* ---------- فصول أونلاين: تجمع شعب الأول معًا وشعب الثالث معًا (النجوم تُسجَّل في شعبة كل طالبة) ---------- */
+var VG = [{k:"g1", name:"🌐 الأول الثانوي (أونلاين)", re:/الأول|الاول/}, {k:"g3", name:"🌐 الثالث الثانوي (أونلاين)", re:/الثالث/}];
+function virtSrc(s, k){ var g = VG.filter(function(x){ return x.k === k; })[0]; return g ? s.classes.filter(function(x){ return !x.virt && g.re.test(x.name); }) : []; }
+function fillVirt(s){
+  s.classes.forEach(function(c){
+    if(!c.virt) return; var st = [], lg = [];
+    virtSrc(s, c.virt).forEach(function(x){ st = st.concat(x.students); lg = lg.concat(x.log || []); });
+    c.students = st; c.log = lg;
+  });
+}
+function ensureVirt(s){
+  VG.forEach(function(g){
+    if(virtSrc(s, g.k).length < 2 || s.classes.some(function(c){ return c.virt === g.k; })) return;
+    s.classes.push({id:"virt-" + g.k, name:g.name, virt:g.k, students:[], picked:[], log:[]});
+  });
+  fillVirt(s);
+}
+function ser(){
+  var bk = []; state.classes.forEach(function(c){ if(c.virt){ bk.push([c, c.students, c.log]); c.students = []; c.log = []; } });
+  var j = JSON.stringify(state); bk.forEach(function(b){ b[0].students = b[1]; b[0].log = b[2]; }); return j;
+}
 function norm(s){
   s.classes.forEach(function(c){
     c.students = c.students || []; c.picked = c.picked || [];
@@ -312,6 +333,7 @@ function norm(s){
       c.log = keep;
     }
   });
+  ensureVirt(s);
   if(!s.classes.some(function(c){ return c.id === s.current; })) s.current = s.classes[0].id;
   return s;
 }
@@ -319,6 +341,7 @@ var GDEF = {orig: ["المجموعة 1", "المجموعة 2", "المجموعة
 var GCOL = {orig: ["#7c5cc4", "#3d9a9b", "#d9628c", "#4f86c6"], diff: ["#4f86c6", "#4f9a6c", "#d9a21b", "#e07a5f"]};
 function nowMin(){ return Math.floor(Date.now()/60000); }
 function logAdd(c, sid, d){
+  if(c.virt){ c = state.classes.filter(function(x){ return !x.virt && x.students.some(function(t){ return t.id === sid; }); })[0]; if(!c) return; }
   c.log = c.log || []; c.log.push([sid, nowMin(), d]);
   if(c.log.length > 12000){ // دمج أقدم السجلات في رصيد سابق للحفاظ على حجم الملف
     var old = c.log.splice(0, 4000), agg = {};
@@ -328,12 +351,12 @@ function logAdd(c, sid, d){
 }
 function save(){
   state.updatedAt = Date.now();
-  var s = JSON.stringify(state);
+  var s = ser();
   try{ localStorage.setItem(KEY, s); }catch(e){}
   scheduleSync(); cloudSchedule();
   if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
 }
-function cls(){ for(var i=0;i<state.classes.length;i++){ if(state.classes[i].id === state.current) return state.classes[i]; } return state.classes[0]; }
+function cls(){ var cc = state.classes.filter(function(x){ return x.id === state.current; })[0]; if(cc && cc.virt) fillVirt(state); for(var i=0;i<state.classes.length;i++){ if(state.classes[i].id === state.current) return state.classes[i]; } return state.classes[0]; }
 
 function start(){
   if(started) return; started = true;
@@ -390,6 +413,7 @@ function alarm(){ for(var i=0;i<3;i++){ tone(880,.35,i*.5,"square"); tone(660,.3
 
 /* ---------- header ---------- */
 function renderHeader(){
+  ensureVirt(state);
   var sel = $("clsSel");
   sel.innerHTML = state.classes.map(function(c){ return '<option value="'+c.id+'"'+(c.id===state.current?" selected":"")+'>'+esc(c.name)+'</option>'; }).join("");
   $("sndBtn").textContent = state.sound ? "🔊" : "🔇";
@@ -1542,10 +1566,10 @@ function openBk(mode){
   if(mode === "backup"){
     $("bkT").textContent = "💾 النسخة الاحتياطية";
     $("bkH").textContent = "تحتوي على جميع الفصول والأسماء والنجوم والسجل. نزّليها ملفًا أو انسخيها، ثم استرجعيها على أي جهاز من زر «استرجاع».";
-    tx.value = JSON.stringify(state); tx.readOnly = true;
+    tx.value = ser(); tx.readOnly = true;
     acts.innerHTML = '<button class="green" id="bkDl">📥 تنزيل ملف</button><button id="bkCp">📋 نسخ</button><span class="sp"></span><button class="ghost" id="bkX">إغلاق</button>';
-    $("bkDl").onclick = function(){ download("مُلهِم - نسخة احتياطية - " + todayIso() + ".json", JSON.stringify(state), "application/json"); toast("تم تنزيل النسخة الاحتياطية"); };
-    $("bkCp").onclick = function(){ copyText(JSON.stringify(state), "تم نسخ النسخة الاحتياطية"); };
+    $("bkDl").onclick = function(){ download("مُلهِم - نسخة احتياطية - " + todayIso() + ".json", ser(), "application/json"); toast("تم تنزيل النسخة الاحتياطية"); };
+    $("bkCp").onclick = function(){ copyText(ser(), "تم نسخ النسخة الاحتياطية"); };
   } else {
     $("bkT").textContent = "♻️ استرجاع نسخة احتياطية";
     $("bkH").textContent = "اختاري ملف النسخة الاحتياطية، أو الصقي محتواها في المربع. ستحل محل البيانات الحالية في المساعد.";
@@ -1567,10 +1591,10 @@ function openBk(mode){
 
 /* ---------- إدارة الأسماء ---------- */
 var mgId = null;
-function openMg(){ mgId = state.current; fillMg(); fillLnk(); $("mg").classList.add("show"); }
+function openMg(){ mgId = state.current; if(state.classes.filter(function(x){ return x.id === mgId && x.virt; }).length) mgId = state.classes.filter(function(x){ return !x.virt; })[0].id; fillMg(); fillLnk(); $("mg").classList.add("show"); }
 function fillMg(){
-  $("mgSel").innerHTML = state.classes.map(function(c){ return '<option value="'+c.id+'"'+(c.id===mgId?" selected":"")+'>'+esc(c.name)+' ('+c.students.length+')</option>'; }).join("");
-  var c = state.classes.filter(function(x){ return x.id===mgId; })[0] || state.classes[0]; mgId = c.id;
+  $("mgSel").innerHTML = state.classes.filter(function(c){ return !c.virt; }).map(function(c){ return '<option value="'+c.id+'"'+(c.id===mgId?" selected":"")+'>'+esc(c.name)+' ('+c.students.length+')</option>'; }).join("");
+  var c = state.classes.filter(function(x){ return x.id===mgId && !x.virt; })[0] || state.classes.filter(function(x){ return !x.virt; })[0]; mgId = c.id;
   $("mgName").value = c.name;
   $("mgList").value = c.students.map(function(s){ return s.name; }).join("\n");
 }
@@ -1594,11 +1618,11 @@ $("mgNew").onclick = function(){
   mgId = id; save(); fillMg(); $("mgName").focus(); $("mgName").select();
 };
 $("mgDel").onclick = function(){
-  if(state.classes.length < 2){ note("لا يمكن حذف الفصل الوحيد. يمكنك تعديل اسمه وأسماء طالباته."); return; }
+  if(state.classes.filter(function(x){ return !x.virt; }).length < 2){ note("لا يمكن حذف الفصل الوحيد. يمكنك تعديل اسمه وأسماء طالباته."); return; }
   var c = state.classes.filter(function(x){ return x.id===mgId; })[0];
   ask("حذف فصل «"+c.name+"» وجميع نجوم طالباته؟", function(){
   state.classes = state.classes.filter(function(x){ return x.id!==mgId; });
-  if(state.current === mgId) state.current = state.classes[0].id;
+  if(state.current === mgId || !state.classes.some(function(x){ return x.id === state.current; })) state.current = state.classes[0].id;
   mgId = state.current; save(); fillMg(); render();
 });
 };
@@ -1633,7 +1657,7 @@ var syncing = false, syncT = null;
 function doSync(manual){
   if(!lget(TK)){ if(manual) lnkMsg("أدخلي مفتاح الربط أولًا ثم اضغطي «حفظ المفتاح»."); return Promise.resolve(); }
   if(syncing) return Promise.resolve();
-  var evs = []; state.classes.forEach(function(c){ evs = evs.concat(syncEvents(c)); });
+  var evs = []; state.classes.forEach(function(c){ if(!c.virt) evs = evs.concat(syncEvents(c)); });
   if(!evs.length){ if(manual) lnkMsg("لا توجد نجوم جديدة لإرسالها."); return Promise.resolve(); }
   syncing = true; var maxMin = 0; evs.forEach(function(e){ if(e.m > maxMin) maxMin = e.m; });
   var chunks = []; for(var i = 0; i < evs.length; i += 400) chunks.push(evs.slice(i, i + 400));
@@ -1654,7 +1678,7 @@ function cloudMsg(t){ lnkMsg(t); }
 function applyCloud(j){
   try{ var old = localStorage.getItem(KEY); if(old && hasData()) localStorage.setItem(KEY + "-before-cloud", old); }catch(e){}
   var d = norm(j.data); d.updatedAt = j.at; state = d;
-  var s = JSON.stringify(state);
+  var s = ser();
   try{ localStorage.setItem(KEY, s); }catch(e){}
   if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
   lset(CK, String(j.at)); render(); try{ fillMg(); }catch(e){}
@@ -1677,7 +1701,7 @@ function cloudPull(manual){
 function cloudPush(manual, force){
   if(!cloudOn() || !hasData()) return Promise.resolve();
   var at = state.updatedAt || Date.now();
-  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({data: state, at: at, force: !!force})}).then(function(j){
+  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: '{"data":' + ser() + ',"at":' + at + ',"force":' + (!!force) + "}"}).then(function(j){
     if(j.newer){ cloudPull(false); return; }
     lset(CK, String(at)); if(manual) cloudMsg("تم حفظ بياناتك في السحابة ☁️✅");
   }).catch(function(err){ if(manual) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
