@@ -266,7 +266,8 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
       <h2 class="cal" style="font-size:1.05em">🔗 الربط مع موقع مُتقِن</h2>
       <input id="lnkTok" type="password" dir="ltr" autocomplete="off" placeholder="مفتاح الربط (من لوحة معلمة مُتقِن ← ⭐ ربط رفيق الحصة)">
       <label class="chk"><input type="checkbox" id="lnkAuto" style="width:auto"> إرسال النجوم إلى مُتقِن تلقائيًا</label>
-      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">📥 جلب نجوم مُتقِن</button></div>
+      <div class="acts"><button id="lnkSave">حفظ المفتاح</button><button id="lnkImp">📥 استيراد أسماء الصف</button><button id="lnkSync">🔄 إرسال النجوم الآن</button><button id="lnkStars">📥 جلب نجوم مُتقِن</button><button id="lnkCopy">📋 نسخ مفتاح الربط</button><button id="lnkCloud">☁️ مزامنة الآن</button></div>
+      <div class="hint">☁️ بمجرد حفظ المفتاح تُحفظ بياناتك تلقائيًا في السحابة. على أي جهاز آخر: الصقي المفتاح وستظهر بياناتك.</div>
       <div class="hint" id="lnkSt"></div>
     </div>
     <div class="acts">
@@ -329,7 +330,7 @@ function save(){
   state.updatedAt = Date.now();
   var s = JSON.stringify(state);
   try{ localStorage.setItem(KEY, s); }catch(e){}
-  scheduleSync();
+  scheduleSync(); cloudSchedule();
   if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
 }
 function cls(){ for(var i=0;i<state.classes.length;i++){ if(state.classes[i].id === state.current) return state.classes[i]; } return state.classes[0]; }
@@ -1646,6 +1647,45 @@ function scheduleSync(){
   if(!lget(TK) || lget(AK) !== "1") return;
   clearTimeout(syncT); syncT = setTimeout(function(){ doSync(false); }, 4000);
 }
+/* ---------- مزامنة البيانات سحابيًا (افتحيها من أي جهاز بمفتاح الربط) ---------- */
+var cloudT = null, cloudBusy = false, CK = "rafeeq-cloud-at";
+function cloudOn(){ return !!lget(TK); }
+function cloudMsg(t){ lnkMsg(t); }
+function applyCloud(j){
+  try{ var old = localStorage.getItem(KEY); if(old && hasData()) localStorage.setItem(KEY + "-before-cloud", old); }catch(e){}
+  var d = norm(j.data); d.updatedAt = j.at; state = d;
+  var s = JSON.stringify(state);
+  try{ localStorage.setItem(KEY, s); }catch(e){}
+  if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
+  lset(CK, String(j.at)); render(); try{ fillMg(); }catch(e){}
+}
+function hasData(){ return state.classes.some(function(c){ return c.students.length; }); }
+function cloudPull(manual){
+  if(!cloudOn() || cloudBusy) return Promise.resolve();
+  cloudBusy = true;
+  return mqFetch("/api/rafeeq/state").then(function(j){
+    cloudBusy = false;
+    if(!j.has){ if(hasData()) cloudPush(true); else if(manual) cloudMsg("لا توجد نسخة سحابية بعد."); return; }
+    var mine = state.updatedAt || 0;
+    if(j.at > mine){
+      if(!hasData()){ applyCloud(j); toast("تم تحميل بياناتك من السحابة ☁️"); cloudMsg("تم تحميل بياناتك من السحابة ☁️"); }
+      else ask("وجدتُ نسخة أحدث محفوظة في السحابة (" + new Date(j.at).toLocaleString("ar-SA-u-nu-latn") + "). هل تريدين تحميلها بدل ما على هذا الجهاز؟", function(){ applyCloud(j); toast("تم تحميل النسخة السحابية ☁️"); });
+    } else if(mine > j.at){ cloudPush(manual); }
+    else if(manual) cloudMsg("بياناتك مطابقة للسحابة ☁️✅");
+  }).catch(function(err){ cloudBusy = false; if(manual) cloudMsg(err.message || "تعذّر الاتصال بالسحابة"); });
+}
+function cloudPush(manual, force){
+  if(!cloudOn() || !hasData()) return Promise.resolve();
+  var at = state.updatedAt || Date.now();
+  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({data: state, at: at, force: !!force})}).then(function(j){
+    if(j.newer){ cloudPull(false); return; }
+    lset(CK, String(at)); if(manual) cloudMsg("تم حفظ بياناتك في السحابة ☁️✅");
+  }).catch(function(err){ if(manual) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
+}
+function cloudSchedule(){ if(!cloudOn()) return; clearTimeout(cloudT); cloudT = setTimeout(function(){ cloudPush(false); }, 6000); }
+document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible" && started) cloudPull(false); else if(document.visibilityState === "hidden" && cloudOn()){ clearTimeout(cloudT); cloudPush(false); } });
+setTimeout(function(){ if(started) cloudPull(false); }, 1500);
+
 function importRoster(){
   mqFetch("/api/rafeeq/roster").then(function(j){
     var list = j.classes || []; if(!list.length){ note("لا توجد أسماء في «قائمة الصف» بمُتقِن بعد."); return; }
@@ -1687,7 +1727,9 @@ function importStars(){
   }).catch(function(err){ lnkMsg(err.message); note(err.message || "تعذّر جلب النجوم"); });
 }
 function fillLnk(){ $("lnkTok").value = lget(TK); $("lnkAuto").checked = lget(AK) === "1"; lnkMsg(lget(TK) ? "المفتاح محفوظ على هذا الجهاز." : ""); }
-$("lnkSave").onclick = function(){ var v = $("lnkTok").value.trim(); lset(TK, v); lset(LK, ""); lnkMsg(v ? "تم حفظ المفتاح على هذا الجهاز." : "حُذف المفتاح."); };
+$("lnkSave").onclick = function(){ var v = $("lnkTok").value.trim(); lset(TK, v); lset(LK, ""); lnkMsg(v ? "تم حفظ المفتاح على هذا الجهاز." : "حُذف المفتاح."); if(v) cloudPull(true); };
+$("lnkCopy").onclick = function(){ var v = lget(TK); if(!v){ lnkMsg("لا يوجد مفتاح محفوظ."); return; } var ok = function(){ lnkMsg("تم نسخ المفتاح 📋 الصقيه في ملهم على الجهاز الآخر."); toast("تم نسخ المفتاح"); }; try{ navigator.clipboard.writeText(v).then(ok, function(){ $("lnkTok").type = "text"; $("lnkTok").select(); lnkMsg("انسخي المفتاح الظاهر يدويًا."); }); }catch(e){ $("lnkTok").type = "text"; $("lnkTok").select(); lnkMsg("انسخي المفتاح الظاهر يدويًا."); } };
+$("lnkCloud").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); else cloudPull(true); };
 $("lnkAuto").onchange = function(){ lset(AK, this.checked ? "1" : ""); if(this.checked) scheduleSync(); };
 $("lnkImp").onclick = function(){ if(!lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importRoster(); };
 $("lnkStars").onclick = function(){ if($("lnkTok").value.trim() !== lget(TK)) $("lnkSave").onclick(); if(!lget(TK)){ lnkMsg("أدخلي مفتاح الربط أولًا."); return; } importStars(); };
