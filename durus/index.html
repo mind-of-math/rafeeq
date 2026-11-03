@@ -86,6 +86,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .num.ppt{background:#D24726}
 .card.ppt:hover{border-color:#f6d2c6}
 .meta .t-ppt{background:#fde4dc;color:#a8361b}.meta .t-live{background:#dff1f1;color:#0f7c7f}
+.btn1{margin-top:auto;display:flex;flex-direction:column;gap:6px}.btn1 .open{margin:0;text-decoration:none}.btn1 small{color:var(--muted);font-weight:700;font-size:.8rem;text-align:center}
 .btn2{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn2 .open{margin:0;text-decoration:none}
 .open.alt{background:linear-gradient(180deg,#f08a5d,#D24726)}
@@ -140,7 +141,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     if (!inStore.length) { $("#list").innerHTML = `<div class="grid">${addCard(true)}</div>`; return; }
     if (!items.length) { $("#list").innerHTML = `<div class="empty">لا توجد دروس مطابقة للبحث في ${esc(store.label)}.</div>`; return; }
     const groups = {}; items.forEach((l) => { (groups[l.chapter] = groups[l.chapter] || []).push(l); });
-    $("#list").innerHTML = Object.entries(groups).map(([ch, ls]) =>
+    $("#list").innerHTML = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0], "ar", { numeric: true })).map(([ch, ls]) =>
       `<section class="group"><h2>${esc(ch)} <small>${ls.length} ${ls.length === 1 ? "درس" : "دروس"}</small></h2><div class="grid">${ls.sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true })).map(card).join("")}</div></section>`).join("")
       + `<div class="grid" style="margin-top:16px">${addCard(false)}</div>`;
   }
@@ -161,7 +162,8 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       <div class="c-top"><span class="num ppt">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
       <div class="meta"><span class="t-ppt">عرض بوربوينت</span><span>${esc(l.slides)} شريحة</span></div>
-      <div class="btn2"><a class="open alt" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(abs)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div></div>`; };
+      ${(l.mb || 0) > 10 ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`
+        : `<div class="btn2"><a class="open alt" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(abs)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div>`}</div>`; };
   const addCard = (first) => `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
   fetch("lessons.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { lessons = d; stores(); render(); })

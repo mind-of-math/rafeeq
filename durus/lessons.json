@@ -20,7 +20,8 @@
     "chapter": "الفصل 3: المثلثات المتطابقة",
     "file": "files/3-1.pptx",
     "slides": 28,
-    "added": "2026-11-03"
+    "added": "2026-11-03",
+    "mb": 1.5
   },
   {
     "id": "3-2",
@@ -32,7 +33,8 @@
     "chapter": "الفصل 3: المثلثات المتطابقة",
     "file": "files/3-2.pptx",
     "slides": 18,
-    "added": "2026-11-03"
+    "added": "2026-11-03",
+    "mb": 2.0
   },
   {
     "id": "3-3",
@@ -44,6 +46,58 @@
     "chapter": "الفصل 3: المثلثات المتطابقة",
     "url": "https://project-623a5a.lovable.app/",
     "by": "المعلمة هند العديني",
+    "added": "2026-11-03"
+  },
+  {
+    "id": "g1-2-6",
+    "num": "2-6",
+    "type": "pptx",
+    "title": "الأعمدة والمسافة",
+    "en": "Perpendiculars and Distance",
+    "grade": "الأول الثانوي",
+    "chapter": "الفصل 2: التوازي والتعامد",
+    "file": "files/g1-2-6.pptx",
+    "slides": 22,
+    "mb": 1.1,
+    "added": "2026-11-03"
+  },
+  {
+    "id": "g3-2-6",
+    "num": "2-6",
+    "type": "pptx",
+    "title": "اللوغاريتمات العشرية",
+    "en": "Common Logarithms",
+    "grade": "الثالث الثانوي",
+    "chapter": "الفصل 2: العلاقات والدوال الأسية واللوغاريتمية",
+    "file": "files/g3-2-6.pptx",
+    "slides": 41,
+    "mb": 13.2,
+    "added": "2026-11-03"
+  },
+  {
+    "id": "g3-3-1",
+    "num": "3-1",
+    "type": "pptx",
+    "title": "المتطابقات المثلثية",
+    "en": "Trigonometric Identities",
+    "grade": "الثالث الثانوي",
+    "chapter": "الفصل 3: المتطابقات والمعادلات المثلثية",
+    "file": "files/g3-3-1.pptx",
+    "slides": 41,
+    "mb": 26.0,
+    "added": "2026-11-03"
+  },
+  {
+    "id": "g3-3-2",
+    "num": "3-2",
+    "type": "pptx",
+    "title": "إثبات صحة المتطابقات المثلثية",
+    "en": "Verifying Trigonometric Identities",
+    "grade": "الثالث الثانوي",
+    "chapter": "الفصل 3: المتطابقات والمعادلات المثلثية",
+    "file": "files/g3-3-2.pptx",
+    "slides": 36,
+    "mb": 2.8,
     "added": "2026-11-03"
   }
 ]
