@@ -124,6 +124,10 @@ body.tmode .tbtn{background:var(--purple);color:#fff;border-color:var(--purple)}
 .lnk-add{font-family:inherit;text-align:inherit;width:100%;border-color:#cdbff3!important;background:#f5f1fd!important}.lnk-add b{color:var(--purple)!important}
 .drop-add{cursor:pointer;border-color:#9fd9d7;background:#effafa}.drop-add b{color:#0f7c7f}
 .dz-hot{outline:4px solid var(--teal)!important;outline-offset:2px;background:#e3f6f6!important}
+.lim{display:block;font-size:.85rem;font-weight:700;color:var(--ink2);margin-top:4px}
+.sz-big{background:#fff1dc!important;color:#a35a00!important;font-weight:800}
+.w-huge,.w-big{border-radius:14px;padding:12px 14px;margin-top:6px}.w-huge{background:#fde6e6;color:#8f1d22}.w-big{background:#fff4e0;color:#7a4300}
+.w-huge ul,.w-big ul{margin:6px 0;padding-inline-start:20px;overflow-wrap:anywhere}.w-huge small,.w-big small{display:block;font-weight:600}
 .w-b.edit{background:#f0ebfc;color:var(--purple);border:0;cursor:pointer;font-family:inherit}.w-b.edit.big{display:block;width:100%;margin-top:12px;padding:10px;font-weight:800}
 .w-b.del{background:#fde6e6;color:#c0262d;border:0;cursor:pointer;font-family:inherit}.w-b.del.big{display:block;width:100%;margin-top:12px;padding:10px}
 .toast{overflow-wrap:anywhere;position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:60;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;font-weight:700;width:min(440px,calc(100% - 32px));box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -178,6 +182,8 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   <div id="eUrlRow" hidden style="display:flex;flex-direction:column;gap:8px"><label for="eUrl">رابط الدرس</label><input id="eUrl" dir="ltr" maxlength="1000"></div>
   <p class="err" id="eErr"></p>
   <div class="row"><button type="submit" class="pbtn">حفظ التعديلات</button><button type="button" class="pbtn ghost" id="eCancel">إلغاء</button></div></form></div>
+<div class="modal" id="wModal" hidden role="alertdialog" aria-modal="true" aria-labelledby="wH"><div class="fbox small"><h3 id="wH">تنبيه بحجم الملف</h3><div id="wBody"></div>
+  <div class="row"><button type="button" class="pbtn" id="wGo">متابعة الرفع</button><button type="button" class="pbtn ghost" id="wCancel">إلغاء</button></div></div></div>
 <div class="toast" id="toast" hidden role="status"></div>
 <div class="dropveil" aria-hidden="true">أفلتي الملف على بطاقة درس لإضافته لمجلده، أو في أي مكان آخر لإضافته درسًا جديدًا</div>
 <div class="modal" id="folder" hidden role="dialog" aria-modal="true" aria-labelledby="fTitle">
@@ -235,7 +241,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     return `<div class="card ${k}" data-drop-ws="${esc(l.id)}">
       <div class="c-top"><span class="num ${k}">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span class="t-${k}">${lab}</span>${l.slides ? `<span>${esc(l.slides)} شريحة</span>` : ""}${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
+      <div class="meta"><span class="t-${k}">${lab}</span>${l.slides ? `<span>${esc(l.slides)} شريحة</span>` : ""}${l.mb ? `<span class="${l.mb > 10 ? "sz-big" : ""}">💾 ${l.mb} ميجابايت</span>` : ""}${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
       ${k === "live" ? `<div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>` : k === "lnk" ? `<div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>` : ""}
       <div class="acts">${actions(l)}</div>
       <button class="folder-btn" data-folder="${esc(l.id)}">📂 المجلد <span>${ws ? ws + (ws === 1 ? " ورقة عمل" : ws === 2 ? " ورقتا عمل" : " أوراق عمل") : "فارغ"}</span></button></div>`; };
@@ -248,18 +254,18 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   function openFolder(id) {
     const l = lessons.find((x) => x.id === id); if (!l) return; const ws = l.worksheets || [];
     $("#fTitle").innerHTML = `<span class="num ${kind(l)[0]}">${esc(l.num)}</span> ${esc(l.title)}`;
-    $("#fBody").innerHTML = `<h4>الدرس</h4><div class="f-item"><span class="f-ic">${l.type === "pptx" ? "📙" : l.type === "link" ? "🔗" : "✨"}</span><span class="f-t"><b>${esc(l.title)}</b><small>${kind(l)[1]}</small></span><span class="f-a">${actions(l)}</span></div>
+    $("#fBody").innerHTML = `<h4>الدرس</h4><div class="f-item"><span class="f-ic">${l.type === "pptx" ? "📙" : l.type === "link" ? "🔗" : "✨"}</span><span class="f-t"><b>${esc(l.title)}</b><small>${kind(l)[1]}${l.mb ? " • " + l.mb + " ميجابايت" : ""}</small></span><span class="f-a">${actions(l)}</span></div>
       <h4>أوراق العمل <small>${ws.length}</small></h4>${ws.length ? ws.map((w) => `<div class="f-item"><span class="f-ic">${fileIcon(w.file)}</span><span class="f-t"><b>${esc(w.title)}</b><small>${esc(ext(w.file).toUpperCase())}${w.mb ? " • " + w.mb + " ميجابايت" : ""}${w.note ? " • " + esc(w.note) : ""}</small></span><span class="f-a">${wsActions(w)}</span></div>`).join("")
         : `<div class="f-empty">${T() ? "لا توجد أوراق عمل بعد." : "لا توجد أوراق عمل لهذا الدرس بعد. أرسليها في محادثة Claude واذكري رقم الدرس، وستُضاف هنا."}</div>`}
-      ${T() ? `<label class="drop" data-drop-ws="${esc(l.id)}" for="wsPick">⬆ اسحبي أوراق العمل وأفلتيها هنا، أو اضغطي لاختيارها</label><button class="w-b edit big" data-edit="${esc(l.id)}">✏️ تعديل معلومات الدرس</button><input id="wsPick" type="file" multiple hidden data-ws="${esc(l.id)}">${l.db ? `<button class="w-b del big" data-del="${esc(l.id)}">🗑 حذف هذا الدرس ومجلده</button>` : ""}` : ""}`;
-    const pick = $("#wsPick"); if (pick) pick.addEventListener("change", () => { upload([...pick.files], { kind: "worksheet", parent: l.id }); pick.value = ""; });
+      ${T() ? `<label class="drop" data-drop-ws="${esc(l.id)}" for="wsPick">⬆ اسحبي أوراق العمل وأفلتيها هنا، أو اضغطي لاختيارها<small class="lim">الحد الأقصى للملف 50 ميجابايت</small></label><button class="w-b edit big" data-edit="${esc(l.id)}">✏️ تعديل معلومات الدرس</button><input id="wsPick" type="file" multiple hidden data-ws="${esc(l.id)}">${l.db ? `<button class="w-b del big" data-del="${esc(l.id)}">🗑 حذف هذا الدرس ومجلده</button>` : ""}` : ""}`;
+    const pick = $("#wsPick"); if (pick) pick.addEventListener("change", () => { checkSizes([...pick.files], (f) => upload(f, { kind: "worksheet", parent: l.id })); pick.value = ""; });
     $("#folder").dataset.id = id; $("#folder").hidden = false; $("#fClose").focus();
   }
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-folder]"); if (b) openFolder(b.dataset.folder); });
   $("#fClose").addEventListener("click", () => { $("#folder").hidden = true; });
   $("#folder").addEventListener("click", (e) => { if (e.target.id === "folder") $("#folder").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#folder").hidden = true; });
-  const addCard = (first) => T() ? `<label class="add drop-add" data-drop-new="1" for="newPick"><b>⬆ ${first ? "أول درس في هذا المخزن" : "رفع درس جديد"}</b><span>اسحبي ملف الدرس (بوربوينت أو PDF) وأفلتيه هنا، أو اضغطي لاختياره.</span></label><input id="newPick" type="file" hidden><button type="button" class="add drop-add lnk-add" data-addlink="1"><b>🔗 إضافة رابط درس</b><span>درس جاهز على موقع آخر (مثل Lovable)؟ الصقي رابطه هنا.</span></button>`
+  const addCard = (first) => T() ? `<label class="add drop-add" data-drop-new="1" for="newPick"><b>⬆ ${first ? "أول درس في هذا المخزن" : "رفع درس جديد"}</b><span>اسحبي ملف الدرس (بوربوينت أو PDF) وأفلتيه هنا، أو اضغطي لاختياره.</span><small class="lim">الحد الأقصى 50 ميجابايت • الأقل من 10 ميجابايت يُعرض داخل المكتبة</small></label><input id="newPick" type="file" hidden><button type="button" class="add drop-add lnk-add" data-addlink="1"><b>🔗 إضافة رابط درس</b><span>درس جاهز على موقع آخر (مثل Lovable)؟ الصقي رابطه هنا.</span></button>`
     : `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
   /* ---------- online library (uploads) ---------- */
@@ -315,11 +321,22 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     }
     toast("✓ تم الرفع والحفظ في المكتبة", true); loadItems();
   }
+  const MB = (b) => Math.round(b / 104857.6) / 10;
+  function checkSizes(files, go) {
+    const huge = files.filter((f) => f.size > 50 * 1048576), big = files.filter((f) => f.size > 10 * 1048576 && f.size <= 50 * 1048576), ok = files.filter((f) => f.size <= 50 * 1048576);
+    if (!huge.length && !big.length) return go(ok);
+    const li = (a) => a.map((f) => `<li><b>${esc(f.name)}</b> — ${MB(f.size)} ميجابايت</li>`).join("");
+    $("#wBody").innerHTML = (huge.length ? `<div class="w-huge"><b>⛔ لا يمكن رفع ${huge.length > 1 ? "هذه الملفات" : "هذا الملف"} لأن حجمه أكبر من 50 ميجابايت:</b><ul>${li(huge)}</ul><small>جرّبي ضغط الصور داخل العرض (في PowerPoint: ملف ← ضغط الصور) أو حفظه PDF ثم ارفعيه.</small></div>` : "")
+      + (big.length ? `<div class="w-big"><b>⚠️ ${big.length > 1 ? "هذه الملفات كبيرة" : "هذا الملف كبير"} (أكثر من 10 ميجابايت):</b><ul>${li(big)}</ul><small>سيُرفع ويُحفظ، لكنه لن يُعرض داخل المكتبة، وسيكون للتنزيل فقط. كما أنه يستهلك مساحة أكبر من التخزين.</small></div>` : "");
+    $("#wGo").hidden = !ok.length; $("#wGo").textContent = ok.length === files.length ? "متابعة الرفع" : `رفع الباقي (${ok.length})`;
+    $("#wGo").onclick = () => { $("#wModal").hidden = true; go(ok); }; $("#wModal").hidden = false; $("#wGo").hidden ? $("#wCancel").focus() : $("#wGo").focus();
+  }
+  $("#wCancel").addEventListener("click", () => { $("#wModal").hidden = true; });
   // new lesson dialog
   function newLesson(file) {
     const chs = [...new Set(lessons.filter((l) => l.grade === store.grade).map((l) => l.chapter))];
     const guess = (file.name.match(/(\d+)\s*[-–]\s*(\d+)/) || [])[0] || "";
-    $("#nFile").textContent = file.name + " • " + (Math.round(file.size / 104857.6) / 10) + " ميجابايت"; $("#nStore").textContent = store.label;
+    $("#nFile").innerHTML = esc(file.name) + " • <b>" + MB(file.size) + " ميجابايت</b>" + (file.size > 10 * 1048576 ? `<br><span class="sz-big">⚠️ حجمه كبير: سيكون للتنزيل فقط</span>` : ""); $("#nStore").textContent = store.label;
     $("#nTitle").value = file.name.replace(/\.[^.]+$/, "").replace(/\d+\s*[-–]\s*\d+/, "").replace(/[_]+/g, " ").replace(/^\s*درس\s+/, "").replace(/\s+/g, " ").trim(); $("#nNum").value = guess.replace(/\s/g, "");
     $("#nCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#nChNew").hidden = chs.length > 0; $("#nChNew").value = "";
     $("#nModal").hidden = false; $("#nModal").fileRef = file; $("#nTitle").focus();
@@ -352,7 +369,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   $("#nCancel").addEventListener("click", () => { $("#nModal").hidden = true; });
   $("#nForm").addEventListener("submit", (e) => { e.preventDefault(); const ch = $("#nCh").value === "__new" || !$("#nCh").value ? $("#nChNew").value.trim() : $("#nCh").value;
     $("#nModal").hidden = true; upload([$("#nModal").fileRef], { kind: "lesson", title: $("#nTitle").value.trim(), num: $("#nNum").value.trim(), chapter: ch || "دروس متنوعة", grade: store.grade }); });
-  document.addEventListener("change", (e) => { if (e.target.id === "newPick" && e.target.files[0]) { newLesson(e.target.files[0]); e.target.value = ""; } });
+  document.addEventListener("change", (e) => { if (e.target.id === "newPick" && e.target.files[0]) { checkSizes([e.target.files[0]], (f) => newLesson(f[0])); e.target.value = ""; } });
   // delete
   document.addEventListener("click", async (e) => { const b = e.target.closest("[data-del]"); if (!b || !T()) return;
     if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "اضغطي مرة أخرى للتأكيد"; return; }
@@ -366,7 +383,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   window.addEventListener("drop", (e) => { if (!T()) return; e.preventDefault(); dragDepth = 0; document.body.classList.remove("dragging"); document.querySelectorAll(".dz-hot").forEach((x) => x.classList.remove("dz-hot"));
     const files = [...(e.dataTransfer.files || [])]; if (!files.length) return;
     const ws = e.target.closest("[data-drop-ws]");
-    if (ws) upload(files, { kind: "worksheet", parent: ws.dataset.dropWs }); else newLesson(files[0]); });
+    if (ws) checkSizes(files, (f) => upload(f, { kind: "worksheet", parent: ws.dataset.dropWs })); else checkSizes([files[0]], (f) => newLesson(f[0])); });
   $("#q").addEventListener("input", render);
 
   // install
