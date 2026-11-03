@@ -177,6 +177,15 @@ body.student .ft .nv{display:none}
 .thumb img{width:100%;aspect-ratio:1;object-fit:cover}
 .net{font-size:.8rem;font-weight:700;margin-top:6px}.net.ok{color:var(--ok)}.net.bad{color:var(--bad)}
 .live-box{display:flex;flex-direction:column;align-items:center}
+.start-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.start-row input{font:inherit;font-size:1.05rem;padding:11px 16px;border-radius:999px;border:2px solid var(--line);background:#fff;min-width:260px}
+.hist{margin-top:12px;background:rgba(255,255,255,.92);border-radius:18px;padding:10px 16px;width:min(620px,100%);text-align:right}
+.hist summary{font-weight:800;cursor:pointer}
+.hist ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.hist li{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--sand);border-radius:12px;padding:6px 10px}
+.hist li.cur{background:#e3f6f6}
+.h-l{display:flex;flex-direction:column}.h-l small{color:var(--ink2)}
+.sbtn.sm{min-width:0;padding:6px 14px;flex-direction:row}
 .go-live{border:0;border-radius:999px;background:var(--ink);color:#fff;font-weight:800;font-size:1.25rem;padding:12px 28px}
 .qr-big{display:flex;gap:22px;align-items:center;background:rgba(255,255,255,.92);border-radius:24px;padding:16px 22px;flex-wrap:wrap;justify-content:center}
 .qr-info{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:right}.qr-info h3{margin:0;font-size:1.5rem}.qr-info p{margin:0;color:var(--ink2)}
@@ -848,23 +857,33 @@ function renderQR(el, size) {
   el.innerHTML = ""; if (!window.QRCode) { el.textContent = joinUrl(); return; }
   new QRCode(el, { text: joinUrl(), width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
 }
+const HKEY = "live-history:" + location.pathname;
+const history_ = () => store.get(HKEY) || [];
+const fmtDate = (t) => { try { return new Date(t).toLocaleString("ar-SA-u-nu-latn-ca-gregory", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch (e) { return new Date(t).toISOString().slice(0, 16).replace("T", " "); } };
+function histHtml() {
+  const h = history_(); if (!h.length) return "";
+  return `<details class="hist"><summary>سجل الحصص السابقة (${h.length})</summary><ul>${h.slice().reverse().map((x) => `<li${live && live.id === x.id ? ' class="cur"' : ""}><span class="h-l"><b>${esc(x.label || "حصة")}</b><small>${fmtDate(x.at)} • الرمز <span class="mu">${esc(x.code)}</span></small></span>${live && live.id === x.id ? '<span class="chip g">الحالية</span>' : `<button class="sbtn sm" data-open="${esc(x.id)}">فتح</button>`}</li>`).join("")}</ul></details>`;
+}
+function bindHist(box) { $$("[data-open]", box).forEach((b) => b.addEventListener("click", () => openSession(history_().find((x) => x.id === b.dataset.open)))); }
+function openSession(h) {
+  if (!h) return; live = { id: h.id, code: h.code, key: h.key, at: h.at, label: h.label }; store.set("live-teacher", live);
+  dash = { people: [], answers: [] }; revealed.clear(); slides.forEach((_, i) => unrevealSlide(i)); lastSig = ""; afterLive(); pushState();
+}
 function renderLiveCover() {
   const box = $("#liveBox"); if (!box) return;
-  if (!live) { box.innerHTML = `<button class="go-live" id="goLive">▶ بدء الحصة المباشرة</button><p class="kbd" style="margin:6px 0 0">تمسح الطالبات الباركود فيظهر الدرس على أجهزتهن ويتابعن معكِ.</p>`; $("#goLive").addEventListener("click", startSession); return; }
-  box.innerHTML = `<div class="qr-big"><div class="qrc" id="qrBig"></div><div class="qr-info"><h3>امسحي الباركود للدخول</h3><p>أو افتحي الرابط وأدخلي الرمز:</p><div class="code">${live.code}</div><div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div><div class="joined"><span class="chip g" id="joinedN">${dash.people.length}</span> طالبة دخلت</div><button class="sbtn" id="newSess">↻<span>حصة جديدة</span></button></div></div>`;
-  renderQR($("#qrBig"), 220); $("#newSess").addEventListener("click", () => { if (box.dataset.confirm) { delete box.dataset.confirm; startSession(); } else { box.dataset.confirm = "1"; $("#newSess span").textContent = "اضغطي مرة أخرى للتأكيد"; } });
+  if (!live) { box.innerHTML = `<div class="start-row"><input id="clsName" maxlength="40" placeholder="اسم الفصل (اختياري) مثل: الأول الثانوي 2" aria-label="اسم الفصل"><button class="go-live" id="goLive">▶ بدء الحصة المباشرة</button></div><p class="kbd" style="margin:6px 0 0">تمسح الطالبات الباركود فيظهر الدرس على أجهزتهن ويتابعن معكِ.</p>${histHtml()}`;
+    $("#goLive").addEventListener("click", startSession); bindHist(box); return; }
+  box.innerHTML = `<div class="qr-big"><div class="qrc" id="qrBig"></div><div class="qr-info">${live.label ? `<span class="chip">${esc(live.label)}</span>` : ""}<h3>امسحي الباركود للدخول</h3><p>أو افتحي الرابط وأدخلي الرمز:</p><div class="code">${live.code}</div><div class="url">${esc(joinUrl().replace(/^https?:\/\//, ""))}</div><div class="joined"><span class="chip g" id="joinedN">${dash.people.length}</span> طالبة دخلت</div><button class="sbtn" id="newSess">＋<span>حصة جديدة لفصل آخر</span></button></div></div>${histHtml()}`;
+  renderQR($("#qrBig"), 220); bindHist(box);
+  $("#newSess").addEventListener("click", () => { live = null; store.del("live-teacher"); clearInterval(dashTimer); document.body.classList.remove("is-live"); renderLiveCover(); });
 }
 async function startSession() {
-  const b = $("#goLive"); if (b) { b.disabled = true; b.textContent = "جارٍ التجهيز…"; }
-  try { const s = await rpc("lesson_create", { p_lesson: LESSON }); live = { id: s.id, code: s.code, key: s.key, at: Date.now() }; store.set("live-teacher", live);
+  const b = $("#goLive"); const label = ($("#clsName") && $("#clsName").value.trim()) || ""; if (b) { b.disabled = true; b.textContent = "جارٍ التجهيز…"; }
+  try { const s = await rpc("lesson_create", { p_lesson: LESSON + (label ? " — " + label : "") }); live = { id: s.id, code: s.code, key: s.key, at: Date.now(), label }; store.set("live-teacher", live);
+    const h = history_(); h.push(live); store.set(HKEY, h.slice(-300));
     dash = { people: [], answers: [] }; revealed.clear(); slides.forEach((_, i) => unrevealSlide(i)); lastSig = "";
-    afterLive(); pushState(); cleanupOld();
+    afterLive(); pushState();
   } catch (e) { if (b) { b.disabled = false; b.textContent = "تعذّر الاتصال، حاولي مرة أخرى"; } }
-}
-async function cleanupOld() {
-  try { const names = await rpc("lesson_cleanup", {}); if (names && names.length)
-    await fetch(`${SB}/storage/v1/object/lesson-uploads`, { method: "DELETE", headers: { ...HDR, "Content-Type": "application/json" }, body: JSON.stringify({ prefixes: names }) });
-  } catch (e) {}
 }
 function endSession() { live = null; store.del("live-teacher"); clearInterval(dashTimer); document.body.classList.remove("is-live"); renderLiveCover(); }
 function afterLive() {
@@ -905,11 +924,11 @@ function renderMine() {
   if (g) g.innerHTML = imgs.map((k) => `<img src="${esc(pubUrl(mine[k].img))}" alt="صورة أرسلتِها">`).join("");
   const st = $("#myState"); if (st && !st.textContent.startsWith("جارٍ")) { st.textContent = got.length ? `✓ أرسلتِ ${got.length} إجابة في هذه الشريحة` : "اختاري إجابتك وستُرسل تلقائيًا"; st.className = "my-state" + (got.length ? " ok" : ""); }
 }
-async function compress(fileOrBlob, max = 1400) {
+async function compress(fileOrBlob, max = 1200) {
   const bmp = await createImageBitmap(fileOrBlob); const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
   const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0, c.width, c.height);
-  return await new Promise((res) => c.toBlob(res, "image/jpeg", 0.82));
+  return await new Promise((res) => c.toBlob(res, "image/jpeg", 0.75));
 }
 async function sendImage(blob, kind) {
   const st = $("#myState"); st.textContent = "جارٍ رفع الصورة…"; st.className = "my-state";
@@ -956,7 +975,7 @@ if (STUDENT) { go(0, false); studentJoin(); }
 else {
   const saved = store.get("live-teacher");
   go(fromHash(), false);
-  if (saved && Date.now() - saved.at < 12 * 3600e3) { live = saved; afterLive(); pushState(); } else renderLiveCover();
+  if (saved && saved.id) { live = saved; const h = history_(); if (!h.some((x) => x.id === saved.id)) { h.push(saved); store.set(HKEY, h); } afterLive(); pushState(); } else renderLiveCover();
 }
 })();
 </script>
