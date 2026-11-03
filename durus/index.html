@@ -121,6 +121,7 @@ body.tmode .tbtn{background:var(--purple);color:#fff;border-color:var(--purple)}
 .fbox .err{color:#c0262d;min-height:1.2em}
 .row{display:flex;gap:8px;margin-top:10px}.pbtn{flex:1;border:0;border-radius:999px;background:var(--ink);color:#fff;font-weight:800;font-size:1.05rem;padding:11px}.pbtn.ghost{background:var(--sand);color:var(--ink)}
 .drop{display:block;margin-top:12px;border:2.5px dashed #9fd9d7;border-radius:18px;padding:18px;text-align:center;font-weight:800;color:#0f7c7f;background:#effafa;cursor:pointer}
+.lnk-add{font-family:inherit;text-align:inherit;width:100%;border-color:#cdbff3!important;background:#f5f1fd!important}.lnk-add b{color:var(--purple)!important}
 .drop-add{cursor:pointer;border-color:#9fd9d7;background:#effafa}.drop-add b{color:#0f7c7f}
 .dz-hot{outline:4px solid var(--teal)!important;outline-offset:2px;background:#e3f6f6!important}
 .w-b.del{background:#fde6e6;color:#c0262d;border:0;cursor:pointer;font-family:inherit}.w-b.del.big{display:block;width:100%;margin-top:12px;padding:10px}
@@ -160,6 +161,14 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   <label for="nTitle">اسم الدرس</label><input id="nTitle" maxlength="160" required>
   <label for="nCh">الفصل</label><select id="nCh"></select><input id="nChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 4: ..." hidden>
   <div class="row"><button type="submit" class="pbtn">⬆ رفع وحفظ</button><button type="button" class="pbtn ghost" id="nCancel">إلغاء</button></div></form></div>
+<div class="modal" id="lModal" hidden role="dialog" aria-modal="true" aria-labelledby="lH"><form class="fbox small" id="lForm"><h3 id="lH">🔗 رابط درس في <span id="lStore"></span></h3>
+  <label for="lUrl">رابط الدرس</label><input id="lUrl" dir="ltr" inputmode="url" maxlength="1000" required placeholder="https://...">
+  <label for="lNum">رقم الدرس</label><input id="lNum" maxlength="12" placeholder="مثل: 3-1">
+  <label for="lTitle">اسم الدرس</label><input id="lTitle" maxlength="160" required>
+  <label for="lCh">الفصل</label><select id="lCh"></select><input id="lChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 3: ..." hidden>
+  <label for="lBy">إعداد (اختياري)</label><input id="lBy" maxlength="120" placeholder="مثل: المعلمة هند العديني">
+  <p class="err" id="lErr"></p>
+  <div class="row"><button type="submit" class="pbtn">حفظ الرابط</button><button type="button" class="pbtn ghost" id="lCancel">إلغاء</button></div></form></div>
 <div class="toast" id="toast" hidden role="status"></div>
 <div class="dropveil" aria-hidden="true">أفلتي الملف على بطاقة درس لإضافته لمجلده، أو في أي مكان آخر لإضافته درسًا جديدًا</div>
 <div class="modal" id="folder" hidden role="dialog" aria-modal="true" aria-labelledby="fTitle">
@@ -241,7 +250,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   $("#fClose").addEventListener("click", () => { $("#folder").hidden = true; });
   $("#folder").addEventListener("click", (e) => { if (e.target.id === "folder") $("#folder").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#folder").hidden = true; });
-  const addCard = (first) => T() ? `<label class="add drop-add" data-drop-new="1" for="newPick"><b>⬆ ${first ? "أول درس في هذا المخزن" : "رفع درس جديد"}</b><span>اسحبي ملف الدرس (بوربوينت أو PDF) وأفلتيه هنا، أو اضغطي لاختياره.</span></label><input id="newPick" type="file" hidden>`
+  const addCard = (first) => T() ? `<label class="add drop-add" data-drop-new="1" for="newPick"><b>⬆ ${first ? "أول درس في هذا المخزن" : "رفع درس جديد"}</b><span>اسحبي ملف الدرس (بوربوينت أو PDF) وأفلتيه هنا، أو اضغطي لاختياره.</span></label><input id="newPick" type="file" hidden><button type="button" class="add drop-add lnk-add" data-addlink="1"><b>🔗 إضافة رابط درس</b><span>درس جاهز على موقع آخر (مثل Lovable)؟ الصقي رابطه هنا.</span></button>`
     : `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
   /* ---------- online library (uploads) ---------- */
@@ -258,6 +267,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     items.filter((i) => i.kind === "lesson").forEach((i) => { const e = ext(i.file_path);
       L.push({ id: i.id, db: true, num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, file: pub(i.file_path), name: i.file_name, mb: +i.mb,
         type: ["ppt", "pptx", "pptm"].includes(e) ? "pptx" : "file", macro: e === "pptm", worksheets: [] }); });
+    items.filter((i) => i.kind === "link").forEach((i) => L.push({ id: i.id, db: true, type: "link", num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, url: i.file_path, by: i.file_name, worksheets: [] }));
     items.filter((i) => i.kind === "worksheet").forEach((i) => { const l = L.find((x) => x.id === i.parent_id); if (l) l.worksheets.push({ id: i.id, db: true, title: i.title, file: pub(i.file_path), name: i.file_name, mb: +i.mb }); });
     lessons = L; stores(); render(); const f = $("#folder"); if (!f.hidden && f.dataset.id) openFolder(f.dataset.id);
   }
@@ -300,6 +310,17 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     $("#nCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#nChNew").hidden = chs.length > 0; $("#nChNew").value = "";
     $("#nModal").hidden = false; $("#nModal").fileRef = file; $("#nTitle").focus();
   }
+  const chOpts = () => [...new Set(lessons.filter((l) => l.grade === store.grade).map((l) => l.chapter))];
+  document.addEventListener("click", (e) => { if (!e.target.closest("[data-addlink]") || !T()) return; const chs = chOpts();
+    $("#lStore").textContent = store.label; ["#lUrl", "#lNum", "#lTitle", "#lBy", "#lChNew"].forEach((q) => { $(q).value = ""; }); $("#lErr").textContent = "";
+    $("#lCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#lChNew").hidden = chs.length > 0; $("#lModal").hidden = false; $("#lUrl").focus(); });
+  $("#lCh").addEventListener("change", () => { $("#lChNew").hidden = $("#lCh").value !== "__new"; });
+  $("#lCancel").addEventListener("click", () => { $("#lModal").hidden = true; });
+  $("#lForm").addEventListener("submit", async (e) => { e.preventDefault(); let u = $("#lUrl").value.trim(); if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+    if (!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(u)) { $("#lErr").textContent = "الرابط غير صحيح."; return; }
+    const ch = $("#lCh").value === "__new" || !$("#lCh").value ? $("#lChNew").value.trim() : $("#lCh").value;
+    try { await rpc("library_add_link", { p_token: token, p_url: u, p_title: $("#lTitle").value.trim(), p_grade: store.grade, p_chapter: ch || "دروس متنوعة", p_num: $("#lNum").value.trim(), p_by: $("#lBy").value.trim() });
+      $("#lModal").hidden = true; toast("✓ أُضيف رابط الدرس إلى المكتبة", true); loadItems(); } catch (err) { $("#lErr").textContent = "تعذّر الحفظ. تأكدي من الإنترنت."; } });
   $("#nCh").addEventListener("change", () => { $("#nChNew").hidden = $("#nCh").value !== "__new"; });
   $("#nCancel").addEventListener("click", () => { $("#nModal").hidden = true; });
   $("#nForm").addEventListener("submit", (e) => { e.preventDefault(); const ch = $("#nCh").value === "__new" || !$("#nCh").value ? $("#nChNew").value.trim() : $("#nCh").value;
