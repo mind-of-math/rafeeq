@@ -111,11 +111,28 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .w-b{border-radius:999px;background:var(--teal);color:#fff;text-decoration:none;font-weight:800;padding:7px 14px;font-size:.92rem}
 .w-b.alt{background:#D24726}
 .f-empty{background:#f7f4ff;border:2px dashed #cdbff3;border-radius:16px;padding:16px;text-align:center;color:var(--ink2);font-weight:700}
+.tbtn{border:2px solid #cdbff3;border-radius:999px;background:#fff;color:var(--purple);font-weight:800;font-size:1rem;padding:9px 18px}
+body.tmode .tbtn{background:var(--purple);color:#fff;border-color:var(--purple)}
+.fbox.small{width:min(480px,100%);display:flex;flex-direction:column;gap:8px}
+.fbox.small h3{margin:0 0 4px;font-size:1.3rem}.fbox.small p{margin:0;color:var(--ink2);font-weight:600}
+.fbox.small label{font-weight:800;margin-top:6px}
+.fbox.small input,.fbox.small select{font:inherit;font-size:1.05rem;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:#fffdf6;color:var(--ink)}
+.fbox .file{background:var(--sand);border-radius:12px;padding:8px 12px;font-weight:700;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.fbox .err{color:#c0262d;min-height:1.2em}
+.row{display:flex;gap:8px;margin-top:10px}.pbtn{flex:1;border:0;border-radius:999px;background:var(--ink);color:#fff;font-weight:800;font-size:1.05rem;padding:11px}.pbtn.ghost{background:var(--sand);color:var(--ink)}
+.drop{display:block;margin-top:12px;border:2.5px dashed #9fd9d7;border-radius:18px;padding:18px;text-align:center;font-weight:800;color:#0f7c7f;background:#effafa;cursor:pointer}
+.drop-add{cursor:pointer;border-color:#9fd9d7;background:#effafa}.drop-add b{color:#0f7c7f}
+.dz-hot{outline:4px solid var(--teal)!important;outline-offset:2px;background:#e3f6f6!important}
+.w-b.del{background:#fde6e6;color:#c0262d;border:0;cursor:pointer;font-family:inherit}.w-b.del.big{display:block;width:100%;margin-top:12px;padding:10px}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:60;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;font-weight:700;width:min(440px,calc(100% - 32px));box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.tbar{height:8px;border-radius:999px;background:rgba(255,255,255,.25);margin-top:8px;overflow:hidden}.tbar i{display:block;height:100%;width:0;background:var(--teal2);transition:width .2s}
+.dropveil{display:none}
+body.dragging .dropveil{display:block;position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:55;background:var(--teal);color:#fff;border-radius:999px;padding:10px 20px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:calc(100% - 32px);text-align:center}
 .empty{background:var(--card);border-radius:24px;padding:34px;text-align:center;font-weight:700;color:var(--ink2)}
 .add{border:2px dashed #cdbff3;border-radius:24px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:6px;color:var(--ink2);background:rgba(255,255,255,.55)}
 .add b{color:var(--purple);font-size:1.1rem}
 footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
-@media (max-width:560px){.top img{width:52px;height:52px}.install{width:100%}}
+@media (max-width:560px){.top{flex-wrap:wrap}.top img{width:52px;height:52px}.install,.tbtn{width:100%;order:9}}
 @media (prefers-reduced-motion:reduce){.card{transition:none}}
 </style>
 </head>
@@ -124,6 +141,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   <header class="top">
     <img src="icons/icon-192.png" alt="">
     <div class="brand"><h1>دروسي التفاعلية</h1><p>دروس تفاعلية مباشرة وعروض بوربوينت في مكان واحد</p></div>
+    <button class="tbtn" id="tBtn">🔒 وضع المعلمة</button>
     <button class="install" id="install" hidden>⬇ تثبيت التطبيق</button>
   </header>
   <div class="tip" id="iosTip" hidden>لتثبيت التطبيق على الآيباد أو الآيفون: اضغطي زر المشاركة ⬆ في Safari، ثم «إضافة إلى الشاشة الرئيسية».</div>
@@ -136,6 +154,14 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   <main id="list"><div class="empty">جارٍ تحميل الدروس…</div></main>
   <footer>إعداد المعلمة: عهود جويهر</footer>
 </div>
+<div class="modal" id="tModal" hidden role="dialog" aria-modal="true" aria-labelledby="tH"><form class="fbox small" id="tForm"><h3 id="tH">وضع المعلمة</h3><p>أدخلي رمز المعلمة لتفعيل رفع الدروس وأوراق العمل بالسحب والإفلات على هذا الجهاز.</p><input id="tCode" autocomplete="off" maxlength="12" placeholder="رمز المعلمة" aria-label="رمز المعلمة"><p class="err" id="tErr"></p><div class="row"><button type="submit" class="pbtn">تفعيل</button><button type="button" class="pbtn ghost" id="tCancel">إلغاء</button></div></form></div>
+<div class="modal" id="nModal" hidden role="dialog" aria-modal="true" aria-labelledby="nH"><form class="fbox small" id="nForm"><h3 id="nH">إضافة درس جديد إلى <span id="nStore"></span></h3><p class="file" id="nFile"></p>
+  <label for="nNum">رقم الدرس</label><input id="nNum" maxlength="12" placeholder="مثل: 3-5">
+  <label for="nTitle">اسم الدرس</label><input id="nTitle" maxlength="160" required>
+  <label for="nCh">الفصل</label><select id="nCh"></select><input id="nChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 4: ..." hidden>
+  <div class="row"><button type="submit" class="pbtn">⬆ رفع وحفظ</button><button type="button" class="pbtn ghost" id="nCancel">إلغاء</button></div></form></div>
+<div class="toast" id="toast" hidden role="status"></div>
+<div class="dropveil" aria-hidden="true">أفلتي الملف على بطاقة درس لإضافته لمجلده، أو في أي مكان آخر لإضافته درسًا جديدًا</div>
 <div class="modal" id="folder" hidden role="dialog" aria-modal="true" aria-labelledby="fTitle">
   <div class="fbox"><div class="f-head"><h3 id="fTitle"></h3><button id="fClose" aria-label="إغلاق">✕</button></div><div id="fBody"></div></div>
 </div>
@@ -172,19 +198,23 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   }
   const abs = (f) => new URL(f, location.href).href;
   const office = (f) => "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(abs(f));
-  const ext = (f) => (f.split(".").pop() || "").toLowerCase();
+  const ext = (f) => (f.split("?")[0].split(".").pop() || "").toLowerCase();
+  const dl = (x) => x.db ? x.file + "?download=" + encodeURIComponent(x.name || x.title) : x.file;
   function actions(l) {
     if (l.type === "link") return `<a class="open lnkb" href="${esc(l.url)}" target="_blank" rel="noopener">فتح الدرس ↗</a>`;
     if (l.type === "pptx") {
-      if (l.macro) return `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>يعمل في PowerPoint على الحاسوب. عند فتحه اضغطي «تمكين المحتوى» لتعمل المؤقتات والأزرار.</small></div>`;
-      if ((l.mb || 0) > 10) return `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`;
-      return `<div class="btn2"><a class="open alt" href="${office(l.file)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div>`;
+      if (l.macro) return `<div class="btn1"><a class="open" href="${esc(dl(l))}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>يعمل في PowerPoint على الحاسوب. عند فتحه اضغطي «تمكين المحتوى» لتعمل المؤقتات والأزرار.</small></div>`;
+      if ((l.mb || 0) > 10) return `<div class="btn1"><a class="open" href="${esc(dl(l))}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`;
+      return `<div class="btn2"><a class="open alt" href="${office(l.file)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(dl(l))}" download>⬇ تنزيل</a></div>`;
     }
+    if (l.type === "file") { const e = ext(l.file);
+      const view = e === "pdf" || ["png", "jpg", "jpeg", "webp"].includes(e) ? esc(l.file) : ((l.mb || 0) <= 10 ? office(l.file) : "");
+      return `<div class="btn2">${view ? `<a class="open alt" href="${view}" target="_blank" rel="noopener">▶ عرض</a>` : ""}<a class="open" href="${esc(dl(l))}" download>⬇ تنزيل</a></div>`; }
     return `<a class="open" href="${esc(l.path)}">فتح الدرس ←</a>`;
   }
-  const kind = (l) => l.type === "link" ? ["lnk", "درس تفاعلي • رابط خارجي"] : l.type === "pptx" ? ["ppt", l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"] : ["live", "درس تفاعلي مباشر"];
+  const kind = (l) => l.type === "file" ? ["ppt", ext(l.file).toUpperCase() + " ملف"] : l.type === "link" ? ["lnk", "درس تفاعلي • رابط خارجي"] : l.type === "pptx" ? ["ppt", l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"] : ["live", "درس تفاعلي مباشر"];
   const card = (l) => { const [k, lab] = kind(l); const ws = (l.worksheets || []).length;
-    return `<div class="card ${k}">
+    return `<div class="card ${k}" data-drop-ws="${esc(l.id)}">
       <div class="c-top"><span class="num ${k}">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
       <div class="meta"><span class="t-${k}">${lab}</span>${l.slides ? `<span>${esc(l.slides)} شريحة</span>` : ""}${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
@@ -195,24 +225,100 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   function wsActions(w) {
     const e = ext(w.file), big = (w.mb || 0) > 10;
     const view = e === "pdf" || ["png", "jpg", "jpeg", "webp"].includes(e) ? esc(w.file) : (!big && ["doc", "docx", "ppt", "pptx", "xls", "xlsx"].includes(e) ? office(w.file) : "");
-    return `${view ? `<a class="w-b alt" href="${view}" target="_blank" rel="noopener">▶ عرض</a>` : ""}<a class="w-b" href="${esc(w.file)}" download>⬇ تنزيل</a>`;
+    return `${view ? `<a class="w-b alt" href="${view}" target="_blank" rel="noopener">▶ عرض</a>` : ""}<a class="w-b" href="${esc(dl(w))}" download>⬇ تنزيل</a>${T() && w.db ? `<button class="w-b del" data-del="${esc(w.id)}">🗑</button>` : ""}`;
   }
   function openFolder(id) {
     const l = lessons.find((x) => x.id === id); if (!l) return; const ws = l.worksheets || [];
     $("#fTitle").innerHTML = `<span class="num ${kind(l)[0]}">${esc(l.num)}</span> ${esc(l.title)}`;
     $("#fBody").innerHTML = `<h4>الدرس</h4><div class="f-item"><span class="f-ic">${l.type === "pptx" ? "📙" : l.type === "link" ? "🔗" : "✨"}</span><span class="f-t"><b>${esc(l.title)}</b><small>${kind(l)[1]}</small></span><span class="f-a">${actions(l)}</span></div>
       <h4>أوراق العمل <small>${ws.length}</small></h4>${ws.length ? ws.map((w) => `<div class="f-item"><span class="f-ic">${fileIcon(w.file)}</span><span class="f-t"><b>${esc(w.title)}</b><small>${esc(ext(w.file).toUpperCase())}${w.mb ? " • " + w.mb + " ميجابايت" : ""}${w.note ? " • " + esc(w.note) : ""}</small></span><span class="f-a">${wsActions(w)}</span></div>`).join("")
-        : `<div class="f-empty">لا توجد أوراق عمل لهذا الدرس بعد. أرسليها في محادثة Claude واذكري رقم الدرس، وستُضاف هنا.</div>`}`;
-    $("#folder").hidden = false; $("#fClose").focus();
+        : `<div class="f-empty">${T() ? "لا توجد أوراق عمل بعد." : "لا توجد أوراق عمل لهذا الدرس بعد. أرسليها في محادثة Claude واذكري رقم الدرس، وستُضاف هنا."}</div>`}
+      ${T() ? `<label class="drop" data-drop-ws="${esc(l.id)}" for="wsPick">⬆ اسحبي أوراق العمل وأفلتيها هنا، أو اضغطي لاختيارها</label><input id="wsPick" type="file" multiple hidden data-ws="${esc(l.id)}">${l.db ? `<button class="w-b del big" data-del="${esc(l.id)}">🗑 حذف هذا الدرس ومجلده</button>` : ""}` : ""}`;
+    const pick = $("#wsPick"); if (pick) pick.addEventListener("change", () => { upload([...pick.files], { kind: "worksheet", parent: l.id }); pick.value = ""; });
+    $("#folder").dataset.id = id; $("#folder").hidden = false; $("#fClose").focus();
   }
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-folder]"); if (b) openFolder(b.dataset.folder); });
   $("#fClose").addEventListener("click", () => { $("#folder").hidden = true; });
   $("#folder").addEventListener("click", (e) => { if (e.target.id === "folder") $("#folder").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#folder").hidden = true; });
-  const addCard = (first) => `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
+  const addCard = (first) => T() ? `<label class="add drop-add" data-drop-new="1" for="newPick"><b>⬆ ${first ? "أول درس في هذا المخزن" : "رفع درس جديد"}</b><span>اسحبي ملف الدرس (بوربوينت أو PDF) وأفلتيه هنا، أو اضغطي لاختياره.</span></label><input id="newPick" type="file" hidden>`
+    : `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
-  fetch("lessons.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { lessons = d; stores(); render(); })
+  /* ---------- online library (uploads) ---------- */
+  const SB = "https://geruvshyzwgjcmcakpfs.supabase.co";
+  const SBK = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlcnV2c2h5endnamNtY2FrcGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjYzMjIsImV4cCI6MjEwNzIwMjMyMn0.sB5UPCVpAEHCYOrGwH8KjL6Wn2lyijQeN3mtulzAJF4";
+  const HDR = { apikey: SBK, Authorization: "Bearer " + SBK };
+  const rpc = (fn, a) => fetch(`${SB}/rest/v1/rpc/${fn}`, { method: "POST", headers: { ...HDR, "Content-Type": "application/json" }, body: JSON.stringify(a) }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); const t = await r.text(); return t ? JSON.parse(t) : null; });
+  const pub = (p) => `${SB}/storage/v1/object/public/library-files/${p}`;
+  let token = (() => { try { return localStorage.getItem("durus-token") || ""; } catch (e) { return ""; } })();
+  const T = () => !!token;
+  let staticL = [];
+  function merge(items) {
+    const L = staticL.map((x) => ({ ...x, worksheets: [...(x.worksheets || [])] }));
+    items.filter((i) => i.kind === "lesson").forEach((i) => { const e = ext(i.file_path);
+      L.push({ id: i.id, db: true, num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, file: pub(i.file_path), name: i.file_name, mb: +i.mb,
+        type: ["ppt", "pptx", "pptm"].includes(e) ? "pptx" : "file", macro: e === "pptm", worksheets: [] }); });
+    items.filter((i) => i.kind === "worksheet").forEach((i) => { const l = L.find((x) => x.id === i.parent_id); if (l) l.worksheets.push({ id: i.id, db: true, title: i.title, file: pub(i.file_path), name: i.file_name, mb: +i.mb }); });
+    lessons = L; stores(); render(); const f = $("#folder"); if (!f.hidden && f.dataset.id) openFolder(f.dataset.id);
+  }
+  async function loadItems() { try { const r = await fetch(`${SB}/rest/v1/library_items?select=*&order=created_at`, { headers: HDR }); merge(r.ok ? await r.json() : []); } catch (e) { merge([]); } }
+  fetch("lessons.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { staticL = d; lessons = d; stores(); render(); loadItems(); })
     .catch(() => { $("#list").innerHTML = `<div class="empty">تعذّر تحميل قائمة الدروس. تأكدي من الاتصال بالإنترنت ثم حدّثي الصفحة.</div>`; });
+
+  // teacher mode
+  function teacherUI() { document.body.classList.toggle("tmode", T()); $("#tBtn").textContent = T() ? "🔓 وضع المعلمة مفعّل" : "🔒 وضع المعلمة"; render(); }
+  $("#tBtn").addEventListener("click", () => { if (T()) { token = ""; try { localStorage.removeItem("durus-token"); } catch (e) {} teacherUI(); return; } $("#tCode").value = ""; $("#tErr").textContent = ""; $("#tModal").hidden = false; $("#tCode").focus(); });
+  $("#tCancel").addEventListener("click", () => { $("#tModal").hidden = true; });
+  $("#tForm").addEventListener("submit", async (e) => { e.preventDefault(); const c = $("#tCode").value.trim().toUpperCase();
+    try { if (await rpc("library_check", { p_token: c })) { token = c; try { localStorage.setItem("durus-token", c); } catch (e2) {} $("#tModal").hidden = true; teacherUI(); } else $("#tErr").textContent = "الرمز غير صحيح."; }
+    catch (e3) { $("#tErr").textContent = "تعذّر التحقق. تأكدي من الإنترنت."; } });
+
+  // upload
+  const toast = (html, done) => { const t = $("#toast"); t.innerHTML = html; t.hidden = false; if (done) setTimeout(() => { t.hidden = true; }, 3500); };
+  function put(path, file, onp) { return new Promise((res, rej) => { const x = new XMLHttpRequest(); x.open("POST", `${SB}/storage/v1/object/library-files/${path}`);
+    x.setRequestHeader("apikey", SBK); x.setRequestHeader("Authorization", "Bearer " + SBK); x.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    x.upload.onprogress = (e) => e.lengthComputable && onp(e.loaded / e.total); x.onload = () => x.status < 300 ? res() : rej(new Error(x.responseText)); x.onerror = () => rej(new Error("net")); x.send(file); }); }
+  async function upload(files, meta) {
+    if (!T() || !files.length) return;
+    for (const [i, f] of files.entries()) {
+      if (f.size > 50 * 1048576) { toast(`<b>«${esc(f.name)}»</b> أكبر من 50 ميجابايت، ولا يمكن رفعه.`, true); continue; }
+      const e = ext(f.name) || "bin", title = meta.title && files.length === 1 ? meta.title : f.name.replace(/\.[^.]+$/, "");
+      try { toast(`جارٍ رفع <b>${esc(f.name)}</b> (${i + 1}/${files.length})<div class="tbar"><i id="tbar"></i></div>`);
+        const path = await rpc("library_ticket", { p_token: token, p_ext: e });
+        await put(path, f, (r) => { const b = $("#tbar"); if (b) b.style.width = Math.round(r * 100) + "%"; });
+        await rpc("library_add", { p_token: token, p_kind: meta.kind, p_path: path, p_title: title, p_grade: meta.grade || "", p_chapter: meta.chapter || "", p_num: meta.num || "", p_parent: meta.parent || null, p_name: f.name, p_mb: Math.round(f.size / 104857.6) / 10 });
+      } catch (err) { toast(`تعذّر رفع <b>${esc(f.name)}</b>. حاولي مرة أخرى.`, true); return; }
+    }
+    toast("✓ تم الرفع والحفظ في المكتبة", true); loadItems();
+  }
+  // new lesson dialog
+  function newLesson(file) {
+    const chs = [...new Set(lessons.filter((l) => l.grade === store.grade).map((l) => l.chapter))];
+    const guess = (file.name.match(/(\d+)\s*[-–]\s*(\d+)/) || [])[0] || "";
+    $("#nFile").textContent = file.name + " • " + (Math.round(file.size / 104857.6) / 10) + " ميجابايت"; $("#nStore").textContent = store.label;
+    $("#nTitle").value = file.name.replace(/\.[^.]+$/, "").replace(/\d+\s*[-–]\s*\d+/, "").replace(/[_]+/g, " ").replace(/^\s*درس\s+/, "").replace(/\s+/g, " ").trim(); $("#nNum").value = guess.replace(/\s/g, "");
+    $("#nCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#nChNew").hidden = chs.length > 0; $("#nChNew").value = "";
+    $("#nModal").hidden = false; $("#nModal").fileRef = file; $("#nTitle").focus();
+  }
+  $("#nCh").addEventListener("change", () => { $("#nChNew").hidden = $("#nCh").value !== "__new"; });
+  $("#nCancel").addEventListener("click", () => { $("#nModal").hidden = true; });
+  $("#nForm").addEventListener("submit", (e) => { e.preventDefault(); const ch = $("#nCh").value === "__new" || !$("#nCh").value ? $("#nChNew").value.trim() : $("#nCh").value;
+    $("#nModal").hidden = true; upload([$("#nModal").fileRef], { kind: "lesson", title: $("#nTitle").value.trim(), num: $("#nNum").value.trim(), chapter: ch || "دروس متنوعة", grade: store.grade }); });
+  document.addEventListener("change", (e) => { if (e.target.id === "newPick" && e.target.files[0]) { newLesson(e.target.files[0]); e.target.value = ""; } });
+  // delete
+  document.addEventListener("click", async (e) => { const b = e.target.closest("[data-del]"); if (!b || !T()) return;
+    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "اضغطي مرة أخرى للتأكيد"; return; }
+    try { const path = await rpc("library_delete", { p_token: token, p_id: b.dataset.del }); if (path) await fetch(`${SB}/storage/v1/object/library-files/${path}`, { method: "DELETE", headers: HDR });
+      if (!lessons.find((x) => x.id === b.dataset.del && x.db) || true) { if (b.classList.contains("big")) $("#folder").hidden = true; } toast("تم الحذف", true); loadItems(); } catch (err) { toast("تعذّر الحذف", true); } });
+  // drag & drop
+  let dragDepth = 0;
+  window.addEventListener("dragenter", (e) => { if (!T() || ![...(e.dataTransfer.types || [])].includes("Files")) return; dragDepth++; document.body.classList.add("dragging"); });
+  window.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove("dragging"); } });
+  window.addEventListener("dragover", (e) => { if (!T()) return; e.preventDefault(); document.querySelectorAll(".dz-hot").forEach((x) => x.classList.remove("dz-hot")); const t = e.target.closest("[data-drop-ws],[data-drop-new]"); if (t) t.classList.add("dz-hot"); });
+  window.addEventListener("drop", (e) => { if (!T()) return; e.preventDefault(); dragDepth = 0; document.body.classList.remove("dragging"); document.querySelectorAll(".dz-hot").forEach((x) => x.classList.remove("dz-hot"));
+    const files = [...(e.dataTransfer.files || [])]; if (!files.length) return;
+    const ws = e.target.closest("[data-drop-ws]");
+    if (ws) upload(files, { kind: "worksheet", parent: ws.dataset.dropWs }); else newLesson(files[0]); });
   $("#q").addEventListener("input", render);
 
   // install
