@@ -284,7 +284,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110301; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110302; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var KEY = "rafeeq-alhessa-v1";
 var state = null, inOffice = false, started = false;
 var tab = "stars", sortMode = "name", attMode = false;
@@ -442,7 +442,7 @@ function lvLoadQ(){
     var j = JSON.parse(raw || "[]"); return Array.isArray(j) ? j : [];
   }catch(e){ return []; }
 }
-function lvQSync(){ if(state && typeof lv !== "undefined" && lv && lv.qFor !== state.current){ lv.qFor = state.current; lv.queue = lvLoadQ(); } }
+function lvQSync(){ if(state && typeof lv !== "undefined" && lv && lv.qFor !== state.current){ lv.qFor = state.current; lv.queue = lvLoadQ(); lv.editIdx = null; } }
 function lvSaveQ(){ try{ localStorage.setItem(LQK + "-" + (lv.qFor || state.current), JSON.stringify(lv.queue)); }catch(e){ toast("تعذّر حفظ القائمة على الجهاز (الصور كبيرة). القائمة تعمل حتى إغلاق مُلهِم."); } }
 // يتحقق من المسودة ويبني جسم الطلب. يرجع {err} أو {body, q}
 function lvBuild(d, code){
@@ -729,15 +729,16 @@ function renderLive(){
     h += '<div class="attbar"><label class="muted">نوع السؤال: <select id="lvTag" '+sel+'><option value="">عادي</option><option value="in"'+(d.tag==="in"?" selected":"")+'>🚪 سؤال دخول (بداية الحصة)</option><option value="out"'+(d.tag==="out"?" selected":"")+'>🏁 سؤال خروج (نهاية الحصة)</option></select></label>'+
       '<label class="muted">⏱️ تحدي سريع: <select id="lvFast" '+sel+'><option value="0">بدون</option>'+[30, 60, 90, 120].map(function(v){ return '<option value="'+v+'"'+(+d.fast===v?" selected":"")+'>'+v+' ثانية</option>'; }).join("")+'</select></label></div>';
     if(d.k === "mcq") for(var i = 0; i < 4; i++) h += '<div class="attbar"><label style="min-width:5.5em"><input type="radio" name="lvC" value="'+i+'"'+(d.c === i ? " checked" : "")+'> '+L[i]+' صحيحة</label><input class="hwt" id="lvO'+i+'" maxlength="120" placeholder="الخيار '+L[i]+(i > 1 ? " (اختياري)" : "")+'" value="'+esc(d.o[i])+'"></div>';
-    h += '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال الآن</button><button id="lvAdd">➕ أضيفيه للقائمة</button></div>'+
+    var ed = lv.editIdx != null && lv.queue[lv.editIdx];
+    h += (ed ? '<div class="attbar"><b>✏️ تعديل السؤال رقم '+(lv.editIdx + 1)+' في القائمة</b></div><div class="attbar"><button class="primary" id="lvAdd">💾 حفظ التعديل</button><button id="lvEditX">✖ إلغاء التعديل</button></div>' : '<div class="attbar"><button class="primary" id="lvSend">📤 إرسال الآن</button><button id="lvAdd">➕ أضيفيه للقائمة</button></div>')+
       '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.'+(d.k==="open" ? " في العصف الذهني يمكن لكل طالبة إرسال حتى 3 أفكار." : d.k==="photo" ? " تصوّر الطالبة حلّها بجوالها وترسله (حتى صورتين)، وتظهر لكِ الصور هنا، ويمكنكِ تكبير أي صورة بالضغط عليها." : "")+'</div>';
   }
   if(lv.compose || !lv.code){
     h += '<div style="margin-top:.8em"><b>📋 قائمة الأسئلة ('+lv.queue.length+')</b>'+(lv.queue.length ? ' <button id="lvQClr" class="danger">مسح القائمة</button>' : '')+'</div>';
     if(!lv.queue.length) h += '<div class="muted">أضيفي عدة أسئلة (من أي صيغة) ثم أرسليها بالتتابع بزر «السؤال التالي».</div>';
     lv.queue.forEach(function(it, i){
-      h += '<div class="attrow'+(it.sent ? " y" : "")+'" style="align-items:center"><div class="nm">'+(i + 1)+'. '+LKI[it.k]+' '+esc((it.p || "(صورة)").slice(0, 60))+(it.img ? " 🖼️" : "")+(it.sent ? ' <small>(أُرسل)</small>' : '')+'</div><div style="display:flex;gap:.3em">'+
-        '<button data-q="'+i+'" data-a="go" title="إرسال هذا السؤال">▶</button><button data-q="'+i+'" data-a="up">▲</button><button data-q="'+i+'" data-a="dn">▼</button><button data-q="'+i+'" data-a="rm">✖</button></div></div>';
+      h += '<div class="attrow'+(it.sent ? " y" : "")+'" style="align-items:center"><div class="nm">'+(i + 1)+'. '+LKI[it.k]+' '+esc((it.p || "(صورة)").slice(0, 60))+(it.img ? " 🖼️" : "")+(it.sent ? ' <small>(أُرسل)</small>' : '')+(lv.editIdx === i ? ' <small style="color:var(--pur,#7c5cc4)">✏️ قيد التعديل</small>' : '')+'</div><div style="display:flex;gap:.3em">'+
+        '<button data-q="'+i+'" data-a="ed" title="تعديل هذا السؤال">✏️</button><button data-q="'+i+'" data-a="go" title="إرسال هذا السؤال">▶</button><button data-q="'+i+'" data-a="up">▲</button><button data-q="'+i+'" data-a="dn">▼</button><button data-q="'+i+'" data-a="rm">✖</button></div></div>';
     });
     if(lv.queue.length && lvPending()) h += '<div class="attbar" style="margin-top:.5em"><button class="green" id="lvGoQ">▶ ابدئي من أول سؤال لم يُرسل</button></div>';
   }
@@ -761,15 +762,24 @@ function renderLive(){
   if($("lvSend")) $("lvSend").onclick = function(){ keep(); var btn = $("lvSend"); btn.disabled = true; lvSendNow(d, null).then(function(ok){ if(!ok && $("lvSend")) $("lvSend").disabled = false; }); };
   if($("lvAdd")) $("lvAdd").onclick = function(){
     keep(); var b = lvBuild(d, ""); if(b.err){ toast(b.err); return; }
-    lv.queue.push({k: d.k, p: d.p, o: d.o.slice(), c: d.c, img: d.img, tag: d.tag || "", fast: +d.fast || 0, sent: false}); lvSaveQ();
+    var rec = {k: d.k, p: d.p, o: d.o.slice(), c: d.c, img: d.img, tag: d.tag || "", fast: +d.fast || 0, sent: false};
+    if(lv.editIdx != null && lv.queue[lv.editIdx]){ lv.queue[lv.editIdx] = rec; lv.editIdx = null; lvSaveQ(); lv.draft = lvBlank(d.k); toast("تم حفظ التعديل ✅"); renderLive(); return; }
+    lv.queue.push(rec); lvSaveQ();
     lv.draft = lvBlank(d.k); toast("أُضيف للقائمة (" + lv.queue.length + ")"); renderLive();
   };
-  if($("lvQClr")) $("lvQClr").onclick = function(){ if(confirm("مسح كل أسئلة القائمة؟")){ lv.queue = []; lvSaveQ(); renderLive(); } };
+  if($("lvEditX")) $("lvEditX").onclick = function(){ lv.editIdx = null; lv.draft = lvBlank(d.k); renderLive(); };
+  if($("lvQClr")) $("lvQClr").onclick = function(){ if(confirm("مسح كل أسئلة القائمة؟")){ lv.editIdx = null; lv.queue = []; lvSaveQ(); renderLive(); } };
   if($("lvGoQ")) $("lvGoQ").onclick = function(){ var it = lvNext(); if(it) lvSendNow(it, it); };
   var qb = document.querySelectorAll("[data-q]");
   for(var qi = 0; qi < qb.length; qi++) qb[qi].onclick = function(){
     var k = +this.getAttribute("data-q"), a = this.getAttribute("data-a"), it = lv.queue[k]; if(!it) return;
     if(a === "go"){ lvSendNow(it, it); return; }
+    if(a === "ed"){
+      keep(); lv.draft = {p: it.p || "", o: (it.o || ["", "", "", ""]).concat(["", "", "", ""]).slice(0, 4), c: it.c || 0, k: it.k || "mcq", img: it.img || "", tag: it.tag || "", fast: +it.fast || 0};
+      lv.editIdx = k; if(!lv.compose){ lv.q = null; lv.ans = []; lv.compose = true; }
+      renderLive(); try{ window.scrollTo(0, 0); $("main").scrollTop = 0; }catch(e){} return;
+    }
+    lv.editIdx = null;
     if(a === "rm") lv.queue.splice(k, 1);
     else if(a === "up" && k > 0){ lv.queue[k] = lv.queue[k - 1]; lv.queue[k - 1] = it; }
     else if(a === "dn" && k < lv.queue.length - 1){ lv.queue[k] = lv.queue[k + 1]; lv.queue[k + 1] = it; }
