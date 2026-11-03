@@ -99,5 +99,33 @@
     "slides": 36,
     "mb": 2.8,
     "added": "2026-11-03"
+  },
+  {
+    "id": "g3-2-3",
+    "num": "2-3",
+    "type": "pptx",
+    "macro": true,
+    "title": "اللوغاريتمات والدوال اللوغاريتمية",
+    "en": "Logarithms and Logarithmic Functions",
+    "grade": "الثالث الثانوي",
+    "chapter": "الفصل 2: العلاقات والدوال الأسية واللوغاريتمية",
+    "file": "files/g3-2-3.pptm",
+    "slides": 56,
+    "mb": 18.3,
+    "added": "2026-11-03"
+  },
+  {
+    "id": "g3-2-5",
+    "num": "2-5",
+    "type": "pptx",
+    "macro": true,
+    "title": "حل المعادلات والمتباينات اللوغاريتمية",
+    "en": "Solving Logarithmic Equations and Inequalities",
+    "grade": "الثالث الثانوي",
+    "chapter": "الفصل 2: العلاقات والدوال الأسية واللوغاريتمية",
+    "file": "files/g3-2-5.pptm",
+    "slides": 40,
+    "mb": 23.5,
+    "added": "2026-11-03"
   }
 ]

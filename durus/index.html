@@ -161,8 +161,9 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
     return `<div class="card ppt">
       <div class="c-top"><span class="num ppt">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span class="t-ppt">عرض بوربوينت</span><span>${esc(l.slides)} شريحة</span></div>
-      ${(l.mb || 0) > 10 ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`
+      <div class="meta"><span class="t-ppt">${l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"}</span><span>${esc(l.slides)} شريحة</span></div>
+      ${l.macro ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>يعمل في PowerPoint على الحاسوب. عند فتحه اضغطي «تمكين المحتوى» لتعمل المؤقتات والأزرار.</small></div>`
+        : (l.mb || 0) > 10 ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`
         : `<div class="btn2"><a class="open alt" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(abs)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div>`}</div>`; };
   const addCard = (first) => `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
