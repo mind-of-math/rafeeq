@@ -284,7 +284,7 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110302; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110304; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var KEY = "rafeeq-alhessa-v1";
 var state = null, inOffice = false, started = false;
 var tab = "stars", sortMode = "name", attMode = false;
@@ -442,8 +442,32 @@ function lvLoadQ(){
     var j = JSON.parse(raw || "[]"); return Array.isArray(j) ? j : [];
   }catch(e){ return []; }
 }
+// نسخ سؤال (أو القائمة كلها) إلى قائمة فصل آخر أو أكثر
+function lvCopyDlg(items){
+  var others = state.classes.filter(function(x){ return x.id !== state.current; });
+  if(!others.length){ toast("لا توجد فصول أخرى"); return; }
+  var o = document.createElement("div"); o.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center";
+  o.innerHTML = '<div style="background:#fff;border-radius:1em;padding:1em 1.2em;max-width:92%;min-width:16em;max-height:85%;overflow:auto;color:#2b2540"><b>نسخ ' + (items.length > 1 ? "القائمة (" + items.length + " سؤال)" : "السؤال") + ' إلى:</b>' +
+    others.map(function(x){ return '<label style="display:flex;gap:.5em;margin:.5em 0;align-items:center"><input type="checkbox" value="' + x.id + '" style="width:auto"> ' + esc(x.name) + '</label>'; }).join("") +
+    '<div style="display:flex;gap:.5em;margin-top:.8em"><button class="primary" id="cpGo">📋 نسخ</button><button id="cpX">إلغاء</button></div></div>';
+  document.body.appendChild(o);
+  o.querySelector("#cpX").onclick = function(){ o.remove(); };
+  o.querySelector("#cpGo").onclick = function(){
+    var ids = [].slice.call(o.querySelectorAll("input:checked")).map(function(i){ return i.value; });
+    if(!ids.length){ toast("اختاري فصلًا واحدًا على الأقل"); return; }
+    try{
+      ids.forEach(function(id){
+        var key = LQK + "-" + id, arr = []; try{ arr = JSON.parse(localStorage.getItem(key) || "[]"); if(!Array.isArray(arr)) arr = []; }catch(e){ arr = []; }
+        items.forEach(function(it){ var c = JSON.parse(JSON.stringify(it)); c.sent = false; arr.push(c); });
+        localStorage.setItem(key, JSON.stringify(arr));
+      });
+      save(); toast("تم النسخ إلى " + ids.length + (ids.length === 1 ? " فصل" : " فصول") + " ✅");
+    }catch(e){ toast("تعذّر النسخ (الصور كبيرة على هذا الجهاز)"); }
+    o.remove();
+  };
+}
 function lvQSync(){ if(state && typeof lv !== "undefined" && lv && lv.qFor !== state.current){ lv.qFor = state.current; lv.queue = lvLoadQ(); lv.editIdx = null; } }
-function lvSaveQ(){ try{ localStorage.setItem(LQK + "-" + (lv.qFor || state.current), JSON.stringify(lv.queue)); }catch(e){ toast("تعذّر حفظ القائمة على الجهاز (الصور كبيرة). القائمة تعمل حتى إغلاق مُلهِم."); } }
+function lvSaveQ(){ try{ localStorage.setItem(LQK + "-" + (lv.qFor || state.current), JSON.stringify(lv.queue)); }catch(e){ toast("تعذّر حفظ القائمة على الجهاز (الصور كبيرة). القائمة تعمل حتى إغلاق مُلهِم."); }  save(); }
 // يتحقق من المسودة ويبني جسم الطلب. يرجع {err} أو {body, q}
 function lvBuild(d, code){
   var opts = [], map = [];
@@ -734,11 +758,11 @@ function renderLive(){
       '<div class="muted">تجيب الطالبة باسمها الكامل، أو تجيب مجموعة كاملة باسم المجموعة (مثل «المجموعة الزرقاء») فتُمنح النجمة لكل أعضائها حسب توزيع المجموعات في تبويب 👥.'+(d.k==="open" ? " في العصف الذهني يمكن لكل طالبة إرسال حتى 3 أفكار." : d.k==="photo" ? " تصوّر الطالبة حلّها بجوالها وترسله (حتى صورتين)، وتظهر لكِ الصور هنا، ويمكنكِ تكبير أي صورة بالضغط عليها." : "")+'</div>';
   }
   if(lv.compose || !lv.code){
-    h += '<div style="margin-top:.8em"><b>📋 قائمة الأسئلة ('+lv.queue.length+')</b>'+(lv.queue.length ? ' <button id="lvQClr" class="danger">مسح القائمة</button>' : '')+'</div>';
+    h += '<div style="margin-top:.8em"><b>📋 قائمة الأسئلة ('+lv.queue.length+')</b>'+(lv.queue.length ? ' <button id="lvQCp">📑 نسخ القائمة إلى فصل آخر</button> <button id="lvQClr" class="danger">مسح القائمة</button>' : '')+'</div>';
     if(!lv.queue.length) h += '<div class="muted">أضيفي عدة أسئلة (من أي صيغة) ثم أرسليها بالتتابع بزر «السؤال التالي».</div>';
     lv.queue.forEach(function(it, i){
       h += '<div class="attrow'+(it.sent ? " y" : "")+'" style="align-items:center"><div class="nm">'+(i + 1)+'. '+LKI[it.k]+' '+esc((it.p || "(صورة)").slice(0, 60))+(it.img ? " 🖼️" : "")+(it.sent ? ' <small>(أُرسل)</small>' : '')+(lv.editIdx === i ? ' <small style="color:var(--pur,#7c5cc4)">✏️ قيد التعديل</small>' : '')+'</div><div style="display:flex;gap:.3em">'+
-        '<button data-q="'+i+'" data-a="ed" title="تعديل هذا السؤال">✏️</button><button data-q="'+i+'" data-a="go" title="إرسال هذا السؤال">▶</button><button data-q="'+i+'" data-a="up">▲</button><button data-q="'+i+'" data-a="dn">▼</button><button data-q="'+i+'" data-a="rm">✖</button></div></div>';
+        '<button data-q="'+i+'" data-a="ed" title="تعديل هذا السؤال">✏️</button><button data-q="'+i+'" data-a="cp" title="نسخ هذا السؤال إلى فصل آخر">📑</button><button data-q="'+i+'" data-a="go" title="إرسال هذا السؤال">▶</button><button data-q="'+i+'" data-a="up">▲</button><button data-q="'+i+'" data-a="dn">▼</button><button data-q="'+i+'" data-a="rm">✖</button></div></div>';
     });
     if(lv.queue.length && lvPending()) h += '<div class="attbar" style="margin-top:.5em"><button class="green" id="lvGoQ">▶ ابدئي من أول سؤال لم يُرسل</button></div>';
   }
@@ -767,6 +791,7 @@ function renderLive(){
     lv.queue.push(rec); lvSaveQ();
     lv.draft = lvBlank(d.k); toast("أُضيف للقائمة (" + lv.queue.length + ")"); renderLive();
   };
+  if($("lvQCp")) $("lvQCp").onclick = function(){ lvCopyDlg(lv.queue); };
   if($("lvEditX")) $("lvEditX").onclick = function(){ lv.editIdx = null; lv.draft = lvBlank(d.k); renderLive(); };
   if($("lvQClr")) $("lvQClr").onclick = function(){ if(confirm("مسح كل أسئلة القائمة؟")){ lv.editIdx = null; lv.queue = []; lvSaveQ(); renderLive(); } };
   if($("lvGoQ")) $("lvGoQ").onclick = function(){ var it = lvNext(); if(it) lvSendNow(it, it); };
@@ -774,6 +799,7 @@ function renderLive(){
   for(var qi = 0; qi < qb.length; qi++) qb[qi].onclick = function(){
     var k = +this.getAttribute("data-q"), a = this.getAttribute("data-a"), it = lv.queue[k]; if(!it) return;
     if(a === "go"){ lvSendNow(it, it); return; }
+    if(a === "cp"){ lvCopyDlg([it]); return; }
     if(a === "ed"){
       keep(); lv.draft = {p: it.p || "", o: (it.o || ["", "", "", ""]).concat(["", "", "", ""]).slice(0, 4), c: it.c || 0, k: it.k || "mcq", img: it.img || "", tag: it.tag || "", fast: +it.fast || 0};
       lv.editIdx = k; if(!lv.compose){ lv.q = null; lv.ans = []; lv.compose = true; }
@@ -1877,12 +1903,20 @@ var cloudT = null, cloudBusy = false, CK = "rafeeq-cloud-at";
 function cloudOn(){ return !!lget(TK); }
 function cloudMsg(t){ lnkMsg(t); }
 function applyCloud(j){
+  var qs = j.data && j.data.queues; if(j.data) delete j.data.queues;
   try{ var old = localStorage.getItem(KEY); if(old && hasData()) localStorage.setItem(KEY + "-before-cloud", old); }catch(e){}
   var d = norm(j.data); d.updatedAt = j.at; state = d;
   var s = ser();
   try{ localStorage.setItem(KEY, s); }catch(e){}
   if(inOffice){ try{ Office.context.document.settings.set(KEY, s); Office.context.document.settings.saveAsync(function(){}); }catch(e){} }
+  if(qs){ Object.keys(qs).forEach(function(id){ try{ localStorage.setItem(LQK + "-" + id, JSON.stringify(qs[id])); }catch(e){} }); if(typeof lv !== "undefined" && lv) lv.qFor = ""; }
   lset(CK, String(j.at)); render(); try{ fillMg(); }catch(e){}
+}
+function qsAll(){
+  var o = {}; state.classes.forEach(function(c){ try{ var raw = localStorage.getItem(LQK + "-" + c.id); if(raw){ var a = JSON.parse(raw); if(a && a.length) o[c.id] = a; } }catch(e){} }); return o;
+}
+function qMissing(j){
+  try{ var q = (j.data && j.data.queues) || {}, loc = qsAll(); if(Object.keys(loc).some(function(id){ return !q[id]; })) save(); }catch(e){}
 }
 function hasData(){ return state.classes.some(function(c){ return c.students.length; }); }
 function cloudPull(manual){
@@ -1892,13 +1926,18 @@ function cloudPull(manual){
     cloudBusy = false;
     if(j.has && j.data && (j.data.build || 0) > BUILD){ cloudStale = true; showUpd(j.data.build); }
     if(!j.has){ if(hasData()) cloudPush(true); else if(manual) cloudMsg("لا توجد نسخة سحابية بعد."); return; }
-    var mine = state.updatedAt || 0;
+    var mine = state.updatedAt || 0, synced = +lget(CK) || 0;
     if(j.at > mine){
-      if(!hasData()){ applyCloud(j); toast("تم تحميل بياناتك من السحابة ☁️"); cloudMsg("تم تحميل بياناتك من السحابة ☁️"); }
+      if(!hasData() || mine <= synced){ var qj = j; applyCloud(j); qMissing(qj); toast("تم تحديث بياناتك من السحابة ☁️"); cloudMsg("تم تحديث بياناتك من السحابة ☁️"); }
       else ask("وجدتُ نسخة أحدث محفوظة في السحابة (" + new Date(j.at).toLocaleString("ar-SA-u-nu-latn") + "). هل تريدين تحميلها بدل ما على هذا الجهاز؟", function(){ applyCloud(j); toast("تم تحميل النسخة السحابية ☁️"); });
     } else if(mine > j.at){ cloudPush(manual); }
-    else if(manual) cloudMsg("بياناتك مطابقة للسحابة ☁️✅");
+    else { qMissing(j); if(manual) cloudMsg("بياناتك مطابقة للسحابة ☁️✅"); }
   }).catch(function(err){ cloudBusy = false; if(manual) cloudMsg(err.message || "تعذّر الاتصال بالسحابة"); });
+}
+function cloudBody(at, force){
+  var dj = JSON.parse(ser()); dj.queues = qsAll(); var js = JSON.stringify(dj);
+  if(js.length > 3600000){ Object.keys(dj.queues).forEach(function(id){ dj.queues[id].forEach(function(it){ it.img = ""; }); }); js = JSON.stringify(dj); }
+  return '{"data":' + js + ',"at":' + at + ',"force":' + (!!force) + "}";
 }
 var cloudStale = false;
 function cloudPush(manual, force){
@@ -1906,7 +1945,7 @@ function cloudPush(manual, force){
   if(cloudStale){ showUpd(0); return Promise.resolve(); }
   state.build = BUILD;
   var at = state.updatedAt || Date.now();
-  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: '{"data":' + ser() + ',"at":' + at + ',"force":' + (!!force) + "}"}).then(function(j){
+  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: cloudBody(at, force)}).then(function(j){
     if(j.newer){ cloudPull(false); return; }
     lset(CK, String(at)); if(manual) cloudMsg("تم حفظ بياناتك في السحابة ☁️✅");
   }).catch(function(err){ if(manual) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
