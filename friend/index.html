@@ -205,6 +205,7 @@ body.guest header h1,body.guest header select{color:#5a2340}
 body.guest .tabs button{background:rgba(255,255,255,.6);color:#7a3355}
 body.guest .tabs button.on{background:#fff;color:#a8456f;box-shadow:0 0 0 2px #e27aa3 inset}
 
+.attrow .bn{color:var(--green);font-weight:800}.attrow .tot{font-weight:800;min-width:3.4em}
 .gin{width:4.6em;text-align:center;padding:.25em .2em;border:2px solid var(--line);border-radius:.5em;font:inherit}
 .gmax{display:inline-flex;align-items:center;gap:.3em;font-size:.9em;white-space:nowrap}.gmax input{width:4.2em;text-align:center}
 .attrow .pc{min-width:2.6em;font-size:.82em;color:var(--muted);text-align:center}
@@ -298,7 +299,7 @@ body.guest .tabs button.on{background:#fff;color:#a8456f;box-shadow:0 0 0 2px #e
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110305; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110306; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var GUEST = true, GUESTKEY = "rf_g_w-wE6zCJsqmqnK4Crof2ZVsQSFb38vEK"; // نسخة المعلمة الضيفة تُولَّد بتحويل آلي
 var KEY = "mulhimg-alhessa-v1";
 if(GUEST) document.body.classList.add("guest");
@@ -1460,23 +1461,36 @@ function testStats(t, students){
   var sum = v.reduce(function(a, b){ return a + b; }, 0), pass = v.filter(function(g){ return t.max ? g * 2 >= t.max : false; }).length;
   return {n: v.length, avg: Math.round(sum / v.length * 100) / 100, max: Math.max.apply(null, v), min: Math.min.apply(null, v), pass: pass};
 }
+/* ترحيل درجة إضافية من القصير إلى الدوري: 4.5 فأكثر (من 5) = درجة، و3.75 إلى أقل من 4.5 = نصف درجة */
+function bonusOf(g, max){ if(g == null) return 0; var v = g * 5 / (max || 5) + 1e-9; return v >= 4.5 ? 1 : v >= 3.75 ? 0.5 : 0; }
+function bonusFor(c, t, sid){
+  if(t.kind !== "per" || !t.from) return 0;
+  var sh = c.tests.filter(function(x){ return x.id === t.from; })[0]; if(!sh) return 0;
+  return bonusOf((sh.g || {})[sid], sh.max);
+}
+function num(x){ return Math.round(x * 100) / 100; }
 function renderTests(){
   var c = cls(); if(!c.students.length) return emptyView();
   c.tests = c.tests || [];
   var list = c.tests.filter(function(t){ return t.kind === tKind; }).sort(function(a, b){ return a.date < b.date ? 1 : -1; });
   var cur = c.tests.filter(function(t){ return t.id === tSel && t.kind === tKind; })[0];
   var h = '<div class="gtop"><div class="seg" id="tK"><button data-k="short"'+(tKind==="short"?' class="on"':'')+'>📝 اختبارات قصيرة</button><button data-k="per"'+(tKind==="per"?' class="on"':'')+'>📋 اختبارات دورية</button></div>'+
-    '<span class="sp"></span><button class="primary" id="tNew">➕ اختبار جديد</button><button class="green" id="tXl">📥 إكسل</button></div>';
+    '<span class="sp"></span><button class="primary" id="tNew">➕ اختبار جديد</button><button class="green" id="tXl">📥 إكسل</button><button id="tPr">🖨 طباعة</button></div>';
   if(!list.length) h += '<div class="muted" style="margin:1em 0">لا توجد '+(tKind==="short"?"اختبارات قصيرة":"اختبارات دورية")+' بعد. اضغطي «اختبار جديد».</div>';
   h += '<div class="tchips">' + list.map(function(t){ var st = testStats(t, c.students);
     return '<button class="tchip'+(cur && cur.id === t.id ? ' on' : '')+'" data-t="'+t.id+'"><b>'+esc(t.title || "بدون عنوان")+'</b><small><bdi dir="ltr">'+t.date+'</bdi>'+(st ? ' • متوسط '+st.avg+(t.max ? '/'+t.max : '') : '')+'</small></button>'; }).join("") + '</div>';
   if(cur){
     var st = testStats(cur, c.students);
     h += '<div class="attbar"><input class="hwt" id="tTitle" maxlength="80" placeholder="عنوان الاختبار" value="'+esc(cur.title || "")+'"><input type="date" id="tDate" value="'+cur.date+'"><label class="gmax">الدرجة العظمى <input type="number" id="tMax" min="1" step="any" value="'+(cur.max || "")+'"></label><button class="danger" id="tDel">🗑 حذف</button></div>';
+    if(cur.kind === "per"){
+      var shorts = c.tests.filter(function(x){ return x.kind === "short"; }).sort(function(a, b){ return a.date < b.date ? 1 : -1; });
+      h += '<div class="attbar"><label class="gmax">⭐ ترحيل درجة إضافية من الاختبار القصير: <select id="tFrom"><option value="">— بدون —</option>'+shorts.map(function(x){ return '<option value="'+x.id+'"'+(cur.from === x.id ? ' selected' : '')+'>'+esc(x.title || "بدون عنوان")+' ('+x.date+')</option>'; }).join("")+'</select></label></div>'+
+        '<div class="muted">القاعدة: من حصلت على 5 أو 4.5 في القصير تُضاف لها درجة، ومن حصلت على 4.25 أو 4 أو 3.75 يُضاف لها نصف درجة.</div>';
+    }
     if(st) h += '<div class="attsum"><span>عدد المُدخَل: '+st.n+'</span><span>المتوسط: <b>'+st.avg+'</b></span><span style="color:var(--green)">الأعلى: '+st.max+'</span><span style="color:var(--red)">الأدنى: '+st.min+'</span>'+(cur.max ? '<span>الناجحات (50% فأكثر): '+st.pass+'</span>' : '')+'</div>';
     h += '<div class="attlist">' + c.students.map(function(s){ var g = (cur.g || {})[s.id];
       return '<div class="attrow"><div class="nm">'+esc(s.name)+'</div><input type="number" class="gin" data-g="'+s.id+'" step="any" min="0" placeholder="الدرجة" value="'+(g == null ? "" : g)+'">'+
-        '<span class="pc">'+(g != null && cur.max ? Math.round(100 * g / cur.max) + "%" : "")+'</span></div>'; }).join("") + '</div>' +
+        (function(){ var b = bonusFor(c, cur, s.id); return b ? '<span class="bn">+'+b+'</span><span class="tot">= '+num((g || 0) + b)+'</span>' : '<span class="pc">'+(g != null && cur.max ? Math.round(100 * g / cur.max) + "%" : "")+'</span>'; })()+'</div>'; }).join("") + '</div>' +
       '<div class="muted" style="margin-top:.5em">اكتبي الدرجة بجانب كل طالبة؛ تُحفظ مباشرة ويمكنك تعديلها في أي وقت.</div>';
   }
   $("main").innerHTML = h;
@@ -1486,30 +1500,59 @@ function renderTests(){
   for(var j = 0; j < cb.length; j++) cb[j].onclick = function(){ tSel = this.getAttribute("data-t"); renderTests(); };
   $("tNew").onclick = function(){
     var n = c.tests.filter(function(t){ return t.kind === tKind; }).length + 1;
-    var t = {id: uid(), kind: tKind, title: (tKind === "short" ? "اختبار قصير " : "اختبار دوري ") + n, date: todayIso(), max: tKind === "short" ? 10 : 20, g: {}};
+    var t = {id: uid(), kind: tKind, title: (tKind === "short" ? "اختبار قصير " : "اختبار دوري ") + n, date: todayIso(), max: tKind === "short" ? 5 : 20, g: {}};
     c.tests.push(t); tSel = t.id; save(); renderTests();
   };
   if(cur){
     $("tTitle").onchange = function(){ cur.title = this.value.trim(); save(); renderTests(); };
     $("tDate").onchange = function(){ if(this.value){ cur.date = this.value; save(); renderTests(); } };
     $("tMax").onchange = function(){ var v = parseFloat(this.value); if(v > 0) cur.max = v; else delete cur.max; save(); renderTests(); };
+    if($("tFrom")) $("tFrom").onchange = function(){ if(this.value) cur.from = this.value; else delete cur.from; save(); renderTests(); };
     $("tDel").onclick = function(){ ask("حذف «" + (cur.title || "الاختبار") + "» ودرجاته نهائيًا؟", function(){ c.tests = c.tests.filter(function(t){ return t.id !== cur.id; }); tSel = null; save(); renderTests(); }); };
     var gi = document.querySelectorAll(".gin");
     for(var q = 0; q < gi.length; q++) gi[q].onchange = function(){
       var sid = this.getAttribute("data-g"), v = this.value.trim() === "" ? NaN : parseFloat(this.value);
       cur.g = cur.g || {}; if(isNaN(v)) delete cur.g[sid]; else cur.g[sid] = v;
-      save(); renderTests();
+      save();
+      var row = this.parentNode, sp = row.querySelector(".pc,.bn,.tot"), b = bonusFor(c, cur, sid), g = isNaN(v) ? null : v;
+      while(row.children.length > 2) row.removeChild(row.lastChild);
+      var e = document.createElement("span");
+      if(b){ e.className = "bn"; e.textContent = "+" + b; row.appendChild(e); var e2 = document.createElement("span"); e2.className = "tot"; e2.textContent = "= " + num((g || 0) + b); row.appendChild(e2); }
+      else { e.className = "pc"; e.textContent = g != null && cur.max ? Math.round(100 * g / cur.max) + "%" : ""; row.appendChild(e); }
+      var sm = document.querySelector(".attsum"), st2 = testStats(cur, c.students);
+      if(sm && st2) sm.innerHTML = '<span>عدد المُدخَل: '+st2.n+'</span><span>المتوسط: <b>'+st2.avg+'</b></span><span style="color:var(--green)">الأعلى: '+st2.max+'</span><span style="color:var(--red)">الأدنى: '+st2.min+'</span>'+(cur.max ? '<span>الناجحات (50% فأكثر): '+st2.pass+'</span>' : '');
     };
   }
+  $("tPr").onclick = function(){
+    var all = c.tests.filter(function(t){ return t.kind === tKind; }).sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+    if(!all.length){ toast("لا توجد اختبارات"); return; }
+    var ttl = (tKind === "short" ? "الاختبارات القصيرة" : "الاختبارات الدورية");
+    var head = ["م", "الاسم"]; all.forEach(function(t){ var nm = esc(t.title || "") + "<br><small>" + t.date + (t.max ? " / " + t.max : "") + "</small>"; if(t.from){ head.push(nm + "<br><small>الدرجة</small>", "إضافية", "المجموع"); } else head.push(nm); }); head.push("المتوسط");
+    var body = c.students.map(function(s, i){
+      var cells = [], nums = [];
+      all.forEach(function(t){ var g = (t.g || {})[s.id];
+        if(t.from){ var b = bonusFor(c, t, s.id); cells.push(g == null ? "" : g, g == null ? "" : (b || ""), g == null ? "" : num(g + b)); if(g != null) nums.push(num(g + b)); }
+        else { cells.push(g == null ? "" : g); if(g != null) nums.push(g); } });
+      return [i + 1, esc(s.name)].concat(cells).concat([nums.length ? num(nums.reduce(function(a, b){ return a + b; }, 0) / nums.length) : ""]);
+    });
+    var h = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>'+ttl+'</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:"Segoe UI",Tahoma,sans-serif;color:#222}h1{font-size:18px;text-align:center;margin:4px 0}.s{text-align:center;color:#555;margin-bottom:8px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #444;padding:4px 6px;text-align:center}td.n{text-align:right;white-space:nowrap}th{background:#eee}small{font-weight:400;color:#555}footer{text-align:center;color:#555;margin-top:10px;font-size:12px}</style></head><body onload="window.print()">'+
+      '<h1>'+ttl+' — '+esc(c.name)+'</h1><div class="s">'+todayIso()+'</div><table><thead><tr>'+head.map(function(x){ return '<th>'+x+'</th>'; }).join("")+'</tr></thead><tbody>'+
+      body.map(function(r){ return '<tr>'+r.map(function(x, k){ return '<td'+(k === 1 ? ' class="n"' : '')+'>'+x+'</td>'; }).join("")+'</tr>'; }).join("")+'</tbody></table>'+
+      (teacherName() ? '<footer>للمعلمة: '+esc(teacherName())+'</footer>' : '')+'</body></html>';
+    download("طباعة " + ttl + " - " + safeName(c.name) + " - " + todayIso() + ".html", h, "text/html");
+    toast("نُزّل ملف الطباعة، افتحيه واطبعي");
+  };
   $("tXl").onclick = function(){
     var all = c.tests.filter(function(t){ return t.kind === tKind; }).sort(function(a, b){ return a.date < b.date ? -1 : 1; });
     if(!all.length){ toast("لا توجد اختبارات"); return; }
-    var head = ["م", "الاسم"].concat(all.map(function(t){ return (t.title || "") + " (" + t.date + (t.max ? " / " + t.max : "") + ")"; })).concat(["المتوسط"]);
+    var head = ["م", "الاسم"]; all.forEach(function(t){ var nm = (t.title || "") + " (" + t.date + (t.max ? " / " + t.max : "") + ")"; if(t.from){ head.push(nm + " - الدرجة", "الإضافية", "المجموع"); } else head.push(nm); }); head.push("المتوسط");
     var rows = [head].concat(c.students.map(function(s, i){
-      var vals = all.map(function(t){ var g = (t.g || {})[s.id]; return g == null ? "" : g; });
-      var nums = vals.filter(function(x){ return x !== ""; });
-      return [i + 1, s.name].concat(vals).concat([nums.length ? Math.round(nums.reduce(function(a, b){ return a + b; }, 0) / nums.length * 100) / 100 : ""]); }));
-    var w = [6, 28]; all.forEach(function(){ w.push(16); }); w.push(10);
+      var vals = [], nums = [];
+      all.forEach(function(t){ var g = (t.g || {})[s.id];
+        if(t.from){ var b = bonusFor(c, t, s.id); vals.push(g == null ? "" : g, g == null ? "" : b, g == null ? "" : num(g + b)); if(g != null) nums.push(num(g + b)); }
+        else { vals.push(g == null ? "" : g); if(g != null) nums.push(g); } });
+      return [i + 1, s.name].concat(vals).concat([nums.length ? num(nums.reduce(function(a, b){ return a + b; }, 0) / nums.length) : ""]); }));
+    var w = [6, 28]; all.forEach(function(t){ w.push(16); if(t.from){ w.push(10, 10); } }); w.push(10);
     var blob = makeXlsx([{name: tKind === "short" ? "الاختبارات القصيرة" : "الاختبارات الدورية", rows: [[(tKind === "short" ? "الاختبارات القصيرة" : "الاختبارات الدورية") + " — " + c.name + " — " + todayIso()], []].concat(rows), bold: [0, 2], widths: w}]);
     download((tKind === "short" ? "الاختبارات القصيرة" : "الاختبارات الدورية") + " - " + safeName(c.name) + " - " + todayIso() + ".xlsx", blob);
     toast("تم التنزيل");
