@@ -78,6 +78,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .meta span{background:var(--sand);border-radius:999px;padding:3px 10px;font-size:.85rem;font-weight:700;color:var(--ink2)}
 .feat{display:flex;gap:6px;flex-wrap:wrap;font-size:.85rem;font-weight:700;color:var(--teal)}
 .open{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:linear-gradient(180deg,var(--teal2),var(--teal));color:#fff;font-weight:800;font-size:1.05rem;padding:11px}
+.num.lnk{background:#6A4FD8}
+.card.lnk:hover{border-color:#dcd2ff}
+.meta .t-lnk{background:#ecebff;color:#4b36b8}
+.feat.lnkf{color:var(--muted)}
+.open.lnkb{background:linear-gradient(180deg,#9a7cf0,#6A4FD8)}
 .num.ppt{background:#D24726}
 .card.ppt:hover{border-color:#f6d2c6}
 .meta .t-ppt{background:#fde4dc;color:#a8361b}.meta .t-live{background:#dff1f1;color:#0f7c7f}
@@ -139,12 +144,18 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       `<section class="group"><h2>${esc(ch)} <small>${ls.length} ${ls.length === 1 ? "درس" : "دروس"}</small></h2><div class="grid">${ls.sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true })).map(card).join("")}</div></section>`).join("")
       + `<div class="grid" style="margin-top:16px">${addCard(false)}</div>`;
   }
-  const card = (l) => l.type === "pptx" ? pptCard(l) : `<a class="card" href="${esc(l.path)}">
+  const card = (l) => l.type === "pptx" ? pptCard(l) : l.type === "link" ? linkCard(l) : `<a class="card" href="${esc(l.path)}">
       <div class="c-top"><span class="num">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
       <div class="meta"><span class="t-live">درس تفاعلي مباشر</span><span>${esc(l.slides)} شريحة</span></div>
       <div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>
       <span class="open">فتح الدرس ←</span></a>`;
+  const linkCard = (l) => `<a class="card lnk" href="${esc(l.url)}" target="_blank" rel="noopener">
+      <div class="c-top"><span class="num lnk">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
+      ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
+      <div class="meta"><span class="t-lnk">درس تفاعلي • رابط خارجي</span>${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
+      <div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>
+      <span class="open lnkb">فتح الدرس ↗</span></a>`;
   const pptCard = (l) => { const abs = new URL(l.file, location.href).href;
     return `<div class="card ppt">
       <div class="c-top"><span class="num ppt">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
