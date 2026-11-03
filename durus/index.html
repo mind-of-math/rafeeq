@@ -128,6 +128,10 @@ body.tmode .tbtn{background:var(--purple);color:#fff;border-color:var(--purple)}
 .sz-big{background:#fff1dc!important;color:#a35a00!important;font-weight:800}
 .w-huge,.w-big{border-radius:14px;padding:12px 14px;margin-top:6px}.w-huge{background:#fde6e6;color:#8f1d22}.w-big{background:#fff4e0;color:#7a4300}
 .w-huge ul,.w-big ul{margin:6px 0;padding-inline-start:20px;overflow-wrap:anywhere}.w-huge small,.w-big small{display:block;font-weight:600}
+.terms{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+.term{flex:1;min-width:180px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid var(--line);background:#fff;border-radius:18px;padding:12px 18px;font:inherit;font-weight:800;font-size:1.1rem;color:var(--ink);cursor:pointer}
+.term small{font-weight:700;font-size:.9rem;background:var(--sand);border-radius:999px;padding:3px 10px;color:var(--ink2)}
+.term[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}.term[aria-pressed="true"] small{background:rgba(255,255,255,.18);color:#fff}
 .w-b.edit{background:#f0ebfc;color:var(--purple);border:0;cursor:pointer;font-family:inherit}.w-b.edit.big{display:block;width:100%;margin-top:12px;padding:10px;font-weight:800}
 .w-b.del{background:#fde6e6;color:#c0262d;border:0;cursor:pointer;font-family:inherit}.w-b.del.big{display:block;width:100%;margin-top:12px;padding:10px}
 .toast{overflow-wrap:anywhere;position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:60;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;font-weight:700;width:min(440px,calc(100% - 32px));box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -154,6 +158,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
 
   <nav class="stores" id="stores" aria-label="مخازن الدروس"></nav>
 
+  <div class="terms" id="terms" role="group" aria-label="الفصل الدراسي"></div>
   <div class="bar">
     <label class="search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="ابحثي عن درس بالاسم أو الرقم" aria-label="البحث في الدروس"></label>
   </div>
@@ -164,20 +169,21 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
 <div class="modal" id="nModal" hidden role="dialog" aria-modal="true" aria-labelledby="nH"><form class="fbox small" id="nForm"><h3 id="nH">إضافة درس جديد إلى <span id="nStore"></span></h3><p class="file" id="nFile"></p>
   <label for="nNum">رقم الدرس</label><input id="nNum" maxlength="12" placeholder="مثل: 3-5">
   <label for="nTitle">اسم الدرس</label><input id="nTitle" maxlength="160" required>
-  <label for="nCh">الفصل</label><select id="nCh"></select><input id="nChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 4: ..." hidden>
+  <label for="nCh">فصل الكتاب</label><select id="nCh"></select><input id="nChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 4: ..." hidden>
   <div class="row"><button type="submit" class="pbtn">⬆ رفع وحفظ</button><button type="button" class="pbtn ghost" id="nCancel">إلغاء</button></div></form></div>
 <div class="modal" id="lModal" hidden role="dialog" aria-modal="true" aria-labelledby="lH"><form class="fbox small" id="lForm"><h3 id="lH">🔗 رابط درس في <span id="lStore"></span></h3>
   <label for="lUrl">رابط الدرس</label><input id="lUrl" dir="ltr" inputmode="url" maxlength="1000" required placeholder="https://...">
   <label for="lNum">رقم الدرس</label><input id="lNum" maxlength="12" placeholder="مثل: 3-1">
   <label for="lTitle">اسم الدرس</label><input id="lTitle" maxlength="160" required>
-  <label for="lCh">الفصل</label><select id="lCh"></select><input id="lChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 3: ..." hidden>
+  <label for="lCh">فصل الكتاب</label><select id="lCh"></select><input id="lChNew" maxlength="120" placeholder="اسم الفصل، مثل: الفصل 3: ..." hidden>
   <label for="lBy">إعداد (اختياري)</label><input id="lBy" maxlength="120" placeholder="مثل: المعلمة هند العديني">
   <p class="err" id="lErr"></p>
   <div class="row"><button type="submit" class="pbtn">حفظ الرابط</button><button type="button" class="pbtn ghost" id="lCancel">إلغاء</button></div></form></div>
 <div class="modal" id="eModal" hidden role="dialog" aria-modal="true" aria-labelledby="eH"><form class="fbox small" id="eForm"><h3 id="eH">✏️ تعديل معلومات الدرس</h3>
   <label for="eNum">رقم الدرس</label><input id="eNum" maxlength="12">
   <label for="eTitle">اسم الدرس</label><input id="eTitle" maxlength="160" required>
-  <label for="eCh">الفصل</label><select id="eCh"></select><input id="eChNew" maxlength="120" placeholder="اسم الفصل الجديد" hidden>
+  <label for="eTerm">الفصل الدراسي</label><select id="eTerm"></select>
+  <label for="eCh">فصل الكتاب</label><select id="eCh"></select><input id="eChNew" maxlength="120" placeholder="اسم الفصل الجديد" hidden>
   <label for="eBy">إعداد (اختياري)</label><input id="eBy" maxlength="120" placeholder="مثل: المعلمة هند العديني">
   <div id="eUrlRow" hidden style="display:flex;flex-direction:column;gap:8px"><label for="eUrl">رابط الدرس</label><input id="eUrl" dir="ltr" maxlength="1000"></div>
   <p class="err" id="eErr"></p>
@@ -201,20 +207,27 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   ];
   let lessons = [];
   const saved = (() => { try { return localStorage.getItem("durus-store"); } catch (e) { return null; } })();
+  const TERMS = [{ id: "1", label: "الفصل الدراسي الأول" }, { id: "2", label: "الفصل الدراسي الثاني" }];
+  let term = (() => { try { return localStorage.getItem("durus-term") || "1"; } catch (e) { return "1"; } })();
+  const tOf = (l) => l.term || "1";
+  const here = (l, g) => l.grade === (g || store.grade) && tOf(l) === term;
+  function terms() { $("#terms").innerHTML = TERMS.map((t) => { const n = lessons.filter((l) => l.grade === store.grade && tOf(l) === t.id).length;
+      return `<button class="term" aria-pressed="${t.id === term}" data-t="${t.id}">${t.label}<small>${n} ${n === 1 ? "درس" : "دروس"}</small></button>`; }).join("");
+    document.querySelectorAll(".term").forEach((b) => b.addEventListener("click", () => { term = b.dataset.t; try { localStorage.setItem("durus-term", term); } catch (e) {} stores(); render(); })); }
   let store = STORES.find((x) => "#" + x.id === location.hash) || STORES.find((x) => x.id === saved) || STORES[0];
 
   function stores() {
-    $("#stores").innerHTML = STORES.map((x) => { const n = lessons.filter((l) => l.grade === x.grade).length;
+    $("#stores").innerHTML = STORES.map((x) => { const n = lessons.filter((l) => here(l, x.grade)).length;
       return `<button class="store ${x.cls}" aria-pressed="${x === store}" data-id="${x.id}"><span class="ic" aria-hidden="true">${x.ic}</span><span class="tx"><small>مخزن</small><strong>${esc(x.label.replace("مخزن ", ""))}</strong></span><span class="cnt">${n} ${n === 1 ? "درس" : "دروس"}</span></button>`; }).join("");
     document.querySelectorAll(".store").forEach((b) => b.addEventListener("click", () => { store = STORES.find((x) => x.id === b.dataset.id);
       try { localStorage.setItem("durus-store", store.id); history.replaceState(null, "", "#" + store.id); } catch (e) {} stores(); render(); }));
   }
   function render() {
-    const q = $("#q").value.trim();
-    const inStore = lessons.filter((l) => l.grade === store.grade);
+    terms(); const q = $("#q").value.trim();
+    const inStore = lessons.filter((l) => here(l));
     const items = inStore.filter((l) => !q || (l.title + " " + l.num + " " + l.chapter).includes(q));
     if (!inStore.length) { $("#list").innerHTML = `<div class="grid">${addCard(true)}</div>`; return; }
-    if (!items.length) { $("#list").innerHTML = `<div class="empty">لا توجد دروس مطابقة للبحث في ${esc(store.label)}.</div>`; return; }
+    if (!items.length) { $("#list").innerHTML = `<div class="empty">لا توجد دروس مطابقة للبحث في ${esc(store.label)} (${TERMS.find((t) => t.id === term).label}).</div>`; return; }
     const groups = {}; items.forEach((l) => { (groups[l.chapter] = groups[l.chapter] || []).push(l); });
     $("#list").innerHTML = Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0], "ar", { numeric: true })).map(([ch, ls]) =>
       `<section class="group"><h2>${esc(ch)} <small>${ls.length} ${ls.length === 1 ? "درس" : "دروس"}</small></h2><div class="grid">${ls.sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true })).map(card).join("")}</div></section>`).join("")
@@ -280,11 +293,11 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   let edits = [];
   function merge(items) {
     const L = staticL.map((x) => { const o = { ...x, worksheets: [...(x.worksheets || [])] }; const e = edits.find((q) => q.id === x.id);
-      if (e) { o.num = e.num; o.title = e.title; if (e.chapter) o.chapter = e.chapter; if (o.type === "link") { o.by = e.by_name; if (e.url) o.url = e.url; } else if (e.by_name !== null) o.by = e.by_name; } return o; });
+      if (e) { o.num = e.num; o.title = e.title; if (e.chapter) o.chapter = e.chapter; if (e.term) o.term = e.term; if (o.type === "link") { o.by = e.by_name; if (e.url) o.url = e.url; } else if (e.by_name !== null) o.by = e.by_name; } return o; });
     items.filter((i) => i.kind === "lesson").forEach((i) => { const e = ext(i.file_path);
-      L.push({ id: i.id, db: true, num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, file: pub(i.file_path), name: i.file_name, mb: +i.mb,
+      L.push({ id: i.id, db: true, term: i.term, num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, file: pub(i.file_path), name: i.file_name, mb: +i.mb,
         type: ["ppt", "pptx", "pptm"].includes(e) ? "pptx" : "file", macro: e === "pptm", worksheets: [] }); });
-    items.filter((i) => i.kind === "link").forEach((i) => L.push({ id: i.id, db: true, type: "link", num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, url: i.file_path, by: i.file_name, worksheets: [] }));
+    items.filter((i) => i.kind === "link").forEach((i) => L.push({ id: i.id, db: true, term: i.term, type: "link", num: i.num, title: i.title, grade: i.grade, chapter: i.chapter, url: i.file_path, by: i.file_name, worksheets: [] }));
     items.filter((i) => i.kind === "worksheet").forEach((i) => { const l = L.find((x) => x.id === i.parent_id); if (l) l.worksheets.push({ id: i.id, db: true, title: i.title, file: pub(i.file_path), name: i.file_name, mb: +i.mb }); });
     lessons = L; stores(); render(); const f = $("#folder"); if (!f.hidden && f.dataset.id) openFolder(f.dataset.id);
   }
@@ -316,7 +329,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       try { toast(`جارٍ رفع <b>${esc(f.name)}</b> (${i + 1}/${files.length})<div class="tbar"><i id="tbar"></i></div>`);
         const path = await rpc("library_ticket", { p_token: token, p_ext: e });
         await put(path, f, (r) => { const b = $("#tbar"); if (b) b.style.width = Math.round(r * 100) + "%"; });
-        await rpc("library_add", { p_token: token, p_kind: meta.kind, p_path: path, p_title: title, p_grade: meta.grade || "", p_chapter: meta.chapter || "", p_num: meta.num || "", p_parent: meta.parent || null, p_name: f.name, p_mb: Math.round(f.size / 104857.6) / 10 });
+        await rpc("library_add", { p_token: token, p_kind: meta.kind, p_path: path, p_title: title, p_grade: meta.grade || "", p_chapter: meta.chapter || "", p_num: meta.num || "", p_parent: meta.parent || null, p_name: f.name, p_mb: Math.round(f.size / 104857.6) / 10, p_term: term });
       } catch (err) { toast(`تعذّر رفع <b>${esc(f.name)}</b>. حاولي مرة أخرى.`, true); return; }
     }
     toast("✓ تم الرفع والحفظ في المكتبة", true); loadItems();
@@ -334,28 +347,28 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   $("#wCancel").addEventListener("click", () => { $("#wModal").hidden = true; });
   // new lesson dialog
   function newLesson(file) {
-    const chs = [...new Set(lessons.filter((l) => l.grade === store.grade).map((l) => l.chapter))];
+    const chs = [...new Set(lessons.filter((l) => here(l)).map((l) => l.chapter))];
     const guess = (file.name.match(/(\d+)\s*[-–]\s*(\d+)/) || [])[0] || "";
-    $("#nFile").innerHTML = esc(file.name) + " • <b>" + MB(file.size) + " ميجابايت</b>" + (file.size > 10 * 1048576 ? `<br><span class="sz-big">⚠️ حجمه كبير: سيكون للتنزيل فقط</span>` : ""); $("#nStore").textContent = store.label;
+    $("#nFile").innerHTML = esc(file.name) + " • <b>" + MB(file.size) + " ميجابايت</b>" + (file.size > 10 * 1048576 ? `<br><span class="sz-big">⚠️ حجمه كبير: سيكون للتنزيل فقط</span>` : ""); $("#nStore").textContent = store.label + " • " + TERMS.find((t) => t.id === term).label;
     $("#nTitle").value = file.name.replace(/\.[^.]+$/, "").replace(/\d+\s*[-–]\s*\d+/, "").replace(/[_]+/g, " ").replace(/^\s*درس\s+/, "").replace(/\s+/g, " ").trim(); $("#nNum").value = guess.replace(/\s/g, "");
     $("#nCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#nChNew").hidden = chs.length > 0; $("#nChNew").value = "";
     $("#nModal").hidden = false; $("#nModal").fileRef = file; $("#nTitle").focus();
   }
-  const chOpts = () => [...new Set(lessons.filter((l) => l.grade === store.grade).map((l) => l.chapter))];
+  const chOpts = () => [...new Set(lessons.filter((l) => here(l)).map((l) => l.chapter))];
   document.addEventListener("click", (e) => { if (!e.target.closest("[data-addlink]") || !T()) return; const chs = chOpts();
-    $("#lStore").textContent = store.label; ["#lUrl", "#lNum", "#lTitle", "#lBy", "#lChNew"].forEach((q) => { $(q).value = ""; }); $("#lErr").textContent = "";
+    $("#lStore").textContent = store.label + " • " + TERMS.find((t) => t.id === term).label; ["#lUrl", "#lNum", "#lTitle", "#lBy", "#lChNew"].forEach((q) => { $(q).value = ""; }); $("#lErr").textContent = "";
     $("#lCh").innerHTML = chs.map((c) => `<option>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#lChNew").hidden = chs.length > 0; $("#lModal").hidden = false; $("#lUrl").focus(); });
   $("#lCh").addEventListener("change", () => { $("#lChNew").hidden = $("#lCh").value !== "__new"; });
   $("#lCancel").addEventListener("click", () => { $("#lModal").hidden = true; });
   $("#lForm").addEventListener("submit", async (e) => { e.preventDefault(); let u = $("#lUrl").value.trim(); if (!/^https?:\/\//i.test(u)) u = "https://" + u;
     if (!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(u)) { $("#lErr").textContent = "الرابط غير صحيح."; return; }
     const ch = $("#lCh").value === "__new" || !$("#lCh").value ? $("#lChNew").value.trim() : $("#lCh").value;
-    try { await rpc("library_add_link", { p_token: token, p_url: u, p_title: $("#lTitle").value.trim(), p_grade: store.grade, p_chapter: ch || "دروس متنوعة", p_num: $("#lNum").value.trim(), p_by: $("#lBy").value.trim() });
+    try { await rpc("library_add_link", { p_token: token, p_url: u, p_title: $("#lTitle").value.trim(), p_grade: store.grade, p_chapter: ch || "دروس متنوعة", p_num: $("#lNum").value.trim(), p_by: $("#lBy").value.trim(), p_term: term });
       $("#lModal").hidden = true; toast("✓ أُضيف رابط الدرس إلى المكتبة", true); loadItems(); } catch (err) { $("#lErr").textContent = "تعذّر الحفظ. تأكدي من الإنترنت."; } });
   let editing = null;
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-edit]"); if (!b || !T()) return; const l = lessons.find((x) => x.id === b.dataset.edit); if (!l) return; editing = l;
     const chs = chOpts(); if (!chs.includes(l.chapter)) chs.unshift(l.chapter);
-    $("#eNum").value = l.num || ""; $("#eTitle").value = l.title || ""; $("#eBy").value = l.by || ""; $("#eUrl").value = l.url || ""; $("#eUrlRow").hidden = l.type !== "link"; $("#eErr").textContent = "";
+    $("#eNum").value = l.num || ""; $("#eTitle").value = l.title || ""; $("#eBy").value = l.by || ""; $("#eUrl").value = l.url || ""; $("#eUrlRow").hidden = l.type !== "link"; $("#eTerm").innerHTML = TERMS.map((t) => `<option value="${t.id}"${t.id === tOf(l) ? " selected" : ""}>${t.label}</option>`).join(""); $("#eErr").textContent = "";
     $("#eCh").innerHTML = chs.map((c) => `<option${c === l.chapter ? " selected" : ""}>${esc(c)}</option>`).join("") + `<option value="__new">＋ فصل جديد…</option>`; $("#eChNew").hidden = true; $("#eChNew").value = "";
     $("#folder").hidden = true; $("#eModal").hidden = false; $("#eTitle").focus(); });
   $("#eCh").addEventListener("change", () => { $("#eChNew").hidden = $("#eCh").value !== "__new"; });
@@ -363,7 +376,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   $("#eForm").addEventListener("submit", async (e) => { e.preventDefault(); if (!editing) return; let u = $("#eUrl").value.trim();
     if (editing.type === "link") { if (!/^https?:\/\//i.test(u)) u = "https://" + u; if (!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(u)) { $("#eErr").textContent = "الرابط غير صحيح."; return; } } else u = "";
     const ch = $("#eCh").value === "__new" ? $("#eChNew").value.trim() : $("#eCh").value;
-    try { await rpc("library_edit", { p_token: token, p_id: editing.id, p_num: $("#eNum").value.trim(), p_title: $("#eTitle").value.trim(), p_chapter: ch || editing.chapter, p_by: $("#eBy").value.trim(), p_url: u });
+    try { await rpc("library_edit", { p_token: token, p_id: editing.id, p_num: $("#eNum").value.trim(), p_title: $("#eTitle").value.trim(), p_chapter: ch || editing.chapter, p_by: $("#eBy").value.trim(), p_url: u, p_term: $("#eTerm").value });
       $("#eModal").hidden = true; toast("✓ حُفظت التعديلات", true); const id = editing.id; await loadItems(); openFolder(id); } catch (err) { $("#eErr").textContent = "تعذّر الحفظ. تأكدي من الإنترنت."; } });
   $("#nCh").addEventListener("change", () => { $("#nChNew").hidden = $("#nCh").value !== "__new"; });
   $("#nCancel").addEventListener("click", () => { $("#nModal").hidden = true; });
