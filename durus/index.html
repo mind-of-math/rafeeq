@@ -91,6 +91,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .btn2{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn2 .open{margin:0;text-decoration:none}
 .open.alt{background:linear-gradient(180deg,#f08a5d,#D24726)}
+.acts{margin-top:auto;display:flex;flex-direction:column}
+.acts .open{text-decoration:none}
+.card .btn1,.card .btn2{margin-top:0}
+.folder-btn{border:2px dashed #cdbff3;background:#f7f4ff;border-radius:16px;padding:9px 12px;font-weight:800;font-size:.98rem;color:var(--purple);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.folder-btn span{font-weight:700;font-size:.85rem;color:var(--ink2)}
+.folder-btn:hover{background:#efe9ff}
+.meta .t-live{background:#dff1f1;color:#0f7c7f}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(19,33,63,.45);display:grid;place-items:center;padding:16px}
+.fbox{background:#fff;border-radius:26px;width:min(720px,100%);max-height:88vh;overflow:auto;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.f-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}.f-head h3{margin:0;flex:1;font-size:1.35rem;display:flex;align-items:center;gap:10px}
+.f-head .num{font-size:1.1rem;padding:4px 10px}
+.f-head button{border:0;width:38px;height:38px;border-radius:50%;background:var(--sand);font-size:1.1rem}
+.fbox h4{margin:16px 0 8px;font-size:1.1rem;display:flex;gap:8px;align-items:center}.fbox h4 small{background:var(--sand);border-radius:999px;padding:1px 9px;font-size:.85rem}
+.f-item{display:flex;align-items:center;gap:12px;background:#fbfaff;border:1.5px solid #ece7fb;border-radius:16px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap}
+.f-ic{font-size:1.6rem}.f-t{flex:1;min-width:160px;display:flex;flex-direction:column}.f-t small{color:var(--ink2);font-weight:700}
+.f-a{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.f-a .open,.f-a .btn1,.f-a .btn2{margin:0}
+.f-a .btn1 small{display:none}.f-a .open{padding:8px 14px;font-size:.95rem;text-decoration:none}
+.w-b{border-radius:999px;background:var(--teal);color:#fff;text-decoration:none;font-weight:800;padding:7px 14px;font-size:.92rem}
+.w-b.alt{background:#D24726}
+.f-empty{background:#f7f4ff;border:2px dashed #cdbff3;border-radius:16px;padding:16px;text-align:center;color:var(--ink2);font-weight:700}
 .empty{background:var(--card);border-radius:24px;padding:34px;text-align:center;font-weight:700;color:var(--ink2)}
 .add{border:2px dashed #cdbff3;border-radius:24px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:6px;color:var(--ink2);background:rgba(255,255,255,.55)}
 .add b{color:var(--purple);font-size:1.1rem}
@@ -115,6 +135,9 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
   </div>
   <main id="list"><div class="empty">جارٍ تحميل الدروس…</div></main>
   <footer>إعداد المعلمة: عهود جويهر</footer>
+</div>
+<div class="modal" id="folder" hidden role="dialog" aria-modal="true" aria-labelledby="fTitle">
+  <div class="fbox"><div class="f-head"><h3 id="fTitle"></h3><button id="fClose" aria-label="إغلاق">✕</button></div><div id="fBody"></div></div>
 </div>
 
 <script>
@@ -147,26 +170,45 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       `<section class="group"><h2>${esc(ch)} <small>${ls.length} ${ls.length === 1 ? "درس" : "دروس"}</small></h2><div class="grid">${ls.sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true })).map(card).join("")}</div></section>`).join("")
       + `<div class="grid" style="margin-top:16px">${addCard(false)}</div>`;
   }
-  const card = (l) => l.type === "pptx" ? pptCard(l) : l.type === "link" ? linkCard(l) : `<a class="card" href="${esc(l.path)}">
-      <div class="c-top"><span class="num">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
+  const abs = (f) => new URL(f, location.href).href;
+  const office = (f) => "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(abs(f));
+  const ext = (f) => (f.split(".").pop() || "").toLowerCase();
+  function actions(l) {
+    if (l.type === "link") return `<a class="open lnkb" href="${esc(l.url)}" target="_blank" rel="noopener">فتح الدرس ↗</a>`;
+    if (l.type === "pptx") {
+      if (l.macro) return `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>يعمل في PowerPoint على الحاسوب. عند فتحه اضغطي «تمكين المحتوى» لتعمل المؤقتات والأزرار.</small></div>`;
+      if ((l.mb || 0) > 10) return `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`;
+      return `<div class="btn2"><a class="open alt" href="${office(l.file)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div>`;
+    }
+    return `<a class="open" href="${esc(l.path)}">فتح الدرس ←</a>`;
+  }
+  const kind = (l) => l.type === "link" ? ["lnk", "درس تفاعلي • رابط خارجي"] : l.type === "pptx" ? ["ppt", l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"] : ["live", "درس تفاعلي مباشر"];
+  const card = (l) => { const [k, lab] = kind(l); const ws = (l.worksheets || []).length;
+    return `<div class="card ${k}">
+      <div class="c-top"><span class="num ${k}">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span class="t-live">درس تفاعلي مباشر</span><span>${esc(l.slides)} شريحة</span></div>
-      <div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>
-      <span class="open">فتح الدرس ←</span></a>`;
-  const linkCard = (l) => `<a class="card lnk" href="${esc(l.url)}" target="_blank" rel="noopener">
-      <div class="c-top"><span class="num lnk">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
-      ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span class="t-lnk">درس تفاعلي • رابط خارجي</span>${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
-      <div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>
-      <span class="open lnkb">فتح الدرس ↗</span></a>`;
-  const pptCard = (l) => { const abs = new URL(l.file, location.href).href;
-    return `<div class="card ppt">
-      <div class="c-top"><span class="num ppt">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
-      ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span class="t-ppt">${l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"}</span><span>${esc(l.slides)} شريحة</span>${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
-      ${l.macro ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>يعمل في PowerPoint على الحاسوب. عند فتحه اضغطي «تمكين المحتوى» لتعمل المؤقتات والأزرار.</small></div>`
-        : (l.mb || 0) > 10 ? `<div class="btn1"><a class="open" href="${esc(l.file)}" download>⬇ تنزيل العرض (${l.mb} ميجابايت)</a><small>حجمه كبير على العرض في المتصفح، فيُفتح بعد التنزيل في PowerPoint.</small></div>`
-        : `<div class="btn2"><a class="open alt" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(abs)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div>`}</div>`; };
+      <div class="meta"><span class="t-${k}">${lab}</span>${l.slides ? `<span>${esc(l.slides)} شريحة</span>` : ""}${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
+      ${k === "live" ? `<div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>` : k === "lnk" ? `<div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>` : ""}
+      <div class="acts">${actions(l)}</div>
+      <button class="folder-btn" data-folder="${esc(l.id)}">📂 المجلد <span>${ws ? ws + (ws === 1 ? " ورقة عمل" : ws === 2 ? " ورقتا عمل" : " أوراق عمل") : "فارغ"}</span></button></div>`; };
+  const fileIcon = (f) => ({ pdf: "📕", doc: "📘", docx: "📘", ppt: "📙", pptx: "📙", pptm: "📙", xls: "📗", xlsx: "📗", png: "🖼", jpg: "🖼", jpeg: "🖼" }[ext(f)] || "📄");
+  function wsActions(w) {
+    const e = ext(w.file), big = (w.mb || 0) > 10;
+    const view = e === "pdf" || ["png", "jpg", "jpeg", "webp"].includes(e) ? esc(w.file) : (!big && ["doc", "docx", "ppt", "pptx", "xls", "xlsx"].includes(e) ? office(w.file) : "");
+    return `${view ? `<a class="w-b alt" href="${view}" target="_blank" rel="noopener">▶ عرض</a>` : ""}<a class="w-b" href="${esc(w.file)}" download>⬇ تنزيل</a>`;
+  }
+  function openFolder(id) {
+    const l = lessons.find((x) => x.id === id); if (!l) return; const ws = l.worksheets || [];
+    $("#fTitle").innerHTML = `<span class="num ${kind(l)[0]}">${esc(l.num)}</span> ${esc(l.title)}`;
+    $("#fBody").innerHTML = `<h4>الدرس</h4><div class="f-item"><span class="f-ic">${l.type === "pptx" ? "📙" : l.type === "link" ? "🔗" : "✨"}</span><span class="f-t"><b>${esc(l.title)}</b><small>${kind(l)[1]}</small></span><span class="f-a">${actions(l)}</span></div>
+      <h4>أوراق العمل <small>${ws.length}</small></h4>${ws.length ? ws.map((w) => `<div class="f-item"><span class="f-ic">${fileIcon(w.file)}</span><span class="f-t"><b>${esc(w.title)}</b><small>${esc(ext(w.file).toUpperCase())}${w.mb ? " • " + w.mb + " ميجابايت" : ""}${w.note ? " • " + esc(w.note) : ""}</small></span><span class="f-a">${wsActions(w)}</span></div>`).join("")
+        : `<div class="f-empty">لا توجد أوراق عمل لهذا الدرس بعد. أرسليها في محادثة Claude واذكري رقم الدرس، وستُضاف هنا.</div>`}`;
+    $("#folder").hidden = false; $("#fClose").focus();
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-folder]"); if (b) openFolder(b.dataset.folder); });
+  $("#fClose").addEventListener("click", () => { $("#folder").hidden = true; });
+  $("#folder").addEventListener("click", (e) => { if (e.target.id === "folder") $("#folder").hidden = true; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#folder").hidden = true; });
   const addCard = (first) => `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
   fetch("lessons.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { lessons = d; stores(); render(); })
