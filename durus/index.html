@@ -78,6 +78,12 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .meta span{background:var(--sand);border-radius:999px;padding:3px 10px;font-size:.85rem;font-weight:700;color:var(--ink2)}
 .feat{display:flex;gap:6px;flex-wrap:wrap;font-size:.85rem;font-weight:700;color:var(--teal)}
 .open{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:linear-gradient(180deg,var(--teal2),var(--teal));color:#fff;font-weight:800;font-size:1.05rem;padding:11px}
+.num.ppt{background:#D24726}
+.card.ppt:hover{border-color:#f6d2c6}
+.meta .t-ppt{background:#fde4dc;color:#a8361b}.meta .t-live{background:#dff1f1;color:#0f7c7f}
+.btn2{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn2 .open{margin:0;text-decoration:none}
+.open.alt{background:linear-gradient(180deg,#f08a5d,#D24726)}
 .empty{background:var(--card);border-radius:24px;padding:34px;text-align:center;font-weight:700;color:var(--ink2)}
 .add{border:2px dashed #cdbff3;border-radius:24px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:6px;color:var(--ink2);background:rgba(255,255,255,.55)}
 .add b{color:var(--purple);font-size:1.1rem}
@@ -90,7 +96,7 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
 <div class="wrap">
   <header class="top">
     <img src="icons/icon-192.png" alt="">
-    <div class="brand"><h1>دروسي التفاعلية</h1><p>دروس مباشرة تدخلها الطالبات بالباركود وتُعرض إجاباتهن على الشاشة</p></div>
+    <div class="brand"><h1>دروسي التفاعلية</h1><p>دروس تفاعلية مباشرة وعروض بوربوينت في مكان واحد</p></div>
     <button class="install" id="install" hidden>⬇ تثبيت التطبيق</button>
   </header>
   <div class="tip" id="iosTip" hidden>لتثبيت التطبيق على الآيباد أو الآيفون: اضغطي زر المشاركة ⬆ في Safari، ثم «إضافة إلى الشاشة الرئيسية».</div>
@@ -133,12 +139,18 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       `<section class="group"><h2>${esc(ch)} <small>${ls.length} ${ls.length === 1 ? "درس" : "دروس"}</small></h2><div class="grid">${ls.sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true })).map(card).join("")}</div></section>`).join("")
       + `<div class="grid" style="margin-top:16px">${addCard(false)}</div>`;
   }
-  const card = (l) => `<a class="card" href="${esc(l.path)}">
+  const card = (l) => l.type === "pptx" ? pptCard(l) : `<a class="card" href="${esc(l.path)}">
       <div class="c-top"><span class="num">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
-      <div class="meta"><span>${esc(l.grade)}</span><span>${esc(l.slides)} شريحة</span></div>
+      <div class="meta"><span class="t-live">درس تفاعلي مباشر</span><span>${esc(l.slides)} شريحة</span></div>
       <div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>
       <span class="open">فتح الدرس ←</span></a>`;
+  const pptCard = (l) => { const abs = new URL(l.file, location.href).href;
+    return `<div class="card ppt">
+      <div class="c-top"><span class="num ppt">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
+      ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
+      <div class="meta"><span class="t-ppt">عرض بوربوينت</span><span>${esc(l.slides)} شريحة</span></div>
+      <div class="btn2"><a class="open alt" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(abs)}" target="_blank" rel="noopener">▶ عرض</a><a class="open" href="${esc(l.file)}" download>⬇ تنزيل</a></div></div>`; };
   const addCard = (first) => `<div class="add"><b>＋ ${first ? "أول درس في هذا المخزن" : "درس جديد"}</b><span>أرسلي صفحات الدرس في محادثة Claude، وسيُضاف إلى ${esc(store.label)} تلقائيًا.</span></div>`;
 
   fetch("lessons.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { lessons = d; stores(); render(); })

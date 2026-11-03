@@ -9,5 +9,29 @@
     "path": "lessons/3-4/",
     "slides": 17,
     "added": "2026-11-03"
+  },
+  {
+    "id": "3-1",
+    "num": "3-1",
+    "type": "pptx",
+    "title": "تصنيف المثلثات",
+    "en": "Classifying Triangles",
+    "grade": "الأول الثانوي",
+    "chapter": "الفصل 3: المثلثات المتطابقة",
+    "file": "files/3-1.pptx",
+    "slides": 28,
+    "added": "2026-11-03"
+  },
+  {
+    "id": "3-2",
+    "num": "3-2",
+    "type": "pptx",
+    "title": "زوايا المثلثات",
+    "en": "Angles of Triangles",
+    "grade": "الأول الثانوي",
+    "chapter": "الفصل 3: المثلثات المتطابقة",
+    "file": "files/3-2.pptx",
+    "slides": 18,
+    "added": "2026-11-03"
   }
 ]
