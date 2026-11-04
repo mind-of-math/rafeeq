@@ -294,7 +294,7 @@ body.guest #lnkBox{display:none!important}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110306; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110401; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var GUEST = true, GUESTKEY = "rf_g_w-wE6zCJsqmqnK4Crof2ZVsQSFb38vEK"; // نسخة المعلمة الضيفة تُولَّد بتحويل آلي
 var KEY = "mulhimg-alhessa-v1";
 if(GUEST) document.body.classList.add("guest");
@@ -551,7 +551,7 @@ document.addEventListener("paste", function(e){
   for(var i = 0; i < it.length; i++){ if(it[i].kind === "file" && /^image\//.test(it[i].type)){ var f = it[i].getAsFile(); if(f){ e.preventDefault(); lvPaste(f); return; } } }
 });
 /* ---------- أدوات الحصة الأونلاين: سجل الأسئلة، المشاركة، تحدي سريع، لم تجب بعد، الملخص ---------- */
-function lvM(id){ lv.meta = lv.meta || {}; return lv.meta[id] || {}; }
+function lvM(id){ lv.meta = lv.meta || {}; return lv.meta[id] || (lv.meta[id] = {}); }
 function lvCls(){ var id = lv.clsId || state.current, r = state.classes.filter(function(x){ return x.id === id; })[0] || cls(); if(r.virt) fillVirt(state); return r; }
 function lvLog(q){
   var cc = lvCls(); cc.qs = cc.qs || []; cc.part = cc.part || {};
@@ -569,6 +569,22 @@ function lvLog(q){
   if(ch){ save(); var pe = $("lvPnl"); if(pe){ pe.innerHTML = lvPanel(cls()); if(lv._pb) lv._pb(); } }
 }
 function lvCloseQ(){ return mqFetch("/api/rafeeq/live", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({action:"close", code: lv.code})}).then(lvPoll).catch(function(e){ toast(e.message); }); }
+function lvFmtT(r){ return r >= 60 ? Math.floor(r / 60) + ":" + ("0" + (r % 60)).slice(-2) : r + " ث"; }
+function lvTmCtl(q, big){
+  var m = lvM(q.id), run = m.end && q.open, st = big ? "font:inherit;font-size:.6em;padding:.4em .9em;border-radius:.6em;border:0;background:#e09a1b;color:#fff;cursor:pointer" : "";
+  var sl = big ? "font:inherit;font-size:.6em;padding:.35em .5em;border-radius:.5em" : "";
+  if(!q.open) return "";
+  return run ? '<button id="'+(big ? "lvTmX2" : "lvTmX")+'"'+(big ? ' style="'+st+'"' : '')+'>⏹ إيقاف المؤقت</button>'
+    : '<select id="'+(big ? "lvTmS2" : "lvTmS")+'"'+(big ? ' style="'+sl+'"' : '')+'>'+[[30, "30 ثانية"], [60, "دقيقة"], [120, "دقيقتان"], [180, "3 دقائق"], [300, "5 دقائق"], [600, "10 دقائق"]].map(function(o){ return '<option value="'+o[0]+'"'+((lv.tmSec || 60) === o[0] ? " selected" : "")+'>'+o[1]+'</option>'; }).join("")+'</select><button id="'+(big ? "lvTmB2" : "lvTmB")+'"'+(big ? ' style="'+st+'"' : '')+'>⏱ ابدئي المؤقت</button>';
+}
+function lvTmBind(q){
+  [["lvTmB", "lvTmS"], ["lvTmB2", "lvTmS2"]].forEach(function(ids){
+    if($(ids[0])) $(ids[0]).onclick = function(){ var sec = +$(ids[1]).value || 60, m = lvM(q.id); lv.tmSec = sec; if(!m.fast) m.soft = 1; m.done = 0; m.end = Date.now() + sec * 1000; clearInterval(lv.cdT); lv.cdT = null; lv.cdQ = null; lvRes(); };
+  });
+  ["lvTmX", "lvTmX2"].forEach(function(id){
+    if($(id)) $(id).onclick = function(){ var m = lvM(q.id); m.end = 0; m.done = 0; clearInterval(lv.cdT); lv.cdT = null; lv.cdQ = null; lvRes(); };
+  });
+}
 function lvCdStart(q){
   if(lv.cdQ === q.id && lv.cdT) return;
   clearInterval(lv.cdT); lv.cdQ = q.id;
@@ -577,8 +593,10 @@ function lvCdStart(q){
     if(tab !== "live" || !m.end || !lv.q || lv.q.id !== q.id){ clearInterval(lv.cdT); lv.cdT = null; return; }
     var r = Math.ceil((m.end - Date.now()) / 1000);
     var e2 = $("lvCd2");
-    if(r <= 0){ clearInterval(lv.cdT); lv.cdT = null; m.end = 0; if(el) el.textContent = "⏰ انتهى الوقت!"; if(e2) e2.textContent = "⏰ انتهى الوقت!"; alarm(); lvCloseQ(); return; }
-    if(el) el.textContent = "⏱️ " + r + " ث"; if(e2) e2.textContent = "⏱️ " + r + " ث";
+    if(r <= 0){ clearInterval(lv.cdT); lv.cdT = null; m.end = 0; m.done = 1; if(el) el.textContent = "⏰ انتهى الوقت!"; if(e2) e2.textContent = "⏰ انتهى الوقت!"; alarm(); if(!m.soft) lvCloseQ(); return; }
+    var tx = "⏱️ " + lvFmtT(r) + (r <= 10 ? "" : "");
+    if(r <= 5 && m.lastTick !== r){ m.lastTick = r; tick(); }
+    if(el){ el.textContent = tx; el.style.color = r <= 10 ? "#c0392b" : ""; } if(e2){ e2.textContent = tx; e2.style.color = r <= 10 ? "#c0392b" : "#2b2540"; }
   }, 250);
 }
 function lvPct(list, tag){ var n = 0, g = 0; list.forEach(function(e){ if(e.tag === tag && e.ok != null && e.n){ n += e.n; g += e.g; } }); return n ? Math.round(g * 100 / n) : null; }
@@ -641,7 +659,9 @@ function lvShowRender(){
   h += '<div style="display:flex;align-items:center;gap:2vmin;flex-wrap:wrap;margin-bottom:1.5vmin"><div style="flex:1;min-width:14em"><div style="font-size:.7em;color:#6a6580">ادخلي من جوالك: <b style="direction:ltr;unicode-bidi:embed">rehlat.vercel.app/join</b></div><div style="font-size:2em;font-weight:800;letter-spacing:.15em;direction:ltr;text-align:right;color:#6b46c1">'+lv.code+'</div></div>'+
     '<img alt="QR" style="width:7.5em;height:7.5em;border-radius:.4em;background:#fff" src="'+MQ+'/api/join/qr?c='+lv.code+'">'+
     '<div style="display:flex;flex-direction:column;gap:.4em"><button id="lvShX" style="font:inherit;font-size:.6em;padding:.4em .9em;border-radius:.6em;border:0;background:#6b46c1;color:#fff;cursor:pointer">✖ إغلاق العرض</button><button id="lvShF" style="font:inherit;font-size:.6em;padding:.4em .9em;border-radius:.6em;border:1px solid #c9bfe3;background:#fff;cursor:pointer">⛶ ملء الشاشة</button></div></div>';
-  if(m.end && q.open) h += '<div id="lvCd2" style="font-size:2.4em;font-weight:800;text-align:center;color:#c0392b">⏱️</div>';
+  if(m.end && q.open) h += '<div id="lvCd2" style="font-size:3.2em;font-weight:800;text-align:center;color:#2b2540">⏱️</div>';
+  else if(m.done) h += '<div style="font-size:2.4em;font-weight:800;text-align:center;color:#c0392b">⏰ انتهى الوقت!</div>';
+  if(q.open) h += '<div style="text-align:center;margin:.3vmin 0">'+lvTmCtl(q, true)+'</div>';
   if(m.img) h += '<div style="text-align:center;margin:1vmin 0"><img alt="" src="'+m.img+'" style="max-width:100%;max-height:46vh;border-radius:.5em;background:#fff"></div>';
   if(q.prompt) h += '<div style="font-size:1.35em;font-weight:700;line-height:1.6;margin:1vmin 0 2vmin;text-align:center">'+esc(q.prompt)+'</div>';
   if(mcq){
@@ -656,6 +676,7 @@ function lvShowRender(){
   }
   h += '<div style="text-align:center;margin-top:2vmin;font-size:.8em;color:#6a6580">'+(q.open ? "👥 أجابت حتى الآن: <b>"+tot+"</b>" : "🔒 أُغلق السؤال")+'</div>';
   o.innerHTML = h;
+  lvTmBind(q);
   $("lvShX").onclick = function(){ lv.show = false; try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} lvShowRender(); };
   $("lvShF").onclick = function(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }catch(e){} };
   if(m.end && q.open) lvCdStart(q);
@@ -682,6 +703,7 @@ function lvRes(){
   var c = cls(), L = ["أ", "ب", "ج", "د"], isOpen = q.kind !== "mcq", isPh = q.kind === "photo", tot = lv.ans.length, h = "", qm = lvM(q.id);
   lvLog(q);
   if(qm.end && q.open) h += '<div id="lvCd" style="font-size:2.6em;font-weight:800;text-align:center;color:var(--red,#c0392b)">⏱️</div>';
+  else if(qm.done) h += '<div style="font-size:1.8em;font-weight:800;text-align:center;color:var(--red,#c0392b)">⏰ انتهى الوقت!</div>';
   if(isOpen){
     var who = {}; lv.ans.forEach(function(a){ who[lvNrm(a.name)] = 1; });
     h += '<div class="attsum"><span>👥 شاركت '+Object.keys(who).length+'</span><span>'+(isPh ? "📷 " + tot + " صورة" : "💭 " + tot + " إجابة")+'</span><span>'+(q.open ? "🟢 مفتوح" : "🔒 مغلق")+'</span><button id="lvNm">'+(lv.names ? "🙈 إخفاء الأسماء" : "👁 إظهار الأسماء")+'</button></div>';
@@ -704,7 +726,7 @@ function lvRes(){
   h += '<div style="margin-top:.7em"><b>🙋 لم تجب بعد ('+notYet.length+')</b> '+(notYet.length ? '<button id="lvWho">🎲 اختاري واحدة</button>' : '')+(notYet.length ? '<div class="muted">'+esc(notYet.slice(0, 14).map(function(x){ return shortName(x.name); }).join("، "))+(notYet.length > 14 ? " …" : "")+'</div>' : '')+
     '<div style="margin-top:.3em"><b>🔕 لم تشارك في أي سؤال اليوم ('+noPart.length+')</b> '+(noPart.length ? '<button id="lvWho2">🎲 اختاري واحدة</button>' : '')+'</div></div>';
   h += '<div style="display:flex;gap:.5em;flex-wrap:wrap;margin-top:.8em">'+
-    '<button id="lvShB">🖥️ عرض السؤال على الشاشة</button>'+
+    '<button id="lvShB">🖥️ عرض السؤال على الشاشة</button>'+lvTmCtl(q, false)+
     (!isOpen && qm.fast && !q.open ? '<button id="lvFastB">🏆 نجمة إضافية لأسرع 3 إجابات صحيحة</button>' : '')+
     (q.open ? '<button class="primary" id="lvClose">'+(isOpen ? "🔒 إغلاق باب الإجابات" : "🔒 إغلاق وإظهار الإجابة")+'</button>' : '<button class="green" id="lvStar">'+(isOpen ? "🌟 نجمة لكل من شاركت" : "🌟 نجمة لمن أجبن صح")+'</button>')+
     (lvPending() ? '<button class="primary" id="lvNxt">⏭ السؤال التالي ('+lvPending()+' في القائمة)</button>' : '')+'<button id="lvNew">➕ سؤال جديد</button><button id="lvEnd">🆕 حصة جديدة (رمز جديد)</button></div><div id="lvMsg" class="muted" style="margin-top:.5em"></div>';
@@ -714,6 +736,7 @@ function lvRes(){
   if($("lvClose")) $("lvClose").onclick = function(){ lvCloseQ(); };
   if(qm.end && q.open) lvCdStart(q);
   if($("lvShB")) $("lvShB").onclick = function(){ lv.show = true; lvShowRender(); };
+  lvTmBind(q);
   lvShowRender();
   var pick = function(arr){ if(!arr.length) return; var x = arr[Math.floor(Math.random() * arr.length)]; tone(784,.2); tone(1046,.35,.12); celebrate("🎯", x.name, "دورك في الإجابة!"); };
   if($("lvWho")) $("lvWho").onclick = function(){ pick(notYet); };
