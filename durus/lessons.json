@@ -165,5 +165,31 @@
   "by": "المعلمة هند العديني",
   "worksheets": [],
   "term": "1"
+ },
+ {
+  "id": "g3-3-3",
+  "num": "3-3",
+  "title": "المتطابقات المثلثية لمجموع زاويتين والفرق بينهما",
+  "en": "Sum and Difference of Angles Identities",
+  "grade": "الثالث الثانوي",
+  "chapter": "الفصل 3: المتطابقات والمعادلات المثلثية",
+  "path": "lessons/g3-3-3/",
+  "slides": 16,
+  "added": "2026-11-04",
+  "term": "1"
+ },
+ {
+  "id": "g3-3-3-ppt",
+  "num": "3-3",
+  "type": "pptx",
+  "title": "المتطابقات المثلثية لمجموع زاويتين والفرق بينهما",
+  "en": "Sum and Difference of Angles Identities",
+  "grade": "الثالث الثانوي",
+  "chapter": "الفصل 3: المتطابقات والمعادلات المثلثية",
+  "file": "files/g3-3-3.pptx",
+  "slides": 39,
+  "mb": 21.6,
+  "added": "2026-11-04",
+  "term": "1"
  }
 ]
