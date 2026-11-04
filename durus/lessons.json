@@ -191,5 +191,19 @@
   "mb": 21.6,
   "added": "2026-11-04",
   "term": "1"
+ },
+ {
+  "id": "g1-review-2",
+  "num": "مراجعة",
+  "type": "page",
+  "title": "مراجعة الاختبار الدوري 2",
+  "en": "Periodic Test 2 Review",
+  "grade": "الأول الثانوي",
+  "chapter": "الفصل 2: التوازي والتعامد",
+  "term": "1",
+  "path": "lessons/g1-review-2/",
+  "by": "هند العديني وعهود جويهر",
+  "worksheets": [],
+  "slides": 24
  }
 ]

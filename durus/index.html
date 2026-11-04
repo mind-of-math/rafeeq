@@ -251,13 +251,13 @@ footer{text-align:center;color:var(--ink2);font-weight:700;font-size:.95rem}
       return `<div class="btn2">${view ? `<a class="open alt" href="${view}" target="_blank" rel="noopener">▶ عرض</a>` : ""}<a class="open" href="${esc(dl(l))}" download>⬇ تنزيل</a></div>`; }
     return `<a class="open" href="${esc(l.path)}">فتح الدرس ←</a>`;
   }
-  const kind = (l) => l.type === "file" ? ["ppt", ext(l.file).toUpperCase() + " ملف"] : l.type === "link" ? ["lnk", "درس تفاعلي • رابط خارجي"] : l.type === "pptx" ? ["ppt", l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"] : ["live", "درس تفاعلي مباشر"];
+  const kind = (l) => l.type === "page" ? ["live", "عرض تفاعلي (HTML)"] : l.type === "file" ? ["ppt", ext(l.file).toUpperCase() + " ملف"] : l.type === "link" ? ["lnk", "درس تفاعلي • رابط خارجي"] : l.type === "pptx" ? ["ppt", l.macro ? "بوربوينت بماكرو (pptm)" : "عرض بوربوينت"] : ["live", "درس تفاعلي مباشر"];
   const card = (l) => { const [k, lab] = kind(l); const ws = (l.worksheets || []).length;
     return `<div class="card ${k}" data-drop-ws="${esc(l.id)}">
       <div class="c-top"><span class="num ${k}">${esc(l.num)}</span><h3>${esc(l.title)}</h3></div>
       ${l.en ? `<div class="en">${esc(l.en)}</div>` : ""}
       <div class="meta"><span class="t-${k}">${lab}</span>${l.slides ? `<span>${esc(l.slides)} شريحة</span>` : ""}${l.mb ? `<span class="${l.mb > 10 ? "sz-big" : ""}">💾 ${l.mb} ميجابايت</span>` : ""}${l.by ? `<span>إعداد ${esc(l.by)}</span>` : ""}</div>
-      ${k === "live" ? `<div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>` : k === "lnk" ? `<div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>` : ""}
+      ${l.type === "page" ? `<div class="feat"><span>● عرض شرائح يُفتح في المتصفح</span></div>` : k === "live" ? `<div class="feat"><span>● باركود للطالبات</span><span>● نتائج مباشرة</span><span>● الأكثر تفاعلًا</span></div>` : k === "lnk" ? `<div class="feat lnkf"><span>يعمل من موقعه بنظامه الخاص</span></div>` : ""}
       <div class="acts">${actions(l)}</div>
       <button class="folder-btn" data-folder="${esc(l.id)}">📂 المجلد <span>${ws ? ws + (ws === 1 ? " ورقة عمل" : ws === 2 ? " ورقتا عمل" : " أوراق عمل") : "فارغ"}</span></button></div>`; };
   const fileIcon = (f) => ({ pdf: "📕", doc: "📘", docx: "📘", ppt: "📙", pptx: "📙", pptm: "📙", xls: "📗", xlsx: "📗", png: "🖼", jpg: "🖼", jpeg: "🖼" }[ext(f)] || "📄");
