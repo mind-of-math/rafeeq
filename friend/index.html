@@ -294,7 +294,7 @@ body.guest #lnkBox{display:none!important}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110401; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110901; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var GUEST = true, GUESTKEY = "rf_g_w-wE6zCJsqmqnK4Crof2ZVsQSFb38vEK"; // نسخة المعلمة الضيفة تُولَّد بتحويل آلي
 var KEY = "mulhimg-alhessa-v1";
 if(GUEST) document.body.classList.add("guest");
@@ -1506,6 +1506,7 @@ function renderTests(){
         '<div class="muted">القاعدة: من حصلت على 5 أو 4.5 في القصير تُضاف لها درجة، ومن حصلت على 4.25 أو 4 أو 3.75 يُضاف لها نصف درجة.</div>';
     }
     if(st) h += '<div class="attsum"><span>عدد المُدخَل: '+st.n+'</span><span>المتوسط: <b>'+st.avg+'</b></span><span style="color:var(--green)">الأعلى: '+st.max+'</span><span style="color:var(--red)">الأدنى: '+st.min+'</span>'+(cur.max ? '<span>الناجحات (50% فأكثر): '+st.pass+'</span>' : '')+'</div>';
+    if(cur.kind === "per" && cur.max && !GUEST) h += '<div class="attbar"><button class="primary" id="tHonor">🌟 إرسال الحاصلات على الدرجة النهائية إلى مُتقِن</button></div><div class="muted">تُحسب الدرجة مع الدرجة المرحّلة من القصير. إعادة الضغط تحدّث القائمة.</div>';
     h += '<div class="attlist">' + c.students.map(function(s){ var g = (cur.g || {})[s.id];
       return '<div class="attrow"><div class="nm">'+esc(s.name)+'</div><input type="number" class="gin" data-g="'+s.id+'" step="any" min="0" placeholder="الدرجة" value="'+(g == null ? "" : g)+'">'+
         (function(){ var b = bonusFor(c, cur, s.id); return b ? '<span class="bn">+'+b+'</span><span class="tot">= '+num((g || 0) + b)+'</span>' : '<span class="pc">'+(g != null && cur.max ? Math.round(100 * g / cur.max) + "%" : "")+'</span>'; })()+'</div>'; }).join("") + '</div>' +
@@ -1524,6 +1525,14 @@ function renderTests(){
   if(cur){
     $("tTitle").onchange = function(){ cur.title = this.value.trim(); save(); renderTests(); };
     $("tDate").onchange = function(){ if(this.value){ cur.date = this.value; save(); renderTests(); } };
+    if($("tHonor")) $("tHonor").onclick = function(){
+      if(!lget(TK)){ note("اربطي مُلهِم بمُتقِن أولًا (مفتاح الربط)."); return; }
+      var names = c.students.filter(function(s){ var g = (cur.g || {})[s.id]; return g != null && g + bonusFor(c, cur, s.id) + 1e-9 >= cur.max; }).map(function(s){ return s.name; });
+      var btn = this; btn.disabled = true;
+      mqFetch("/api/rafeeq/honor", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({key: c.id + "|" + cur.id, title: cur.title || "اختبار دوري", date: cur.date, max: cur.max, cls: c.name, names: names})})
+        .then(function(){ btn.disabled = false; toast(names.length ? "تم إرسال " + names.length + " طالبة إلى لوحة الشرف في مُتقِن ✅" : "لا توجد طالبات بالدرجة النهائية (تم تحديث القائمة)"); })
+        .catch(function(err){ btn.disabled = false; note(err.message || "تعذر الإرسال"); });
+    };
     $("tMax").onchange = function(){ var v = parseFloat(this.value); if(v > 0) cur.max = v; else delete cur.max; save(); renderTests(); };
     if($("tFrom")) $("tFrom").onchange = function(){ if(this.value) cur.from = this.value; else delete cur.from; save(); renderTests(); };
     $("tDel").onclick = function(){ ask("حذف «" + (cur.title || "الاختبار") + "» ودرجاته نهائيًا؟", function(){ c.tests = c.tests.filter(function(t){ return t.id !== cur.id; }); tSel = null; save(); renderTests(); }); };
@@ -1821,6 +1830,65 @@ function revealPodium(g){
   })(k);
 }
 
+/* ---------- الحفظ السحابي بالرمز الشخصي (نسخة المعلمات) ---------- */
+var cldMode = "";
+function cldProblem(c){
+  c = String(c || "").trim().toLowerCase();
+  if(c.length < 10) return "الرمز قصير؛ اكتبي 10 خانات على الأقل (مثل: رياضيات-نورة-2026).";
+  var u = {}, n = 0; for(var i = 0; i < c.length; i++){ if(!u[c[i]]){ u[c[i]] = 1; n++; } }
+  if(n < 5) return "الرمز سهل التخمين؛ اكتبي رمزًا أطول وأكثر تنوعًا.";
+  if(/^\d+$/.test(c) && (c.length < 12 || "01234567890123456789".indexOf(c) >= 0 || "98765432109876543210".indexOf(c) >= 0)) return "الأرقام وحدها سهلة التخمين؛ أضيفي كلمات أو حروفًا.";
+  return "";
+}
+function cldCard(){
+  var on = !!lget(PCK), h = '<div class="section" id="cldBox"><h3>☁️ حفظ سحابي لبياناتك' + (on ? ' <span style="color:#2e9e7a">— مفعّل</span>' : '') + '</h3>';
+  if(on){
+    var at = +lget(CK); 
+    h += '<div class="muted">يُحفظ ما تدخلينه تلقائيًا في السحابة' + (at ? " · آخر حفظ: " + new Date(at).toLocaleString("ar-SA-u-ca-gregory-nu-latn") : "") + '</div>' +
+      '<div class="toolbar"><button class="primary" id="cdSave">حفظ الآن</button><button id="cdShow">إظهار رمزي</button><button id="cdOff">إيقاف على هذا الجهاز</button></div>';
+  } else if(cldMode === "new"){
+    h += '<div class="muted">اكتبي رمزًا خاصًا بك (10 خانات فأكثر). به تفتحين بياناتك من أي جهاز. <b>احفظيه في مكان آمن ولا تعطيه لأحد؛ وإن نسيتِه لا يمكن استرجاعه.</b></div>' +
+      '<input id="cdCode" type="text" dir="auto" autocomplete="off" placeholder="مثال: رياضيات-نورة-2026" style="width:100%;margin:.5em 0">' +
+      '<div class="muted" id="cdHint"></div><div class="toolbar"><button class="primary" id="cdGo">حفظ الرمز وتفعيل</button><button id="cdCancel">إلغاء</button></div>';
+  } else if(cldMode === "have"){
+    h += '<div class="muted">اكتبي رمزك الذي سبق أن فعّلتِه لاسترجاع بياناتك.</div>' +
+      '<input id="cdCode" type="text" dir="auto" autocomplete="off" placeholder="رمزك" style="width:100%;margin:.5em 0">' +
+      '<div class="toolbar"><button class="primary" id="cdGo">استرجاع بياناتي</button><button id="cdCancel">إلغاء</button></div>';
+  } else {
+    h += '<div class="muted">احفظي بياناتك على الإنترنت لتفتحيها من أي جهاز. بياناتك لك وحدك.</div>' +
+      '<div class="toolbar"><button class="primary" id="cdNew">تفعيل الحفظ السحابي</button><button id="cdHave">لدي رمز من قبل</button></div>';
+  }
+  return h + '<div class="hint" id="cldMsg"></div></div>';
+}
+function cldBind(){
+  var set = function(id, fn){ var e = $(id); if(e) e.onclick = fn; };
+  var go = function(m){ cldMode = m; renderProg(); };
+  set("cdNew", function(){ go("new"); }); set("cdHave", function(){ go("have"); }); set("cdCancel", function(){ go(""); });
+  var inp = $("cdCode");
+  if(inp && cldMode === "new") inp.oninput = function(){ var p = cldProblem(this.value); $("cdHint").textContent = this.value ? (p || "✅ رمز مقبول") : ""; };
+  set("cdGo", function(){
+    var code = ($("cdCode").value || "").trim(); if(!code){ cloudMsg("اكتبي الرمز أولًا"); return; }
+    var btn = this; btn.disabled = true;
+    if(cldMode === "new"){
+      var p = cldProblem(code); if(p){ cloudMsg(p); btn.disabled = false; return; }
+      mqFetch("/api/rafeeq/mystate?create=1", {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}", code: code}).then(function(){
+        lset(PCK, code); cldMode = ""; lset(CK, "0"); renderProg();
+        if(hasData()) cloudPush(true, true).then(function(){ renderProg(); cloudMsg("تم التفعيل وحفظ بياناتك ☁️✅ احفظي رمزك في مكان آمن."); });
+        else cloudMsg("تم التفعيل ☁️ سيُحفظ ما تدخلينه تلقائيًا. احفظي رمزك في مكان آمن.");
+      }).catch(function(err){ btn.disabled = false; cloudMsg(err.message || "تعذّر التفعيل"); });
+    } else {
+      mqFetch("/api/rafeeq/mystate", {code: code}).then(function(j){
+        var done = function(){ lset(PCK, code); cldMode = ""; if(j.has && j.data) applyCloud(j); renderProg(); cloudMsg(j.has ? "تم استرجاع بياناتك ☁️✅" : "تم ربط الرمز. سيُحفظ ما تدخلينه تلقائيًا."); if(!j.has && hasData()) cloudPush(true, true); };
+        if(j.has && hasData()) ask("يوجد على هذا الجهاز بيانات. استرجاع بياناتك من السحابة سيستبدلها (تُحفظ نسخة منها تلقائيًا). متابعة؟", done); else done();
+        btn.disabled = false;
+      }).catch(function(err){ btn.disabled = false; cloudMsg(err.message || "تعذّر الاسترجاع"); });
+    }
+  });
+  set("cdSave", function(){ cloudMsg("جارٍ الحفظ…"); cloudPush(true, true).then(function(){ renderProg(); }); });
+  set("cdShow", function(){ cloudMsg("رمزك: " + lget(PCK)); });
+  set("cdOff", function(){ ask("سيتوقف الحفظ التلقائي على هذا الجهاز، وتبقى بياناتك محفوظة في السحابة، وتعودين لها بالرمز. متابعة؟", function(){ lset(PCK, ""); renderProg(); }); });
+}
+
 /* ---------- التقدم والتصدير ---------- */
 var progSort = "week";
 function progRows(c){
@@ -1829,7 +1897,7 @@ function progRows(c){
 }
 var COLS = [["name","الاسم"],["day","اليوم"],["week","الأسبوع"],["month","الشهر"],["all","منذ البداية"],["cur","النجوم الحالية"]];
 function renderProg(){
-  var c = cls(); if(!c.students.length) return emptyView();
+  var c = cls(); if(!c.students.length){ emptyView(); if(GUEST){ $("main").insertAdjacentHTML("beforeend", cldCard()); cldBind(); } return; }
   var rows = progRows(c);
   rows.sort(function(a,b){ return progSort==="name" ? 0 : (b[progSort] - a[progSort]); });
   var mx = {}; COLS.slice(1).forEach(function(k){ mx[k[0]] = Math.max.apply(null, rows.map(function(r){ return r[k[0]]; })); });
@@ -1848,7 +1916,9 @@ function renderProg(){
   h += '<div class="section"><h3>آخر المشاركات</h3><div class="logl">' +
     (recent.length ? recent.map(function(e){ return '<div><span>'+esc(byId[e[0]] || "طالبة محذوفة")+'</span><span class="'+(e[2]>0?'plus':'minus2')+'">'+(e[2]>0?'+':'−')+Math.abs(e[2])+' ⭐</span><span class="muted">'+fmtWhen(e[1])+'</span></div>'; }).join("")
       : '<div class="muted">لا توجد مشاركات مسجلة بعد</div>') + '</div></div>';
+  if(GUEST) h += cldCard();
   $("main").innerHTML = h;
+  if(GUEST) cldBind();
   var ths = document.querySelectorAll("table.prog th[data-k]");
   for(var i=0;i<ths.length;i++) ths[i].onclick = function(){ progSort = this.getAttribute("data-k"); renderProg(); };
   $("xl").onclick = exportXlsx;
@@ -2016,15 +2086,16 @@ $("mgDel").onclick = function(){
 
 /* ---------- الربط مع مُتقِن ---------- */
 // المفتاح يُحفظ على هذا الجهاز فقط (وليس داخل ملف العرض) حتى لا ينتقل مع مشاركة الملف.
-var MQ = "https://rehlat.vercel.app", TK = "mulhimg-mutqin-token", AK = "mulhimg-mutqin-auto", LK = "mulhimg-mutqin-last";
+var MQ = "https://rehlat.vercel.app", TK = "mulhimg-mutqin-token", AK = "mulhimg-mutqin-auto", LK = "mulhimg-mutqin-last", PCK = "mulhimg-pcode";
 function lget(k){ if(GUEST && k === TK) return GUESTKEY; try{ return localStorage.getItem(k) || ""; }catch(e){ return ""; } }
 function lset(k, v){ try{ if(v === "" || v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){} }
 function lnkMsg(t){ var e = $("lnkSt"); if(e) e.textContent = t || ""; }
 function mqFetch(path, opt){
   opt = opt || {}; opt.headers = Object.assign({Authorization:"Bearer " + lget(TK)}, opt.headers || {});
+  if(path.indexOf("/api/rafeeq/mystate") === 0) opt.headers["X-Mg-Code"] = encodeURIComponent(opt.code || lget(PCK));
   return fetch(MQ + path, opt).then(function(r){
     return r.json().catch(function(){ return {}; }).then(function(j){
-      if(!r.ok){ var m = r.status === 401 ? "مفتاح الربط غير صحيح أو أُوقف. أنشئي مفتاحًا جديدًا من لوحة مُتقِن." : (j && j.error) || ("تعذر الاتصال (رمز " + r.status + ")"); throw new Error(m); }
+      if(!r.ok){ var m = r.status === 401 && path.indexOf("/api/rafeeq/mystate") === 0 ? "تعذّر التحقق، أعيدي فتح الصفحة." : r.status === 401 ? "مفتاح الربط غير صحيح أو أُوقف. أنشئي مفتاحًا جديدًا من لوحة مُتقِن." : (j && j.error) || ("تعذر الاتصال (رمز " + r.status + ")"); throw new Error(m); }
       return j;
     });
   });
@@ -2060,8 +2131,9 @@ function scheduleSync(){
 }
 /* ---------- مزامنة البيانات سحابيًا (افتحيها من أي جهاز بمفتاح الربط) ---------- */
 var cloudT = null, cloudBusy = false, CK = "mulhimg-cloud-at";
-function cloudOn(){ return !GUEST && !!lget(TK); }
-function cloudMsg(t){ lnkMsg(t); }
+function cloudOn(){ return GUEST ? !!lget(PCK) : !!lget(TK); }
+function cloudPath(){ return GUEST ? "/api/rafeeq/mystate" : "/api/rafeeq/state"; }
+function cloudMsg(t){ if(GUEST){ var e = $("cldMsg"); if(e) e.textContent = t || ""; } else lnkMsg(t); }
 function applyCloud(j){
   var qs = j.data && j.data.queues; if(j.data) delete j.data.queues;
   try{ var old = localStorage.getItem(KEY); if(old && hasData()) localStorage.setItem(KEY + "-before-cloud", old); }catch(e){}
@@ -2082,7 +2154,7 @@ function hasData(){ return state.classes.some(function(c){ return c.students.len
 function cloudPull(manual){
   if(!cloudOn() || cloudBusy) return Promise.resolve();
   cloudBusy = true;
-  return mqFetch("/api/rafeeq/state").then(function(j){
+  return mqFetch(cloudPath()).then(function(j){
     cloudBusy = false;
     if(j.has && j.data && (j.data.build || 0) > BUILD){ cloudStale = true; showUpd(j.data.build); }
     if(!j.has){ if(hasData()) cloudPush(true); else if(manual) cloudMsg("لا توجد نسخة سحابية بعد."); return; }
@@ -2096,6 +2168,7 @@ function cloudPull(manual){
 }
 function cloudBody(at, force){
   var dj = JSON.parse(ser()); dj.queues = qsAll(); var js = JSON.stringify(dj);
+  if(GUEST){ Object.keys(dj.queues).forEach(function(id){ dj.queues[id].forEach(function(it){ it.img = ""; }); }); js = JSON.stringify(dj); }
   if(js.length > 3600000){ Object.keys(dj.queues).forEach(function(id){ dj.queues[id].forEach(function(it){ it.img = ""; }); }); js = JSON.stringify(dj); }
   return '{"data":' + js + ',"at":' + at + ',"force":' + (!!force) + "}";
 }
@@ -2105,10 +2178,10 @@ function cloudPush(manual, force){
   if(cloudStale){ showUpd(0); return Promise.resolve(); }
   state.build = BUILD;
   var at = state.updatedAt || Date.now();
-  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: cloudBody(at, force)}).then(function(j){
+  return mqFetch(cloudPath(), {method:"POST", headers:{"Content-Type":"application/json"}, body: cloudBody(at, force)}).then(function(j){
     if(j.newer){ cloudPull(false); return; }
     lset(CK, String(at)); if(manual) cloudMsg("تم حفظ بياناتك في السحابة ☁️✅");
-  }).catch(function(err){ if(manual) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
+  }).catch(function(err){ if(manual || GUEST) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
 }
 function cloudSchedule(){ if(!cloudOn()) return; clearTimeout(cloudT); cloudT = setTimeout(function(){ cloudPush(false); }, 6000); }
 document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible" && started) cloudPull(false); else if(document.visibilityState === "hidden" && cloudOn()){ clearTimeout(cloudT); cloudPush(false); } });

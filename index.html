@@ -294,7 +294,7 @@ body.guest #lnkBox{display:none!important}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110701; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026110901; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var GUEST = false, GUESTKEY = ""; // نسخة المعلمة الضيفة تُولَّد بتحويل آلي
 var KEY = "rafeeq-alhessa-v1";
 if(GUEST) document.body.classList.add("guest");
@@ -1830,6 +1830,65 @@ function revealPodium(g){
   })(k);
 }
 
+/* ---------- الحفظ السحابي بالرمز الشخصي (نسخة المعلمات) ---------- */
+var cldMode = "";
+function cldProblem(c){
+  c = String(c || "").trim().toLowerCase();
+  if(c.length < 10) return "الرمز قصير؛ اكتبي 10 خانات على الأقل (مثل: رياضيات-نورة-2026).";
+  var u = {}, n = 0; for(var i = 0; i < c.length; i++){ if(!u[c[i]]){ u[c[i]] = 1; n++; } }
+  if(n < 5) return "الرمز سهل التخمين؛ اكتبي رمزًا أطول وأكثر تنوعًا.";
+  if(/^\d+$/.test(c) && (c.length < 12 || "01234567890123456789".indexOf(c) >= 0 || "98765432109876543210".indexOf(c) >= 0)) return "الأرقام وحدها سهلة التخمين؛ أضيفي كلمات أو حروفًا.";
+  return "";
+}
+function cldCard(){
+  var on = !!lget(PCK), h = '<div class="section" id="cldBox"><h3>☁️ حفظ سحابي لبياناتك' + (on ? ' <span style="color:#2e9e7a">— مفعّل</span>' : '') + '</h3>';
+  if(on){
+    var at = +lget(CK); 
+    h += '<div class="muted">يُحفظ ما تدخلينه تلقائيًا في السحابة' + (at ? " · آخر حفظ: " + new Date(at).toLocaleString("ar-SA-u-ca-gregory-nu-latn") : "") + '</div>' +
+      '<div class="toolbar"><button class="primary" id="cdSave">حفظ الآن</button><button id="cdShow">إظهار رمزي</button><button id="cdOff">إيقاف على هذا الجهاز</button></div>';
+  } else if(cldMode === "new"){
+    h += '<div class="muted">اكتبي رمزًا خاصًا بك (10 خانات فأكثر). به تفتحين بياناتك من أي جهاز. <b>احفظيه في مكان آمن ولا تعطيه لأحد؛ وإن نسيتِه لا يمكن استرجاعه.</b></div>' +
+      '<input id="cdCode" type="text" dir="auto" autocomplete="off" placeholder="مثال: رياضيات-نورة-2026" style="width:100%;margin:.5em 0">' +
+      '<div class="muted" id="cdHint"></div><div class="toolbar"><button class="primary" id="cdGo">حفظ الرمز وتفعيل</button><button id="cdCancel">إلغاء</button></div>';
+  } else if(cldMode === "have"){
+    h += '<div class="muted">اكتبي رمزك الذي سبق أن فعّلتِه لاسترجاع بياناتك.</div>' +
+      '<input id="cdCode" type="text" dir="auto" autocomplete="off" placeholder="رمزك" style="width:100%;margin:.5em 0">' +
+      '<div class="toolbar"><button class="primary" id="cdGo">استرجاع بياناتي</button><button id="cdCancel">إلغاء</button></div>';
+  } else {
+    h += '<div class="muted">احفظي بياناتك على الإنترنت لتفتحيها من أي جهاز. بياناتك لك وحدك.</div>' +
+      '<div class="toolbar"><button class="primary" id="cdNew">تفعيل الحفظ السحابي</button><button id="cdHave">لدي رمز من قبل</button></div>';
+  }
+  return h + '<div class="hint" id="cldMsg"></div></div>';
+}
+function cldBind(){
+  var set = function(id, fn){ var e = $(id); if(e) e.onclick = fn; };
+  var go = function(m){ cldMode = m; renderProg(); };
+  set("cdNew", function(){ go("new"); }); set("cdHave", function(){ go("have"); }); set("cdCancel", function(){ go(""); });
+  var inp = $("cdCode");
+  if(inp && cldMode === "new") inp.oninput = function(){ var p = cldProblem(this.value); $("cdHint").textContent = this.value ? (p || "✅ رمز مقبول") : ""; };
+  set("cdGo", function(){
+    var code = ($("cdCode").value || "").trim(); if(!code){ cloudMsg("اكتبي الرمز أولًا"); return; }
+    var btn = this; btn.disabled = true;
+    if(cldMode === "new"){
+      var p = cldProblem(code); if(p){ cloudMsg(p); btn.disabled = false; return; }
+      mqFetch("/api/rafeeq/mystate?create=1", {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}", code: code}).then(function(){
+        lset(PCK, code); cldMode = ""; lset(CK, "0"); renderProg();
+        if(hasData()) cloudPush(true, true).then(function(){ renderProg(); cloudMsg("تم التفعيل وحفظ بياناتك ☁️✅ احفظي رمزك في مكان آمن."); });
+        else cloudMsg("تم التفعيل ☁️ سيُحفظ ما تدخلينه تلقائيًا. احفظي رمزك في مكان آمن.");
+      }).catch(function(err){ btn.disabled = false; cloudMsg(err.message || "تعذّر التفعيل"); });
+    } else {
+      mqFetch("/api/rafeeq/mystate", {code: code}).then(function(j){
+        var done = function(){ lset(PCK, code); cldMode = ""; if(j.has && j.data) applyCloud(j); renderProg(); cloudMsg(j.has ? "تم استرجاع بياناتك ☁️✅" : "تم ربط الرمز. سيُحفظ ما تدخلينه تلقائيًا."); if(!j.has && hasData()) cloudPush(true, true); };
+        if(j.has && hasData()) ask("يوجد على هذا الجهاز بيانات. استرجاع بياناتك من السحابة سيستبدلها (تُحفظ نسخة منها تلقائيًا). متابعة؟", done); else done();
+        btn.disabled = false;
+      }).catch(function(err){ btn.disabled = false; cloudMsg(err.message || "تعذّر الاسترجاع"); });
+    }
+  });
+  set("cdSave", function(){ cloudMsg("جارٍ الحفظ…"); cloudPush(true, true).then(function(){ renderProg(); }); });
+  set("cdShow", function(){ cloudMsg("رمزك: " + lget(PCK)); });
+  set("cdOff", function(){ ask("سيتوقف الحفظ التلقائي على هذا الجهاز، وتبقى بياناتك محفوظة في السحابة، وتعودين لها بالرمز. متابعة؟", function(){ lset(PCK, ""); renderProg(); }); });
+}
+
 /* ---------- التقدم والتصدير ---------- */
 var progSort = "week";
 function progRows(c){
@@ -1838,7 +1897,7 @@ function progRows(c){
 }
 var COLS = [["name","الاسم"],["day","اليوم"],["week","الأسبوع"],["month","الشهر"],["all","منذ البداية"],["cur","النجوم الحالية"]];
 function renderProg(){
-  var c = cls(); if(!c.students.length) return emptyView();
+  var c = cls(); if(!c.students.length){ emptyView(); if(GUEST){ $("main").insertAdjacentHTML("beforeend", cldCard()); cldBind(); } return; }
   var rows = progRows(c);
   rows.sort(function(a,b){ return progSort==="name" ? 0 : (b[progSort] - a[progSort]); });
   var mx = {}; COLS.slice(1).forEach(function(k){ mx[k[0]] = Math.max.apply(null, rows.map(function(r){ return r[k[0]]; })); });
@@ -1857,7 +1916,9 @@ function renderProg(){
   h += '<div class="section"><h3>آخر المشاركات</h3><div class="logl">' +
     (recent.length ? recent.map(function(e){ return '<div><span>'+esc(byId[e[0]] || "طالبة محذوفة")+'</span><span class="'+(e[2]>0?'plus':'minus2')+'">'+(e[2]>0?'+':'−')+Math.abs(e[2])+' ⭐</span><span class="muted">'+fmtWhen(e[1])+'</span></div>'; }).join("")
       : '<div class="muted">لا توجد مشاركات مسجلة بعد</div>') + '</div></div>';
+  if(GUEST) h += cldCard();
   $("main").innerHTML = h;
+  if(GUEST) cldBind();
   var ths = document.querySelectorAll("table.prog th[data-k]");
   for(var i=0;i<ths.length;i++) ths[i].onclick = function(){ progSort = this.getAttribute("data-k"); renderProg(); };
   $("xl").onclick = exportXlsx;
@@ -2025,15 +2086,16 @@ $("mgDel").onclick = function(){
 
 /* ---------- الربط مع مُتقِن ---------- */
 // المفتاح يُحفظ على هذا الجهاز فقط (وليس داخل ملف العرض) حتى لا ينتقل مع مشاركة الملف.
-var MQ = "https://rehlat.vercel.app", TK = "rafeeq-mutqin-token", AK = "rafeeq-mutqin-auto", LK = "rafeeq-mutqin-last";
+var MQ = "https://rehlat.vercel.app", TK = "rafeeq-mutqin-token", AK = "rafeeq-mutqin-auto", LK = "rafeeq-mutqin-last", PCK = "rafeeq-pcode";
 function lget(k){ if(GUEST && k === TK) return GUESTKEY; try{ return localStorage.getItem(k) || ""; }catch(e){ return ""; } }
 function lset(k, v){ try{ if(v === "" || v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); }catch(e){} }
 function lnkMsg(t){ var e = $("lnkSt"); if(e) e.textContent = t || ""; }
 function mqFetch(path, opt){
   opt = opt || {}; opt.headers = Object.assign({Authorization:"Bearer " + lget(TK)}, opt.headers || {});
+  if(path.indexOf("/api/rafeeq/mystate") === 0) opt.headers["X-Mg-Code"] = encodeURIComponent(opt.code || lget(PCK));
   return fetch(MQ + path, opt).then(function(r){
     return r.json().catch(function(){ return {}; }).then(function(j){
-      if(!r.ok){ var m = r.status === 401 ? "مفتاح الربط غير صحيح أو أُوقف. أنشئي مفتاحًا جديدًا من لوحة مُتقِن." : (j && j.error) || ("تعذر الاتصال (رمز " + r.status + ")"); throw new Error(m); }
+      if(!r.ok){ var m = r.status === 401 && path.indexOf("/api/rafeeq/mystate") === 0 ? "تعذّر التحقق، أعيدي فتح الصفحة." : r.status === 401 ? "مفتاح الربط غير صحيح أو أُوقف. أنشئي مفتاحًا جديدًا من لوحة مُتقِن." : (j && j.error) || ("تعذر الاتصال (رمز " + r.status + ")"); throw new Error(m); }
       return j;
     });
   });
@@ -2069,8 +2131,9 @@ function scheduleSync(){
 }
 /* ---------- مزامنة البيانات سحابيًا (افتحيها من أي جهاز بمفتاح الربط) ---------- */
 var cloudT = null, cloudBusy = false, CK = "rafeeq-cloud-at";
-function cloudOn(){ return !GUEST && !!lget(TK); }
-function cloudMsg(t){ lnkMsg(t); }
+function cloudOn(){ return GUEST ? !!lget(PCK) : !!lget(TK); }
+function cloudPath(){ return GUEST ? "/api/rafeeq/mystate" : "/api/rafeeq/state"; }
+function cloudMsg(t){ if(GUEST){ var e = $("cldMsg"); if(e) e.textContent = t || ""; } else lnkMsg(t); }
 function applyCloud(j){
   var qs = j.data && j.data.queues; if(j.data) delete j.data.queues;
   try{ var old = localStorage.getItem(KEY); if(old && hasData()) localStorage.setItem(KEY + "-before-cloud", old); }catch(e){}
@@ -2091,7 +2154,7 @@ function hasData(){ return state.classes.some(function(c){ return c.students.len
 function cloudPull(manual){
   if(!cloudOn() || cloudBusy) return Promise.resolve();
   cloudBusy = true;
-  return mqFetch("/api/rafeeq/state").then(function(j){
+  return mqFetch(cloudPath()).then(function(j){
     cloudBusy = false;
     if(j.has && j.data && (j.data.build || 0) > BUILD){ cloudStale = true; showUpd(j.data.build); }
     if(!j.has){ if(hasData()) cloudPush(true); else if(manual) cloudMsg("لا توجد نسخة سحابية بعد."); return; }
@@ -2105,6 +2168,7 @@ function cloudPull(manual){
 }
 function cloudBody(at, force){
   var dj = JSON.parse(ser()); dj.queues = qsAll(); var js = JSON.stringify(dj);
+  if(GUEST){ Object.keys(dj.queues).forEach(function(id){ dj.queues[id].forEach(function(it){ it.img = ""; }); }); js = JSON.stringify(dj); }
   if(js.length > 3600000){ Object.keys(dj.queues).forEach(function(id){ dj.queues[id].forEach(function(it){ it.img = ""; }); }); js = JSON.stringify(dj); }
   return '{"data":' + js + ',"at":' + at + ',"force":' + (!!force) + "}";
 }
@@ -2114,10 +2178,10 @@ function cloudPush(manual, force){
   if(cloudStale){ showUpd(0); return Promise.resolve(); }
   state.build = BUILD;
   var at = state.updatedAt || Date.now();
-  return mqFetch("/api/rafeeq/state", {method:"POST", headers:{"Content-Type":"application/json"}, body: cloudBody(at, force)}).then(function(j){
+  return mqFetch(cloudPath(), {method:"POST", headers:{"Content-Type":"application/json"}, body: cloudBody(at, force)}).then(function(j){
     if(j.newer){ cloudPull(false); return; }
     lset(CK, String(at)); if(manual) cloudMsg("تم حفظ بياناتك في السحابة ☁️✅");
-  }).catch(function(err){ if(manual) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
+  }).catch(function(err){ if(manual || GUEST) cloudMsg(err.message || "تعذّر الحفظ في السحابة"); });
 }
 function cloudSchedule(){ if(!cloudOn()) return; clearTimeout(cloudT); cloudT = setTimeout(function(){ cloudPush(false); }, 6000); }
 document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible" && started) cloudPull(false); else if(document.visibilityState === "hidden" && cloudOn()){ clearTimeout(cloudT); cloudPush(false); } });
