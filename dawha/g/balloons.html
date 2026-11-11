@@ -1,0 +1,354 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مختبر البالونات</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: lab bench — 3D balloon stage beside a control/readout panel, challenge cards below */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#1b2430; --muted:#5d6a78; --line:#d6dde5;
+  --bp:#e5484d; --lp:#8e4ec6; --atom:#9aa4ae; --accent:#0d7c86; --ok:#1f8a4c; --bad:#c2410c;
+  --stage:#f7f9fb;
+  --display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --panel:#1a2129; --ink:#e7edf3; --muted:#9aa8b6; --line:#2c3642;
+  --bp:#ff6b6f; --lp:#b48ae6; --atom:#b9c2cb; --accent:#3cc0c9; --ok:#4cc985; --bad:#f08a54; --stage:#151b22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --panel:#1a2129; --ink:#e7edf3; --muted:#9aa8b6; --line:#2c3642;
+  --bp:#ff6b6f; --lp:#b48ae6; --atom:#b9c2cb; --accent:#3cc0c9; --ok:#4cc985; --bad:#f08a54; --stage:#151b22; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;direction:rtl}
+.wrap{max-width:1100px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+header h1{font-family:var(--display);font-size:clamp(28px,5vw,42px);margin:0;line-height:1.2;text-wrap:balance}
+header .eyebrow{font-size:13px;letter-spacing:.04em;color:var(--accent);font-weight:600}
+header p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+@media (max-width:820px){.lab{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:18px;position:relative;overflow:hidden;min-width:0}
+.stage canvas{display:block;width:100%;aspect-ratio:1/1;max-width:100%;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.stage .tip{position:absolute;bottom:10px;inset-inline:0;text-align:center;font-size:13px;color:var(--muted);pointer-events:none}
+.legend{position:absolute;top:12px;right:14px;display:flex;gap:14px;font-size:13px;color:var(--muted)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-inline-end:5px}
+.panel{display:grid;gap:16px;align-content:start;min-width:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.box h2{font-family:var(--display);font-size:17px;margin:0 0 10px}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0}
+.stepper + .stepper{border-top:1px solid var(--line)}
+.stepper label{display:flex;align-items:center;font-weight:500}
+.ctrl{display:flex;align-items:center;gap:10px}
+.ctrl button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.ctrl button:disabled{opacity:.35;cursor:not-allowed}
+.ctrl output{min-width:28px;text-align:center;font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:15px;cursor:pointer;direction:ltr}
+.chip:hover{border-color:var(--accent)}
+.btn{border:0;border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.readout .shape{font-family:var(--display);font-size:28px;font-weight:700;line-height:1.3}
+.readout .src{font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;margin-inline-start:8px;vertical-align:middle;border:1px solid var(--line);color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.fact{border-top:2px solid var(--line);padding-top:6px}
+.fact b{display:block;font-family:var(--display);font-size:20px;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.fact span{font-size:13px;color:var(--muted)}
+.readout p{margin:0;color:var(--muted)}
+.challenge{display:grid;gap:14px}
+.challenge .top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.challenge h2{font-family:var(--display);font-size:22px;margin:0}
+.score{font-family:var(--display);font-variant-numeric:tabular-nums;color:var(--muted)}
+.mol{font-family:var(--display);font-size:40px;direction:ltr;text-align:right;line-height:1.1}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 14px;font:inherit;cursor:pointer}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));font-weight:600}
+.opt.lat{direction:ltr}
+.feedback{border-radius:12px;padding:10px 14px;font-weight:500}
+.feedback.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+.feedback.bad{background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad)}
+.hint{color:var(--muted);font-size:15px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.step-label{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px}
+.figs{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.figs figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 10px 8px;text-align:center}
+.figs figcaption{font-size:13px;color:var(--muted)}
+.opt.pic{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px}
+.opt.pic canvas{pointer-events:none}
+footer{text-align:center;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">كيمياء · الدرس 4-4 · أشكال الجزيئات</div>
+    <h1>مختبر البالونات: كيف تتنافر أزواج الإلكترونات؟</h1>
+    <p>كل بالون منطقة كثافة إلكترونية حول الذرة المركزية. أضيفي البالونات وراقبيها تبتعد عن بعضها حتى تستقر في الشكل الذي يقل فيه التنافر. هذا هو نموذج VSEPR.</p>
+    <div class="figs" id="introFigs"></div>
+  </header>
+
+  <section class="lab">
+    <div class="stage">
+      <div class="legend"><span><i class="dot" style="background:var(--bp)"></i>زوج رابط</span><span><i class="dot" style="background:var(--lp)"></i>زوج غير رابط</span></div>
+      <canvas id="cv" aria-label="نموذج ثلاثي الأبعاد لأزواج الإلكترونات حول الذرة المركزية"></canvas>
+      <div class="tip">اسحبي النموذج لتدويره</div>
+    </div>
+
+    <div class="panel">
+      <div class="box">
+        <h2>اضبطي الذرة المركزية</h2>
+        <div class="stepper">
+          <label><i class="dot" style="background:var(--bp)"></i>الأزواج المشتركة (الرابطة)</label>
+          <div class="ctrl"><button id="bMinus" aria-label="إنقاص الأزواج الرابطة">−</button><output id="bOut">4</output><button id="bPlus" aria-label="زيادة الأزواج الرابطة">+</button></div>
+        </div>
+        <div class="stepper">
+          <label><i class="dot" style="background:var(--lp)"></i>الأزواج غير الرابطة</label>
+          <div class="ctrl"><button id="lMinus" aria-label="إنقاص الأزواج غير الرابطة">−</button><output id="lOut">0</output><button id="lPlus" aria-label="زيادة الأزواج غير الرابطة">+</button></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost" id="shake">هزّي البالونات</button>
+          <span class="hint">بعثريها وشاهديها تعود للشكل نفسه</span>
+        </div>
+      </div>
+
+      <div class="box readout" aria-live="polite">
+        <div><span class="shape" id="shape">رباعي الأوجه منتظم</span><span class="src" id="src">الجدول 6-4</span></div>
+        <div class="facts">
+          <div class="fact"><b id="angle">109.5°</b><span>زاوية الرابطة</span></div>
+          <div class="fact"><b id="hyb">sp³</b><span>المستويات المهجنة</span></div>
+          <div class="fact"><b id="ex">CH₄</b><span>مثال</span></div>
+        </div>
+        <p id="note">أربعة أزواج رابطة تبتعد بأقصى مسافة ممكنة في الفراغ.</p>
+      </div>
+
+      <div class="box">
+        <h2>جزيئات الجدول 6-4</h2>
+        <div class="chips" id="presets"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="box challenge" id="challenge">
+    <div class="top">
+      <h2>تحدّي الأشكال</h2>
+      <span class="score" id="score">النقاط: 0 من 0</span>
+    </div>
+    <div>
+      <div class="mol" id="qMol">BF<sub>3</sub></div>
+      <div class="hint" id="qCentral">الذرة المركزية: B</div>
+    </div>
+    <div class="qgrid">
+      <div>
+        <div class="step-label">الخطوة 1</div>
+        <div>مثّلي الذرة المركزية بالبالونات في المختبر أعلاه.</div>
+        <button class="btn ghost" id="hintBtn" style="margin-top:8px">تلميح</button>
+        <p class="hint" id="hintTxt" hidden></p>
+      </div>
+      <div>
+        <div class="step-label">الخطوة 2</div>
+        <div style="margin-bottom:6px">ما شكل الجزيء؟</div>
+        <div class="opts" id="shapeOpts"></div>
+      </div>
+      <div>
+        <div class="step-label">الخطوة 3</div>
+        <div style="margin-bottom:6px">ما نوع التهجين؟</div>
+        <div class="opts" id="hybOpts"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="check">تحقّقي</button>
+      <button class="btn ghost" id="next">الجزيء التالي</button>
+    </div>
+    <div class="feedback" id="fb" hidden></div>
+  </section>
+
+  <footer>نشاط تفاعلي لدرس أشكال الجزيئات · نموذج التنافر بين أزواج إلكترونات التكافؤ VSEPR</footer>
+</div>
+
+<script>
+const SHAPES={
+ "2-0":{n:"خطي",a:"180°",ex:"BeCl₂",t:1,note:"زوجان رابطان يبتعدان إلى جهتين متقابلتين."},
+ "3-0":{n:"مثلث مستوٍ",a:"120°",ex:"AlCl₃",t:1,note:"ثلاثة أزواج رابطة تنتشر في مستوى واحد."},
+ "2-1":{n:"منحنٍ",a:"< 120°",ex:"SO₂",t:0,note:"الزوج غير الرابط يأخذ حيزًا أكبر فيدفع الرابطتين."},
+ "4-0":{n:"رباعي الأوجه منتظم",a:"109.5°",ex:"CH₄",t:1,note:"أربعة أزواج رابطة تبتعد بأقصى مسافة ممكنة في الفراغ."},
+ "3-1":{n:"مثلثي هرمي",a:"107.3°",ex:"PH₃",t:1,note:"الزوج غير الرابط يضغط الروابط الثلاث فتصغر الزاوية عن 109.5°."},
+ "2-2":{n:"منحنٍ",a:"104.5°",ex:"H₂O",t:1,note:"زوجان غير رابطين يضغطان الرابطتين أكثر، فتصبح الزاوية أصغر."},
+ "5-0":{n:"ثنائي الهرم مثلثي",a:"90° , 120°",ex:"NbBr₅",t:1,note:"ثلاث روابط في مستوى استوائي ورابطتان فوقه وتحته."},
+ "4-1":{n:"أرجوحي",a:"< 90° , < 120°",ex:"SF₄",t:0,note:"الزوج غير الرابط يستقر في المستوى الاستوائي حيث المساحة أكبر."},
+ "3-2":{n:"على شكل حرف T",a:"< 90°",ex:"ClF₃",t:0,note:"زوجان غير رابطين في المستوى الاستوائي."},
+ "2-3":{n:"خطي",a:"180°",ex:"XeF₂",t:0,note:"ثلاثة أزواج غير رابطة حول المستوى الاستوائي، والرابطتان متقابلتان."},
+ "6-0":{n:"ثماني الأوجه منتظم",a:"90°",ex:"SF₆",t:1,note:"ستة أزواج رابطة متعامدة حول الذرة المركزية."},
+ "5-1":{n:"هرم رباعي القاعدة",a:"< 90°",ex:"BrF₅",t:0,note:"الزوج غير الرابط يحتل أحد رؤوس ثماني الأوجه."},
+ "4-2":{n:"مربع مستوٍ",a:"90°",ex:"XeF₄",t:0,note:"الزوجان غير الرابطين متقابلان، والروابط الأربع في مستوى واحد."}
+};
+const HYB={2:"sp",3:"sp²",4:"sp³",5:"sp³d",6:"sp³d²"};
+const PRESETS=[["BeCl₂",2,0],["AlCl₃",3,0],["CH₄",4,0],["PH₃",3,1],["H₂O",2,2],["NbBr₅",5,0],["SF₆",6,0]];
+
+let B=4,L=0; // counts
+let doms=[]; // {lp:bool, p:[x,y,z]}
+const $=id=>document.getElementById(id);
+
+function rnd(){let v;do{v=[Math.random()*2-1,Math.random()*2-1,Math.random()*2-1]}while(Math.hypot(...v)<.2||Math.hypot(...v)>1);return norm(v)}
+function norm(v){const m=Math.hypot(...v)||1;return v.map(x=>x/m)}
+function sync(){
+  while(doms.filter(d=>!d.lp).length<B) doms.push({lp:false,p:rnd()});
+  while(doms.filter(d=>d.lp).length<L) doms.push({lp:true,p:rnd()});
+  while(doms.filter(d=>!d.lp).length>B){const i=doms.findIndex(d=>!d.lp);doms.splice(i,1)}
+  while(doms.filter(d=>d.lp).length>L){const i=doms.findIndex(d=>d.lp);doms.splice(i,1)}
+  energy=1;
+  render();
+}
+function render(){
+  $("bOut").textContent=B;$("lOut").textContent=L;
+  const T=B+L;
+  $("bMinus").disabled=B<=2;$("bPlus").disabled=T>=6;
+  $("lMinus").disabled=L<=0;$("lPlus").disabled=T>=6||B<2;
+  const s=SHAPES[B+"-"+L];
+  $("shape").textContent=s.n;$("angle").textContent=s.a;$("hyb").textContent=HYB[T];$("ex").textContent=s.ex;$("note").textContent=s.note;
+  $("src").textContent=s.t?"الجدول 6-4":"إثراء";
+}
+$("bPlus").onclick=()=>{if(B+L<6){B++;sync()}};
+$("bMinus").onclick=()=>{if(B>2){B--;sync()}};
+$("lPlus").onclick=()=>{if(B+L<6){L++;sync()}};
+$("lMinus").onclick=()=>{if(L>0){L--;sync()}};
+$("shake").onclick=()=>{doms.forEach(d=>d.p=rnd());energy=1};
+PRESETS.forEach(([f,b,l])=>{const c=document.createElement("button");c.className="chip";c.textContent=f;c.onclick=()=>{B=b;L=l;doms.forEach(d=>d.p=rnd());sync()};$("presets").appendChild(c)});
+
+// --- repulsion simulation on a sphere ---
+let energy=1;
+function step(){
+  const n=doms.length;let moved=0;
+  const F=doms.map(()=>[0,0,0]);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){if(i===j)continue;
+    const a=doms[i],b=doms[j];
+    const w=(a.lp&&b.lp)?1.9:(a.lp||b.lp)?1.4:1;
+    const d=[a.p[0]-b.p[0],a.p[1]-b.p[1],a.p[2]-b.p[2]];const r=Math.max(Math.hypot(...d),.05);
+    for(let k=0;k<3;k++)F[i][k]+=w*d[k]/(r*r*r);
+  }
+  doms.forEach((d,i)=>{const dot=F[i][0]*d.p[0]+F[i][1]*d.p[1]+F[i][2]*d.p[2];
+    const t=F[i].map((f,k)=>f-dot*d.p[k]);
+    const s=.012;const np=norm(d.p.map((x,k)=>x+s*t[k]));
+    moved=Math.max(moved,Math.hypot(np[0]-d.p[0],np[1]-d.p[1],np[2]-d.p[2]));d.p=np});
+  return moved;
+}
+
+// --- drawing ---
+const cv=$("cv"),ctx=cv.getContext("2d");
+let yaw=.6,pitch=.35,drag=null;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function size(){const r=cv.getBoundingClientRect(),dpr=devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.width*dpr}
+addEventListener("resize",size);
+cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.01;pitch+=(e.clientY-drag.y)*.01;pitch=Math.max(-1.4,Math.min(1.4,pitch));drag={x:e.clientX,y:e.clientY}});
+cv.addEventListener("pointerup",()=>drag=null);cv.addEventListener("pointercancel",()=>drag=null);
+function rot(p){let[x,y,z]=p;const cy=Math.cos(yaw),sy=Math.sin(yaw);[x,z]=[x*cy+z*sy,-x*sy+z*cy];const cp=Math.cos(pitch),sp=Math.sin(pitch);[y,z]=[y*cp-z*sp,y*sp+z*cp];return[x,y,z]}
+function angleText(){ // measured angle between bonding pairs (for 2–4 domains), shown on canvas
+  const b=doms.filter(d=>!d.lp);if(b.length<2)return null;
+  let min=180;for(let i=0;i<b.length;i++)for(let j=i+1;j<b.length;j++){const c=b[i].p[0]*b[j].p[0]+b[i].p[1]*b[j].p[1]+b[i].p[2]*b[j].p[2];min=Math.min(min,Math.acos(Math.max(-1,Math.min(1,c)))*180/Math.PI)}
+  return min;
+}
+function colors(){const css=getComputedStyle(document.documentElement);const g=k=>css.getPropertyValue(k).trim();return{bp:g("--bp"),lp:g("--lp"),atom:g("--atom"),ink:g("--ink"),muted:g("--muted")}}
+function drawMol(ctx,W,list,C,yw,pt,scale=.33){
+  const cx=W/2,cy=W/2,R=W*scale;
+  const r3=p=>{let[x,y,z]=p;const cy_=Math.cos(yw),sy=Math.sin(yw);[x,z]=[x*cy_+z*sy,-x*sy+z*cy_];const cp=Math.cos(pt),sp=Math.sin(pt);[y,z]=[y*cp-z*sp,y*sp+z*cp];return[x,y,z]};
+  const proj=p=>{const[x,y,z]=r3(p);const f=3/(3-z);return{x:cx+x*R*f,y:cy-y*R*f,z,f}};
+  const items=[];
+  list.forEach(d=>{
+    const end=proj(d.p),mid=proj(d.p.map(v=>v*(d.lp?.5:.55)));
+    if(d.lp){items.push({z:mid.z,draw:()=>ballOn(ctx,mid.x,mid.y,R*.36*mid.f,C.lp,.82)})}
+    else{
+      items.push({z:mid.z,draw:()=>{ctx.strokeStyle=C.atom;ctx.lineWidth=R*.05;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(end.x,end.y);ctx.stroke();ballOn(ctx,mid.x,mid.y,R*.27*mid.f,C.bp,.55)}});
+      items.push({z:end.z+.001,draw:()=>ballOn(ctx,end.x,end.y,R*.12*end.f,C.bp,1)});
+    }
+  });
+  items.push({z:0,draw:()=>ballOn(ctx,cx,cy,R*.17,C.atom,1)});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.draw());
+}
+function ballOn(c,x,y,r,col,alpha){
+  const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);
+  g.addColorStop(0,"rgba(255,255,255,"+(.75*alpha)+")");g.addColorStop(.35,col);g.addColorStop(1,col);
+  c.globalAlpha=alpha;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.globalAlpha=1;
+}
+// settled geometry for any (bonding, lone) combination, computed once
+const GEO={};
+function geometry(b,l){
+  const k=b+"-"+l;if(GEO[k])return GEO[k];
+  const saved=doms;doms=[];for(let i=0;i<b;i++)doms.push({lp:false,p:rnd()});for(let i=0;i<l;i++)doms.push({lp:true,p:rnd()});
+  for(let i=0;i<1500;i++)step();
+  // orient: first bonding pair points up, so thumbnails look tidy
+  const res=doms;doms=saved;return GEO[k]=res;
+}
+function thumb(b,l,px){
+  const c=document.createElement("canvas"),dpr=devicePixelRatio||1;c.width=c.height=px*dpr;c.style.width=c.style.height=px+"px";
+  drawMol(c.getContext("2d"),px*dpr,geometry(b,l),colors(),.5,.35,.36);return c;
+}
+const NAME2KEY={};Object.entries(SHAPES).forEach(([k,s])=>{if(s.t&&!NAME2KEY[s.n])NAME2KEY[s.n]=k});
+function intro(){
+  const box=$("introFigs");box.innerHTML="";
+  [[2,"زوجان: خطي"],[3,"ثلاثة: مثلث مستوٍ"],[4,"أربعة: رباعي الأوجه"]].forEach(([n,t])=>{
+    const f=document.createElement("figure");f.append(thumb(n,0,120));const cap=document.createElement("figcaption");cap.textContent=t;f.append(cap);box.append(f)});
+}
+function frame(){
+  for(let k=0;k<6;k++)energy=step();
+  if(!drag&&!reduce)yaw+=.003;
+  const C=colors();
+  const W=cv.width;
+  ctx.clearRect(0,0,W,W);
+  drawMol(ctx,W,doms,C,yaw,pitch);
+  ctx.fillStyle=energy>.0005?C.muted:C.ink;ctx.font=`600 ${Math.round(W*.036)}px "IBM Plex Sans Arabic",Tahoma,sans-serif`;ctx.textAlign="right";ctx.direction="rtl";
+  ctx.fillText(energy>.0005?"البالونات تتنافر…":"استقر الشكل ✓",W*.96,W*.94);
+  requestAnimationFrame(frame);
+}
+// --- challenge ---
+const Q=[
+ {f:"BF<sub>3</sub>",c:"B",b:3,l:0,h:"لذرة B ثلاثة إلكترونات تكافؤ، يرتبط كل منها بذرة F، ولا يبقى زوج غير رابط."},
+ {f:"OCl<sub>2</sub>",c:"O",b:2,l:2,h:"لذرة O ستة إلكترونات تكافؤ: إلكترونان للرابطتين، والأربعة الباقية تكوّن زوجين غير رابطين."},
+ {f:"BeF<sub>2</sub>",c:"Be",b:2,l:0,h:"لذرة Be إلكترونا تكافؤ يكوّنان رابطتين مع ذرتي F."},
+ {f:"CF<sub>4</sub>",c:"C",b:4,l:0,h:"لذرة C أربعة إلكترونات تكافؤ تكوّن أربع روابط."},
+ {f:"NH<sub>4</sub><sup>+</sup>",c:"N",b:4,l:0,h:"مجموع الإلكترونات: 5 + 4 − 1 = 8، أي 4 أزواج كلها رابطة."},
+ {f:"PF<sub>3</sub>",c:"P",b:3,l:1,h:"لذرة P خمسة إلكترونات تكافؤ: ثلاثة للروابط، والاثنان الباقيان زوج غير رابط."},
+ {f:"PF<sub>5</sub>",c:"P",b:5,l:0,h:"إلكترونات P الخمسة كلها تكوّن روابط مع ذرات F الخمس."},
+ {f:"H<sub>2</sub>Se",c:"Se",b:2,l:2,h:"Se من مجموعة الأكسجين: رابطتان وزوجان غير رابطين، مثل الماء."},
+ {f:"CS<sub>2</sub>",c:"C",b:2,l:0,h:"بين C وكل ذرة S رابطة ثنائية، والرابطة الثنائية تُعدّ بالونًا واحدًا."},
+ {f:"CH<sub>2</sub>O",c:"C",b:3,l:0,h:"ترتبط C بذرتي H وبذرة O برابطة ثنائية، فتكون ثلاث مناطق كثافة."},
+ {f:"NCl<sub>3</sub>",c:"N",b:3,l:1,h:"لذرة N خمسة إلكترونات: ثلاث روابط وزوج غير رابط."},
+ {f:"CCl<sub>2</sub>F<sub>2</sub>",c:"C",b:4,l:0,h:"ترتبط C بأربع ذرات (2 Cl و 2 F) بروابط أحادية."},
+ {f:"SF<sub>6</sub>",c:"S",b:6,l:0,h:"ترتبط S بست ذرات F دون أزواج غير رابطة."}
+];
+const ALLNAMES=[...new Set(Object.values(SHAPES).filter(s=>s.t).map(s=>s.n))];
+let qi=0,score=0,tried=0,pickS=null,pickH=null,answered=false;
+const order=Q.map((_,i)=>i).sort(()=>Math.random()-.5);
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+function loadQ(){
+  const q=Q[order[qi%Q.length]];answered=false;pickS=pickH=null;
+  $("qMol").innerHTML=q.f;$("qCentral").textContent="الذرة المركزية: "+q.c;
+  $("hintTxt").hidden=true;$("hintTxt").textContent=q.h;$("fb").hidden=true;
+  const correct=SHAPES[q.b+"-"+q.l].n;
+  const opts=shuffle([correct,...shuffle(ALLNAMES.filter(n=>n!==correct)).slice(0,3)]);
+  const so=$("shapeOpts");so.innerHTML="";
+  opts.forEach(n=>{const b=document.createElement("button");b.className="opt pic";const [kb,kl]=NAME2KEY[n].split("-").map(Number);b.append(thumb(kb,kl,84));const sp=document.createElement("span");sp.textContent=n;b.append(sp);b.setAttribute("aria-pressed","false");b.onclick=()=>{pickS=n;[...so.children].forEach(c=>c.setAttribute("aria-pressed",c===b))};so.appendChild(b)});
+  const ho=$("hybOpts");ho.innerHTML="";
+  Object.values(HYB).forEach(h=>{const b=document.createElement("button");b.className="opt lat";b.textContent=h;b.setAttribute("aria-pressed","false");b.onclick=()=>{pickH=h;[...ho.children].forEach(c=>c.setAttribute("aria-pressed",c===b))};ho.appendChild(b)});
+}
+$("hintBtn").onclick=()=>$("hintTxt").hidden=false;
+$("check").onclick=()=>{
+  const q=Q[order[qi%Q.length]],fb=$("fb");fb.hidden=false;
+  if(!pickS||!pickH){fb.className="feedback bad";fb.textContent="اختاري الشكل ونوع التهجين أولًا.";return}
+  const s=SHAPES[q.b+"-"+q.l];
+  const okB=B===q.b&&L===q.l,okS=pickS===s.n,okH=pickH===HYB[q.b+q.l];
+  if(!answered){tried++;if(okB&&okS&&okH)score++;answered=true;$("score").textContent=`النقاط: ${score} من ${tried}`}
+  if(okB&&okS&&okH){fb.className="feedback ok";fb.textContent=`أحسنتِ! ${s.n}، زاوية الرابطة ${s.a}، والتهجين ${HYB[q.b+q.l]}.`}
+  else{
+    const m=[];
+    if(!okB)m.push(`البالونات: الصحيح ${q.b} أزواج رابطة و ${q.l} غير رابطة`);
+    if(!okS)m.push(`الشكل الصحيح: ${s.n}`);
+    if(!okH)m.push(`التهجين الصحيح: ${HYB[q.b+q.l]}`);
+    fb.className="feedback bad";fb.textContent="حاولي مرة أخرى. "+m.join(" · ");
+  }
+};
+$("next").onclick=()=>{qi++;loadQ()};
+
+size();sync();intro();loadQ();requestAnimationFrame(frame);
+</script>
+
+</body></html>

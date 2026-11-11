@@ -1,0 +1,324 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>رحلة في سورة الحج</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=El+Messiri:wght@500;700&family=Almarai:wght@400;700&display=swap">
+<style>
+/* Layout: a soft botanical study map — five stations in a stepper, colors follow the four verse branches of the lesson map */
+:root{
+  --bg:#F7FAF8; --card:#FFFFFF; --ink:#22324A; --muted:#64748B; --line:#DCE6E2; --soft:#EEF5F2;
+  --teal:#2A9D96; --teal-s:#E2F4F2; --coral:#E07A6F; --coral-s:#FCEBE8; --gold:#C99A2E; --gold-s:#FBF3DF; --plum:#8E6BB0; --plum-s:#F1EAF8;
+  --ok:#2E9B6A; --ok-s:#E1F4EA; --bad:#D0607A; --bad-s:#FBE8EE; --star:#E8B53C;
+  --f-q:"Amiri Quran","Amiri",serif; --f-h:"El Messiri","Almarai",Tahoma,sans-serif; --f-b:"Almarai","Geeza Pro",Tahoma,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:17px;line-height:1.85;direction:rtl;
+  background-image:radial-gradient(circle at 10% 0%,#E6F3EE 0,transparent 40%),radial-gradient(circle at 95% 20%,#F6EEF8 0,transparent 35%),radial-gradient(circle at 50% 100%,#FBF3E2 0,transparent 40%)}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header{text-align:center;margin-bottom:16px}
+.eyebrow{display:inline-block;font-family:var(--f-h);font-size:14px;color:var(--teal);background:var(--teal-s);border-radius:999px;padding:0 14px}
+h1{font-family:var(--f-h);font-weight:700;font-size:clamp(30px,7vw,46px);margin:6px 0 0;line-height:1.3}
+.sub{color:var(--muted);margin:0 0 8px}
+.credit{display:inline-block;font-weight:700;font-size:15px;color:var(--plum);background:var(--plum-s);border-radius:999px;padding:3px 16px}
+
+.journey{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:0 6px 18px -14px rgba(34,50,74,.4)}
+.jtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.jtop b{font-family:var(--f-h);font-size:16px}
+.stars{font-family:var(--f-h);font-size:15px;background:var(--gold-s);border-radius:999px;padding:0 12px}
+.stars span{color:var(--star)}
+.path{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));position:relative}
+.path::before{content:"";position:absolute;top:17px;inset-inline:8%;height:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 13px)}
+.stop{display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;z-index:1;background:none;border:none;cursor:pointer;font:inherit;color:inherit;padding:0}
+.stop i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--f-h);font-weight:700;background:var(--card);border:3px solid var(--line);color:var(--muted)}
+.stop span{font-size:12px;color:var(--muted);line-height:1.3;text-align:center}
+.stop.cur i{border-color:var(--teal);color:var(--teal);box-shadow:0 0 0 5px var(--teal-s)}
+.stop.done i{background:var(--teal);border-color:var(--teal);color:#fff}
+.stop:disabled{cursor:default}
+@media (max-width:480px){.stop span{font-size:10px}.stop i{width:30px;height:30px}.path::before{top:14px}}
+
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding-block:20px 24px;padding-inline:18px}
+.panel h2{font-family:var(--f-h);font-size:24px;margin:0;color:var(--teal)}
+.how{color:var(--muted);margin:2px 0 14px;font-size:15px}
+.btn{font-family:var(--f-h);font-size:17px;border:none;border-radius:12px;padding:8px 22px;cursor:pointer;background:var(--teal);color:#fff}
+.btn.alt{background:var(--soft);color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:14px}
+.fb{min-height:1.8em;font-weight:700;text-align:center;margin-top:8px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+button:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+
+/* verses */
+.mushaf{background:linear-gradient(var(--gold-s),#FFFDF6);border:2px solid #E9D3A0;border-radius:18px;padding:18px 18px 14px;position:relative}
+.mushaf::before{content:"";position:absolute;inset:6px;border:1px solid #EBDDB8;border-radius:13px;pointer-events:none}
+.basmala{text-align:center;font-family:var(--f-q);font-size:22px;color:#7A6230;margin-bottom:4px}
+.verses{font-family:var(--f-q);font-size:clamp(22px,4.6vw,28px);line-height:2.4;text-align:justify;color:#1F4D3F}
+.vn{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;border:1.5px solid #C9A65A;font-size:.6em;font-family:var(--f-b);color:#7A6230;margin:0 4px;vertical-align:middle}
+.w{font:inherit;color:#B04E3A;background:#FBEADF;border:none;border-bottom:2px dashed #E09A7E;border-radius:6px;padding:0 3px;cursor:pointer}
+.w.seen{background:var(--teal-s);color:var(--teal);border-bottom-color:var(--teal)}
+.meaning{margin-top:12px;background:var(--teal-s);border-radius:14px;padding:10px 14px;min-height:64px}
+.meaning b{font-family:var(--f-q);font-size:22px;color:var(--teal);font-weight:400}
+.meaning p{margin:0}
+.count{font-family:var(--f-h);font-size:14px;color:var(--muted);text-align:center;margin-top:8px}
+
+/* map sort */
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px;border:2px dashed var(--line);border-radius:14px;min-height:56px;margin-bottom:12px}
+.card{font-family:var(--f-b);font-size:15px;font-weight:700;line-height:1.6;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 12px;cursor:pointer;color:var(--ink);text-align:start}
+.card[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--soft);transform:translateY(-2px)}
+.branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.branches{grid-template-columns:1fr}}
+.branch{border-radius:16px;border:2px solid;cursor:pointer;background:var(--card);padding:0;text-align:start;font:inherit;color:inherit;overflow:hidden;min-height:110px;display:flex;flex-direction:column}
+.branch h3{margin:0;font-family:var(--f-h);font-size:17px;color:#fff;padding:5px 14px}
+.branch .in{display:flex;flex-direction:column;gap:6px;padding:8px}
+.branch .in .card{cursor:default;font-size:14px}
+.branch.ready{box-shadow:0 0 0 4px var(--soft)}
+.b1{border-color:var(--teal)} .b1 h3{background:var(--teal)}
+.b2{border-color:var(--coral)} .b2 h3{background:var(--coral)}
+.b3{border-color:var(--gold)} .b3 h3{background:var(--gold)}
+.b4{border-color:var(--plum)} .b4 h3{background:var(--plum)}
+.card.ok{border-color:var(--ok);background:var(--ok-s)} .card.no{border-color:var(--bad);background:var(--bad-s)}
+
+/* scene */
+.scene{display:grid;gap:12px}
+.who{border-radius:16px;background:var(--coral-s);padding:10px 14px}
+.who h4{margin:0 0 6px;font-family:var(--f-h);font-size:18px;color:var(--coral)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-b);font-size:15px;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
+.chip.ok{background:var(--ok);border-color:var(--ok);color:#fff} .chip.no{background:var(--bad-s);border-color:var(--bad);color:var(--bad)}
+.chip:disabled{cursor:default}
+.q{font-family:var(--f-q);font-size:22px;color:#1F4D3F}
+
+/* link */
+.links{display:grid;gap:12px}
+.lk{border:1.5px solid var(--line);border-radius:16px;padding:10px 14px;background:var(--gold-s)}
+.lk p{margin:0 0 6px;font-weight:700}
+.lk .opts .chip{font-family:var(--f-q);font-weight:400;font-size:19px}
+
+/* true false */
+.tf{text-align:center}
+.tf .stmt{font-size:21px;font-weight:700;min-height:3.6em;display:grid;place-items:center;padding:10px;background:var(--plum-s);border-radius:16px;margin:8px 0 14px}
+.tf .row .btn{min-width:120px}
+.btn.yes{background:var(--ok)} .btn.no{background:var(--bad)}
+
+/* behavior scale */
+.scale{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+.pan{border-radius:16px;border:2px solid;padding:8px;min-height:120px;background:var(--card);cursor:pointer;font:inherit;color:inherit;text-align:start;display:flex;flex-direction:column;gap:6px}
+.pan h4{margin:0;font-family:var(--f-h);font-size:16px}
+.pan.good{border-color:var(--ok)} .pan.good h4{color:var(--ok)}
+.pan.bad{border-color:var(--bad)} .pan.bad h4{color:var(--bad)}
+.pan.ready{box-shadow:0 0 0 4px var(--soft)}
+
+/* certificate */
+.cert{border:3px double var(--gold);border-radius:22px;padding:22px 18px;text-align:center;background:linear-gradient(#FFFDF6,var(--gold-s))}
+.cert h3{font-family:var(--f-h);font-size:28px;margin:0;color:var(--gold)}
+.cert .nm{font-family:var(--f-h);font-size:30px;color:var(--plum);min-height:1.4em}
+.cert .big{font-size:40px;color:var(--star);letter-spacing:4px}
+.cert input{font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:6px 12px;width:min(280px,100%);text-align:center}
+.goal{font-family:var(--f-h);font-size:19px;color:var(--teal);margin-top:10px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.pop{animation:pop .35s ease}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">الدرس السادس · الدراسات الإسلامية</span>
+    <h1>رحلة في سورة الحج</h1>
+    <p class="sub">تفسير الآيات (١–٤): تقوى الله والاستعداد للآخرة</p>
+    <span class="credit">مشاركة الطالبة: نور أحمد عيسى</span>
+  </header>
+
+  <div class="journey">
+    <div class="jtop"><b>محطات الرحلة</b><span class="stars"><span>★</span> <b id="starCount">٠</b> نجمة · <b id="ptCount">٠</b> نقطة</span></div>
+    <div class="path" id="path"></div>
+  </div>
+
+  <!-- 0 verses -->
+  <section class="panel" data-st="0">
+    <h2>أقرأ وأفهم</h2>
+    <p class="how">اقرئي الآيات، ثم اضغطي كل كلمة ملوّنة لتظهر معناها. افتحي الكلمات كلها لتنتقلي إلى المحطة التالية.</p>
+    <div class="mushaf">
+      <div class="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <div class="verses" id="verses">
+        يَا أَيُّهَا النَّاسُ اتَّقُوا رَبَّكُمْ ۚ إِنَّ <button class="w" data-k="0">زَلْزَلَةَ السَّاعَةِ</button> شَيْءٌ عَظِيمٌ <span class="vn">١</span>
+        يَوْمَ تَرَوْنَهَا <button class="w" data-k="1">تَذْهَلُ</button> كُلُّ مُرْضِعَةٍ عَمَّا أَرْضَعَتْ وَتَضَعُ كُلُّ ذَاتِ حَمْلٍ حَمْلَهَا وَتَرَى النَّاسَ <button class="w" data-k="2">سُكَارَىٰ</button> وَمَا هُم بِسُكَارَىٰ وَلَٰكِنَّ عَذَابَ اللَّهِ شَدِيدٌ <span class="vn">٢</span>
+        وَمِنَ النَّاسِ مَن <button class="w" data-k="3">يُجَادِلُ فِي اللَّهِ بِغَيْرِ عِلْمٍ</button> وَيَتَّبِعُ كُلَّ شَيْطَانٍ <button class="w" data-k="4">مَّرِيدٍ</button> <span class="vn">٣</span>
+        كُتِبَ عَلَيْهِ أَنَّهُ مَن <button class="w" data-k="5">تَوَلَّاهُ</button> فَأَنَّهُ يُضِلُّهُ وَيَهْدِيهِ إِلَىٰ <button class="w" data-k="6">عَذَابِ السَّعِيرِ</button> <span class="vn">٤</span>
+      </div>
+    </div>
+    <div class="meaning" id="meaning"><p style="color:var(--muted)">اضغطي كلمة ملوّنة من الآيات.</p></div>
+    <div class="count" id="wcount"></div>
+    <div class="row"><button class="btn" id="n0" disabled>إلى خريطة الدرس</button></div>
+  </section>
+
+  <!-- 1 map -->
+  <section class="panel" data-st="1" hidden>
+    <h2>أبني خريطة الدرس</h2>
+    <p class="how">اختاري بطاقة، ثم اضغطي فرع الآية الذي تنتمي إليه. كل بطاقة صحيحة من أول مرة = نجمة.</p>
+    <div class="pool" id="mpool"></div>
+    <div class="branches" id="branches">
+      <button class="branch b1" data-b="1"><h3>الآية ١ | الأمر بالتقوى</h3><div class="in"></div></button>
+      <button class="branch b2" data-b="2"><h3>الآية ٢ | أهوال الساعة</h3><div class="in"></div></button>
+      <button class="branch b3" data-b="3"><h3>الآية ٣ | الجدال بغير علم</h3><div class="in"></div></button>
+      <button class="branch b4" data-b="4"><h3>الآية ٤ | عاقبة الاتباع</h3><div class="in"></div></button>
+    </div>
+    <div class="fb" id="mfb"></div>
+    <div class="row"><button class="btn" id="n1" hidden>إلى مشهد الساعة</button></div>
+  </section>
+
+  <!-- 2 scene + link -->
+  <section class="panel" data-st="2" hidden>
+    <h2>مشهد قيام الساعة</h2>
+    <p class="how">ما حال كلٍّ مما يأتي عند قيام الساعة؟ اختاري الوصف الصحيح.</p>
+    <div class="scene" id="scene"></div>
+    <h2 style="margin-top:22px;color:var(--gold)">أصل الفائدة بالآية</h2>
+    <p class="how">لكل فائدة، اختاري الآية التي تدلّ عليها.</p>
+    <div class="links" id="links"></div>
+    <div class="fb" id="sfb"></div>
+    <div class="row"><button class="btn" id="n2" hidden>إلى تحدّي صواب أم خطأ</button></div>
+  </section>
+
+  <!-- 3 true/false -->
+  <section class="panel" data-st="3" hidden>
+    <h2>صواب أم خطأ؟</h2>
+    <p class="how">احكمي على كل عبارة. الإجابة الصحيحة = نجمة.</p>
+    <div class="tf">
+      <div class="count" id="tfc"></div>
+      <div class="stmt" id="tfs"></div>
+      <div class="row" id="tfb"><button class="btn yes" data-v="1">صواب ✓</button><button class="btn no" data-v="0">خطأ ✗</button></div>
+      <div class="fb" id="tff"></div>
+      <div class="row"><button class="btn alt" id="tfn" hidden>التالي</button><button class="btn" id="n3" hidden>إلى ميزان السلوك</button></div>
+    </div>
+  </section>
+
+  <!-- 4 behavior -->
+  <section class="panel" data-st="4" hidden>
+    <h2>ميزان السلوك</h2>
+    <p class="how">الأثر السلوكي للدرس: «أتقي الله وأعمل الصالحات». اختاري كل موقف، ثم ضعيه في الكفّة المناسبة.</p>
+    <div class="pool" id="bpool"></div>
+    <div class="scale">
+      <button class="pan good" data-p="1"><h4>استعداد للآخرة وتقوى</h4><div class="in opts"></div></button>
+      <button class="pan bad" data-p="0"><h4>معصية أو اتباع بغير علم</h4><div class="in opts"></div></button>
+    </div>
+    <div class="fb" id="bfb"></div>
+    <div class="row"><button class="btn" id="n4" hidden>إلى الشهادة</button></div>
+  </section>
+
+  <!-- 5 certificate -->
+  <section class="panel" data-st="5" hidden>
+    <div class="cert">
+      <h3>شهادة إتمام الرحلة</h3>
+      <p style="margin:6px 0">تشهد هذه البطاقة بأنّ الطالبة</p>
+      <div class="nm" id="certName">…</div>
+      <p style="margin:6px 0">أتمّت رحلة تفسير الآيات (١–٤) من سورة الحج</p>
+      <div class="big" id="certStars"></div>
+      <p id="certScore" style="font-family:var(--f-h);font-size:19px;margin:0"></p>
+      <p class="goal">أستعدّ للآخرة بالطاعة، وأتجنّب المعاصي والاتباع بغير علم.</p>
+      <label for="nameIn" style="display:block;font-size:14px;color:var(--muted);margin-top:10px">اكتبي اسمك ليظهر على الشهادة</label>
+      <input id="nameIn" placeholder="اسم الطالبة">
+    </div>
+    <div class="row"><button class="btn alt" id="again">أعيدي الرحلة</button></div>
+  </section>
+
+  <footer>مبني على الدرس السادس «تفسير الآيات (١–٤) من سورة الحج» — كتاب الدراسات الإسلامية للصف الثاني المتوسط.<br>مشاركة الطالبة: نور أحمد عيسى</footer>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const A=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const NAMES=['أقرأ وأفهم','خريطة الدرس','مشهد الساعة','صواب أم خطأ','ميزان السلوك','الشهادة'];
+let stars=0,pts=0,maxStars=0,cur=0,reached=0;
+const addStar=n=>{stars+=n;pts+=n*10;$('#starCount').textContent=A(stars);$('#ptCount').textContent=A(pts);const e=$('#starCount');e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')};
+function drawPath(){$('#path').innerHTML=NAMES.map((n,i)=>'<button class="stop'+(i<reached?' done':'')+(i===cur?' cur':'')+'" data-i="'+i+'"'+(i>reached?' disabled':'')+'><i>'+(i<reached&&i!==cur?'✓':A(i+1))+'</i><span>'+n+'</span></button>').join('');
+  $$('#path .stop').forEach(b=>b.addEventListener('click',()=>show(+b.dataset.i)))}
+function show(i){cur=i;$$('.panel').forEach(p=>p.hidden=+p.dataset.st!==i);drawPath();window.scrollTo({top:0,behavior:'smooth'})}
+function advance(i){reached=Math.max(reached,i);show(i)}
+
+/* 0 words */
+const MEAN=[['زَلْزَلَةَ السَّاعَةِ','اضطراب الأرض عند قيام الساعة.'],['تَذْهَلُ','تنشغل لهول ما ترى عن أحبّ الناس إليها.'],['سُكَارَىٰ','تغيب عقول الناس من شدّة الهول فيبدون كالسكارى، وليسوا بسكارى من الخمر.'],
+ ['يُجَادِلُ فِي اللَّهِ بِغَيْرِ عِلْمٍ','يخاصم ويشكّك في قدرة الله على البعث دون دليل.'],['مَّرِيدٍ','متمرّد على الله.'],['تَوَلَّاهُ','اتّخذه وليًّا واتّبعه.'],['عَذَابِ السَّعِيرِ','عذاب جهنم المتّقدة.']];
+const seen=new Set();
+function wcount(){$('#wcount').textContent='فتحتِ '+A(seen.size)+' من '+A(MEAN.length)+' كلمات'}
+$$('.w').forEach(b=>b.addEventListener('click',()=>{const k=+b.dataset.k;b.classList.add('seen');
+  $('#meaning').innerHTML='<b>'+MEAN[k][0]+'</b><p>'+MEAN[k][1]+'</p>';
+  if(!seen.has(k)){seen.add(k);if(seen.size===MEAN.length){addStar(3);$('#n0').disabled=false;$('#meaning').innerHTML+='<p style="color:var(--ok);font-weight:700">أحسنتِ! حصلتِ على ٣ نجوم.</p>'}}wcount()}));
+wcount();$('#n0').addEventListener('click',()=>advance(1));
+
+/* 1 map */
+const MAP=[['النداء لجميع الناس بتقوى الله',1],['التقوى: فعل أوامر الله واجتناب نواهيه',1],['زلزلة الساعة: اضطراب الأرض عند قيام الساعة',1],['ما يحدث عند قيام الساعة شيء عظيم',1],
+ ['المرضعة تذهل عن رضيعها',2],['الحامل تضع حملها من شدّة الهول',2],['الناس كأنهم سكارى وليسوا بسكارى',2],['السبب: شدّة عذاب الله',2],
+ ['يخاصم ويشكّك في قدرة الله على البعث دون دليل',3],['يتّبع كل شيطان متمرّد على الله',3],['الشياطين المضلّون من الإنس والجن',3],
+ ['من يتولّى الشيطان ويتّبعه يُضلّه',4],['الشيطان يقود من اتّبعه إلى عذاب السعير',4],['الهداية المستفادة: الحذر من المضلّين',4]];
+let msel=null,mleft;
+function startMap(){const P=$('#mpool');P.innerHTML='';mleft=MAP.length;$$('.branch .in').forEach(x=>x.innerHTML='');$('#mfb').textContent='';$('#n1').hidden=true;
+  shuffle(MAP).forEach(m=>{const c=document.createElement('button');c.className='card';c.textContent=m[0];c.setAttribute('aria-pressed','false');c._m=m;c._tries=0;
+    c.addEventListener('click',()=>{msel=msel===c?null:c;$$('#mpool .card').forEach(x=>x.setAttribute('aria-pressed',x===msel));$$('.branch').forEach(b=>b.classList.toggle('ready',!!msel))});P.appendChild(c)})}
+$$('.branch').forEach(b=>b.addEventListener('click',()=>{if(!msel)return;const ok=+b.dataset.b===msel._m[1];const f=$('#mfb');
+  if(ok){const d=document.createElement('span');d.className='card ok';d.textContent=msel._m[0];b.querySelector('.in').appendChild(d);if(msel._tries===0)addStar(1);msel.remove();msel=null;mleft--;
+    f.className='fb ok';f.textContent=mleft?'✓ في مكانها الصحيح.':'✓ اكتملت خريطة الدرس!';if(!mleft)$('#n1').hidden=false}
+  else{msel._tries++;f.className='fb bad';f.textContent='✗ ليست في هذا الفرع. اقرئي الآية مرة أخرى وجرّبي فرعًا آخر.';b.animate&&b.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'none'}],{duration:260})}
+  $$('.branch').forEach(x=>x.classList.toggle('ready',!!msel))}));
+$('#n1').addEventListener('click',()=>advance(2));
+
+/* 2 scene + link */
+const SCENE=[['المُرضِعة','تذهل عن رضيعها',['تذهل عن رضيعها','تضع حملها','تبحث عن رضيعها']],
+ ['الحامل','تضع حملها من شدّة الهول',['تضع حملها من شدّة الهول','تذهل عن رضيعها','تبقى مطمئنّة']],
+ ['الناس','كأنهم سكارى وما هم بسكارى',['كأنهم سكارى وما هم بسكارى','سكارى من الخمر','يمشون بهدوء']]];
+const LINKS=[['أنّ كل شيء يضطرب عند قيام الساعة.','﴿إِنَّ زَلْزَلَةَ السَّاعَةِ شَيْءٌ عَظِيمٌ﴾'],['أنّ من اتّبع المضلّين أضلّوه.','﴿كُتِبَ عَلَيْهِ أَنَّهُ مَن تَوَلَّاهُ فَأَنَّهُ يُضِلُّهُ﴾']];
+const LOPTS=['﴿كُتِبَ عَلَيْهِ أَنَّهُ مَن تَوَلَّاهُ فَأَنَّهُ يُضِلُّهُ﴾','﴿إِنَّ زَلْزَلَةَ السَّاعَةِ شَيْءٌ عَظِيمٌ﴾','﴿تَذْهَلُ كُلُّ مُرْضِعَةٍ﴾'];
+let sleft;
+function choice(container,opts,ans,onDone){const o=document.createElement('div');o.className='opts';
+  shuffle(opts).forEach(t=>{const b=document.createElement('button');b.className='chip';b.textContent=t;b.addEventListener('click',()=>{const ok=t===ans;o.querySelectorAll('.chip').forEach(x=>{x.disabled=true;if(x.textContent===ans)x.classList.add('ok')});if(!ok)b.classList.add('no');onDone(ok)});o.appendChild(b)});container.appendChild(o)}
+function startScene(){const S=$('#scene'),L=$('#links');S.innerHTML='';L.innerHTML='';$('#sfb').textContent='';$('#n2').hidden=true;sleft=SCENE.length+LINKS.length;
+  const fin=ok=>{if(ok)addStar(1);sleft--;if(!sleft){$('#sfb').className='fb ok';$('#sfb').textContent='أحسنتِ! أنهيتِ أسئلة التقويم.';$('#n2').hidden=false}};
+  SCENE.forEach(s=>{const d=document.createElement('div');d.className='who';d.innerHTML='<h4>'+s[0]+'</h4>';choice(d,s[2],s[1],fin);S.appendChild(d)});
+  LINKS.forEach(l=>{const d=document.createElement('div');d.className='lk';d.innerHTML='<p>الفائدة: '+l[0]+'</p>';choice(d,LOPTS,l[1],fin);L.appendChild(d)})}
+$('#n2').addEventListener('click',()=>advance(3));
+
+/* 3 true/false */
+const TF=[['النداء في الآية الأولى خاصّ بالمؤمنين فقط.',0,'النداء ﴿يَا أَيُّهَا النَّاسُ﴾ لجميع الناس.'],
+ ['معنى «مَريد»: متمرّد على الله.',1,'نعم، المَريد هو المتمرّد على الله.'],
+ ['يبدو الناس يوم القيامة سكارى لأنهم شربوا الخمر.',0,'ليسوا بسكارى، ولكنّ شدّة عذاب الله أذهلت عقولهم.'],
+ ['حقيقة التقوى أن يجعل العبد بينه وبين عذاب الله وقاية بفعل أوامره واجتناب نواهيه.',1,'هذا هو تعريف التقوى في الدرس.'],
+ ['المجادل في الآية الثالثة يجادل بعلم ودليل واضح.',0,'هو يجادل ﴿بِغَيْرِ عِلْمٍ﴾ ويشكّك في البعث دون دليل.'],
+ ['من تولّى الشيطان واتّبعه فإنه يُضلّه ويقوده إلى عذاب السعير.',1,'هذا معنى الآية الرابعة.'],
+ ['حقيقة أهوال الساعة لا يعلمها إلا الله وحده.',1,'﴿إِنَّ زَلْزَلَةَ السَّاعَةِ شَيْءٌ عَظِيمٌ﴾ لا يعلم حقيقته إلا الله.']];
+let tdeck,ti;
+function startTF(){tdeck=shuffle(TF);ti=0;$('#n3').hidden=true;loadTF()}
+function loadTF(){const t=tdeck[ti];$('#tfc').textContent='العبارة '+A(ti+1)+' من '+A(tdeck.length);$('#tfs').textContent=t[0];$('#tff').textContent='';$('#tfn').hidden=true;$$('#tfb .btn').forEach(b=>b.disabled=false)}
+$$('#tfb .btn').forEach(b=>b.addEventListener('click',()=>{const t=tdeck[ti];const ok=+b.dataset.v===t[1];$$('#tfb .btn').forEach(x=>x.disabled=true);if(ok)addStar(1);
+  $('#tff').className='fb '+(ok?'ok':'bad');$('#tff').textContent=(ok?'✓ ':'✗ العبارة '+(t[1]?'صحيحة':'خاطئة')+'. ')+t[2];
+  if(ti<tdeck.length-1)$('#tfn').hidden=false;else $('#n3').hidden=false}));
+$('#tfn').addEventListener('click',()=>{ti++;loadTF()});
+$('#n3').addEventListener('click',()=>advance(4));
+
+/* 4 behavior */
+const BEH=[['المحافظة على الصلاة في وقتها',1],['برّ الوالدين والإحسان إليهما',1],['الاستغفار والتوبة بعد الخطأ',1],['سؤال أهل العلم عند الشكّ في مسألة',1],
+ ['نشر مقطع يشكّك في البعث دون تثبّت',0],['تقليد مشهورة في معصية لأنّ الجميع يفعلها',0],['الجدال في أمور الدين بلا علم',0],['ترك واجب لإرضاء الصديقات',0]];
+let bsel=null,bleft;
+function startBeh(){const P=$('#bpool');P.innerHTML='';bleft=BEH.length;$$('.pan .in').forEach(x=>x.innerHTML='');$('#bfb').textContent='';$('#n4').hidden=true;
+  shuffle(BEH).forEach(m=>{const c=document.createElement('button');c.className='card';c.textContent=m[0];c.setAttribute('aria-pressed','false');c._m=m;c._t=0;
+    c.addEventListener('click',()=>{bsel=bsel===c?null:c;$$('#bpool .card').forEach(x=>x.setAttribute('aria-pressed',x===bsel));$$('.pan').forEach(p=>p.classList.toggle('ready',!!bsel))});P.appendChild(c)})}
+$$('.pan').forEach(p=>p.addEventListener('click',()=>{if(!bsel)return;const ok=+p.dataset.p===bsel._m[1];const f=$('#bfb');
+  if(ok){const d=document.createElement('span');d.className='chip '+(bsel._m[1]?'ok':'no');d.textContent=bsel._m[0];d.style.cursor='default';p.querySelector('.in').appendChild(d);if(bsel._t===0)addStar(1);bsel.remove();bsel=null;bleft--;
+    f.className='fb ok';f.textContent=bleft?'✓ أحسنتِ الوزن.':'✓ اكتمل الميزان! تقوى الله تقرّبنا منه وتقينا عذابه.';if(!bleft)$('#n4').hidden=false}
+  else{bsel._t++;f.className='fb bad';f.textContent='✗ فكّري مرة أخرى: هل هذا الموقف يقرّب من الله أم يُبعد عنه؟'}
+  $$('.pan').forEach(x=>x.classList.toggle('ready',!!bsel))}));
+$('#n4').addEventListener('click',()=>{cert();advance(5)});
+
+/* 5 certificate */
+maxStars=3+MAP.length+SCENE.length+LINKS.length+TF.length+BEH.length;
+function cert(){const r=stars/maxStars;$('#certStars').textContent='★'.repeat(r>=.9?3:r>=.6?2:1);
+  $('#certScore').textContent='جمعتِ '+A(stars)+' نجمة من '+A(maxStars)+' ('+A(pts)+' نقطة)'}
+$('#nameIn').addEventListener('input',e=>{$('#certName').textContent=e.target.value.trim()||'…'});
+$('#again').addEventListener('click',()=>{stars=0;pts=0;addStar(0);reached=0;seen.clear();$$('.w').forEach(w=>w.classList.remove('seen'));$('#n0').disabled=true;wcount();
+  $('#meaning').innerHTML='<p style="color:var(--muted)">اضغطي كلمة ملوّنة من الآيات.</p>';startMap();startScene();startTF();startBeh();show(0)});
+
+startMap();startScene();startTF();startBeh();show(0);
+})();
+</script>
+
+</body></html>

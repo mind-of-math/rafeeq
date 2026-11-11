@@ -1,0 +1,630 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>حاسبة مُتقِن العلمية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap">
+<style>
+/* Layout: one physical-looking calculator, centred; history tape beside it on wide screens, below on phones */
+:root {
+  --page: #eef0f4;
+  --ink: #1d2230;
+  --muted: #5b6275;
+  --body: #262a35;          /* calculator shell */
+  --body-edge: #171a22;
+  --lcd: #cfd9c4;           /* LCD glass */
+  --lcd-ink: #1c2416;
+  --lcd-dim: #6c7b60;
+  --key-num: #f3f4f7;
+  --key-num-ink: #1d2230;
+  --key-fn: #3a3f4d;
+  --key-fn-ink: #f2f4f8;
+  --key-warn: #e0672b;
+  --key-eq: #2f6fe4;
+  --accent: #2f6fe4;
+  --tape: #ffffff;
+  --tape-line: #dde1ea;
+  --font-ar: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #12141a; --ink: #e8eaf0; --muted: #9aa1b4; --tape: #1b1e27; --tape-line: #2c3140; --accent: #6b9bff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #12141a; --ink: #e8eaf0; --muted: #9aa1b4; --tape: #1b1e27; --tape-line: #2c3140; --accent: #6b9bff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--page); color: var(--ink); font-family: var(--font-ar);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+header h1 { margin: 0; font-size: 1.5rem; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+.stage { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+
+/* ---------- calculator shell ---------- */
+.calc {
+  direction: ltr; width: 100%; max-width: 420px; flex: 0 1 420px;
+  background: linear-gradient(180deg, #2d3240 0%, var(--body) 40%, var(--body-edge) 100%);
+  border-radius: 28px 28px 40px 40px; padding: 18px 16px 22px;
+  box-shadow: 0 18px 40px rgba(10, 14, 30, .35), inset 0 1px 0 rgba(255,255,255,.08);
+  user-select: none; -webkit-user-select: none;
+}
+.brand { display: flex; justify-content: space-between; align-items: center; color: #c8cdd9; padding: 0 6px 10px; }
+.brand b { font-family: var(--font-ar); font-size: .95rem; letter-spacing: .02em; direction: rtl; }
+.brand span { font-size: .7rem; letter-spacing: .12em; color: #8b93a7; }
+.solar { width: 74px; height: 16px; border-radius: 3px; background: repeating-linear-gradient(90deg, #3b2f28 0 9px, #241c18 9px 10px); border: 1px solid #0d0f14; }
+
+.lcd {
+  background: var(--lcd); color: var(--lcd-ink); border-radius: 10px;
+  border: 6px solid #11131a; box-shadow: inset 0 3px 8px rgba(0,0,0,.25);
+  padding: 8px 12px 10px; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between;
+}
+.status { display: flex; gap: 10px; font: 600 .68rem/1 var(--font-ar); color: var(--lcd-dim); direction: ltr; }
+.status .on { color: var(--lcd-ink); }
+.expr {
+  font-family: var(--font-math); font-size: 1.55rem; line-height: 1.2;
+  min-height: 56px; display: flex; align-items: center; flex-wrap: wrap; overflow-x: auto; overflow-y: hidden; padding: 4px 0;
+}
+.result { font-family: var(--font-math); font-size: 2rem; text-align: right; min-height: 52px; display: flex; justify-content: flex-end; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.result.err { font-family: var(--font-ar); font-size: 1.15rem; font-weight: 700; }
+
+/* natural-display pieces */
+.seq { display: inline-flex; align-items: center; white-space: nowrap; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: .9em; }
+.frac > .num, .frac > .den { display: inline-flex; padding: 0 3px; }
+.frac > .bar { align-self: stretch; height: 2px; background: currentColor; margin: 2px 0; }
+.sup { font-size: .68em; align-self: flex-start; margin-top: -.15em; }
+.sub { font-size: .68em; align-self: flex-end; margin-bottom: -.25em; }
+.sqrt { display: inline-flex; align-items: stretch; }
+.sqrt > .rad { font-size: 1.05em; }
+.sqrt > .seq { border-top: 2px solid currentColor; padding: 1px 2px 0; }
+.fn { font-style: normal; }
+.var { font-style: italic; }
+.ph { display: inline-block; min-width: .7em; height: .95em; border: 1.5px dotted var(--lcd-dim); border-radius: 2px; margin: 0 1px; }
+.cur { display: inline-block; width: 2px; height: 1.05em; background: var(--lcd-ink); margin: 0 1px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cur { animation: none; } }
+
+/* ---------- keys ---------- */
+.pad { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.nav { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 8px; align-items: center; }
+.dpad { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 30px); gap: 4px; }
+.dpad button[data-k="up"] { grid-column: 2; grid-row: 1; }
+.dpad button[data-k="left"] { grid-column: 1; grid-row: 1 / span 2; }
+.dpad button[data-k="right"] { grid-column: 3; grid-row: 1 / span 2; }
+.dpad button[data-k="down"] { grid-column: 2; grid-row: 2; }
+.grid6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+.grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; margin-top: 6px; }
+button.k {
+  font: 600 .95rem/1 var(--font-math); border: 0; border-radius: 9px; cursor: pointer;
+  background: var(--key-fn); color: var(--key-fn-ink); height: 38px; padding: 0 2px;
+  box-shadow: 0 3px 0 #11131a, inset 0 1px 0 rgba(255,255,255,.12);
+  display: inline-flex; align-items: center; justify-content: center; transition: transform .05s;
+}
+button.k:active, button.k.pressed { transform: translateY(2px); box-shadow: 0 1px 0 #11131a; }
+button.k:focus-visible { outline: 3px solid #8fb4ff; outline-offset: 2px; }
+.grid5 button.k { height: 50px; font-size: 1.35rem; border-radius: 11px; }
+button.num { background: var(--key-num); color: var(--key-num-ink); box-shadow: 0 3px 0 #9aa0ad, inset 0 1px 0 #fff; }
+button.warn { background: var(--key-warn); color: #fff; box-shadow: 0 3px 0 #9c4318; font-family: var(--font-ar); font-size: 1rem !important; }
+button.eq { background: var(--key-eq); color: #fff; box-shadow: 0 3px 0 #1b4aa6; }
+button.mode { font-family: var(--font-ar); font-size: .8rem; }
+button.mode.on { background: #e9b949; color: #2a2208; box-shadow: 0 3px 0 #8c6a17; }
+.k .seq { pointer-events: none; }
+.k .ph { border-color: currentColor; opacity: .75; height: .85em; min-width: .6em; }
+.k .frac { font-size: .75em; }
+.k .frac > .bar { height: 1.5px; margin: 1px 0; }
+
+/* ---------- tape / help ---------- */
+.side { flex: 1 1 300px; min-width: 0; max-width: 460px; display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--tape); border: 1px solid var(--tape-line); border-radius: 14px; padding: 14px 16px; }
+.card h2 { margin: 0 0 8px; font-size: 1rem; }
+.tape { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 300px; overflow-y: auto; }
+.tape li { direction: ltr; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 4px; border-bottom: 1px solid var(--tape-line); font-family: var(--font-math); font-size: 1.1rem; cursor: pointer; border-radius: 6px; }
+.tape li:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.tape li .ans { font-weight: 600; color: var(--accent); }
+.tape .empty { color: var(--muted); font-family: var(--font-ar); font-size: .9rem; cursor: default; direction: rtl; }
+.tips { margin: 0; padding-inline-start: 18px; color: var(--muted); font-size: .9rem; line-height: 1.8; }
+.tips b { color: var(--ink); }
+.examples { display: flex; flex-wrap: wrap; gap: 8px; }
+.examples button { font: 600 .95rem var(--font-math); direction: ltr; border: 1px solid var(--tape-line); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; display: inline-flex; align-items: center; }
+.examples button:hover { border-color: var(--accent); color: var(--accent); }
+.examples button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap" dir="rtl">
+  <header>
+    <h1>حاسبة مُتقِن العلمية</h1>
+    <p>حاسبة علمية بعرض طبيعي: الكسور بسط فوق مقام، والأسس والأساس في مكانهما كما في الكتاب.</p>
+  </header>
+
+  <div class="stage">
+    <div class="calc" id="calc" aria-label="الحاسبة">
+      <div class="brand"><span>SCIENTIFIC</span><div class="solar"></div><b>مُتقِن</b></div>
+      <div class="lcd">
+        <div class="status" id="status"></div>
+        <div class="expr" id="expr" aria-live="polite"></div>
+        <div class="result" id="result" aria-live="polite"></div>
+      </div>
+      <div class="pad">
+        <div class="nav">
+          <div class="grid6" style="grid-template-columns:1fr 1fr;gap:6px">
+            <button class="k mode" id="k-sd" data-k="sd" title="تبديل بين الكسر والعدد العشري">S⇔D</button>
+            <button class="k mode" id="k-fix" data-k="fix" title="تقريب لأقرب جزء من عشرة آلاف">Fix 4</button>
+          </div>
+          <div class="dpad">
+            <button class="k" data-k="up" aria-label="أعلى">▲</button>
+            <button class="k" data-k="left" aria-label="يسار">◀</button>
+            <button class="k" data-k="right" aria-label="يمين">▶</button>
+            <button class="k" data-k="down" aria-label="أسفل">▼</button>
+          </div>
+          <div class="grid6" style="grid-template-columns:1fr 1fr;gap:6px">
+            <button class="k mode on" id="k-deg" data-k="deg" title="وحدة الزاوية">DEG</button>
+            <button class="k" data-k="ans" title="الإجابة السابقة">Ans</button>
+          </div>
+        </div>
+        <div class="grid6" id="fnkeys"></div>
+        <div class="grid5" id="numkeys"></div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <section class="card">
+        <h2>أمثلة من درس اللوغاريتمات العشرية</h2>
+        <div class="examples" id="examples"></div>
+      </section>
+      <section class="card">
+        <h2>السجل</h2>
+        <ul class="tape" id="tape"></ul>
+      </section>
+      <section class="card">
+        <h2>طريقة الاستعمال</h2>
+        <ul class="tips">
+          <li><b>log</b> لوغاريتم عشري، و<b>log<sub>□</sub>□</b> لوغاريتم بأي أساس (صيغة تغيير الأساس).</li>
+          <li>زر <b>الكسر</b> يكتب بسطًا ومقامًا، وانتقلي بينهما بالأسهم ▲ ▼.</li>
+          <li>الأسهم ◀ ▶ تحرّك المؤشر داخل الأسس والكسور والخروج منها.</li>
+          <li><b>Fix 4</b> يقرّب الناتج لأقرب جزء من عشرة آلاف، و<b>S⇔D</b> يبدّل بين الكسر والعشري.</li>
+          <li>لوحة المفاتيح تعمل أيضًا: الأرقام، + − * / ^ ( ) و Enter و Backspace.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // ---------------- model ----------------
+  function Seq(parent, field) { return { type: 'seq', items: [], parent: parent || null, field: field || null }; }
+  function node(type, fields) {
+    var n = { type: type };
+    fields.forEach(function (f) { n[f] = Seq(n, f); });
+    n.fields = fields;
+    return n;
+  }
+  var root, cur, lastResult = null, ans = 0, showFrac = true, fix4 = false, deg = true, history = [];
+  function reset() { root = Seq(null, null); cur = { seq: root, i: 0 }; }
+  reset();
+
+  function ownerSeqOf(n) { return n._in; }
+  function insertItem(it) {
+    it._in = cur.seq;
+    cur.seq.items.splice(cur.i, 0, it);
+    if (it.fields) { cur = { seq: it[it.fields[0]], i: 0 }; }
+    else cur.i++;
+  }
+  function ch(v) { insertItem({ type: 'ch', v: v }); }
+  function tmpl(type) { insertItem(node(type, ({ frac: ['num', 'den'], sup: ['exp'], sqrt: ['body'], logb: ['base', 'arg'], sub: [] })[type])); }
+
+  function exitRight() {
+    var s = cur.seq; if (!s.parent) return;
+    var n = s.parent, idx = n.fields.indexOf(s.field);
+    if (idx < n.fields.length - 1) { cur = { seq: n[n.fields[idx + 1]], i: 0 }; return; }
+    var outer = n._in; cur = { seq: outer, i: outer.items.indexOf(n) + 1 };
+  }
+  function exitLeft() {
+    var s = cur.seq; if (!s.parent) return;
+    var n = s.parent, idx = n.fields.indexOf(s.field);
+    if (idx > 0) { var f = n[n.fields[idx - 1]]; cur = { seq: f, i: f.items.length }; return; }
+    var outer = n._in; cur = { seq: outer, i: outer.items.indexOf(n) };
+  }
+  function right() {
+    var s = cur.seq;
+    if (cur.i < s.items.length) {
+      var it = s.items[cur.i];
+      if (it.fields) cur = { seq: it[it.fields[0]], i: 0 }; else cur.i++;
+    } else exitRight();
+  }
+  function left() {
+    var s = cur.seq;
+    if (cur.i > 0) {
+      var it = s.items[cur.i - 1];
+      if (it.fields) { var f = it[it.fields[it.fields.length - 1]]; cur = { seq: f, i: f.items.length }; } else cur.i--;
+    } else exitLeft();
+  }
+  function vertical(dir) {
+    var s = cur.seq;
+    while (s && s.parent) {
+      var n = s.parent;
+      if (n.type === 'frac') {
+        var target = dir < 0 ? n.num : n.den;
+        if (target !== s) { cur = { seq: target, i: Math.min(cur.seq === s ? cur.i : target.items.length, target.items.length) }; return; }
+      }
+      s = n._in;
+    }
+  }
+  function del() {
+    var s = cur.seq;
+    if (cur.i > 0) {
+      var it = s.items[cur.i - 1];
+      if (it.fields) {
+        var empty = it.fields.every(function (f) { return it[f].items.length === 0; });
+        if (empty) { s.items.splice(cur.i - 1, 1); cur.i--; }
+        else { var f = it[it.fields[it.fields.length - 1]]; cur = { seq: f, i: f.items.length }; }
+      } else { s.items.splice(cur.i - 1, 1); cur.i--; }
+    } else if (s.parent) {
+      var n = s.parent;
+      var empty2 = n.fields.every(function (f) { return n[f].items.length === 0; });
+      var outer = n._in, pos = outer.items.indexOf(n);
+      if (empty2) { outer.items.splice(pos, 1); cur = { seq: outer, i: pos }; }
+      else exitLeft();
+    }
+  }
+
+  // ---------------- render ----------------
+  var FN_LABEL = { 'log(': 'log(', 'ln(': 'ln(', 'sin(': 'sin(', 'cos(': 'cos(', 'tan(': 'tan(' };
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function renderSeq(s, withCursor) {
+    var h = '<span class="seq">';
+    var showPh = s.items.length === 0 && !(withCursor && cur.seq === s);
+    for (var i = 0; i <= s.items.length; i++) {
+      if (withCursor && cur.seq === s && cur.i === i) h += '<span class="cur"></span>';
+      if (i < s.items.length) h += renderItem(s.items[i], withCursor);
+    }
+    if (showPh) h += '<span class="ph"></span>';
+    return h + '</span>';
+  }
+  function renderItem(it, wc) {
+    switch (it.type) {
+      case 'ch':
+        if (FN_LABEL[it.v]) return '<span class="fn">' + FN_LABEL[it.v] + '</span>';
+        if (it.v === 'Ans') return '<span class="fn">Ans</span>';
+        if (it.v === 'e' || it.v === 'x') return '<span class="var">' + it.v + '</span>';
+        if ('+−×÷'.indexOf(it.v) >= 0) return '<span style="margin:0 .18em">' + it.v + '</span>';
+        return esc(it.v);
+      case 'frac': return '<span class="frac"><span class="num">' + renderSeq(it.num, wc) + '</span><span class="bar"></span><span class="den">' + renderSeq(it.den, wc) + '</span></span>';
+      case 'sup': return '<span class="sup">' + renderSeq(it.exp, wc) + '</span>';
+      case 'sqrt': return '<span class="sqrt"><span class="rad">√</span>' + renderSeq(it.body, wc) + '</span>';
+      case 'logb': return '<span class="fn">log</span><span class="sub">' + renderSeq(it.base, wc) + '</span>(' + renderSeq(it.arg, wc) + ')';
+    }
+    return '';
+  }
+
+  // ---------------- evaluate ----------------
+  function tokens(s) {
+    var out = [], i = 0, items = s.items;
+    while (i < items.length) {
+      var it = items[i];
+      if (it.type === 'ch' && /[0-9.]/.test(it.v)) {
+        var num = '';
+        while (i < items.length && items[i].type === 'ch' && /[0-9.]/.test(items[i].v)) { num += items[i].v; i++; }
+        if ((num.match(/\./g) || []).length > 1 || num === '.') throw 'syntax';
+        out.push({ t: 'num', v: parseFloat(num) }); continue;
+      }
+      if (it.type === 'ch') {
+        var v = it.v;
+        if (v === 'π') out.push({ t: 'num', v: Math.PI });
+        else if (v === 'e') out.push({ t: 'num', v: Math.E });
+        else if (v === 'Ans') out.push({ t: 'num', v: ans });
+        else if (v === '+' || v === '−' || v === '×' || v === '÷') out.push({ t: 'op', v: v });
+        else if (v === '(' || v === ')') out.push({ t: v });
+        else if (FN_LABEL[v]) out.push({ t: 'fn', v: v.slice(0, -1) });
+        else if (v === '(−)') out.push({ t: 'neg' });
+      } else if (it.type === 'frac') {
+        var a = evalSeq(it.num), b = evalSeq(it.den);
+        if (b === 0) throw 'math';
+        out.push({ t: 'num', v: a / b, frac: true });
+      } else if (it.type === 'sqrt') {
+        var r = evalSeq(it.body); if (r < 0) throw 'math'; out.push({ t: 'num', v: Math.sqrt(r) });
+      } else if (it.type === 'logb') {
+        var base = evalSeq(it.base), arg = evalSeq(it.arg);
+        if (base <= 0 || base === 1 || arg <= 0) throw 'math';
+        out.push({ t: 'num', v: Math.log(arg) / Math.log(base) });
+      } else if (it.type === 'sup') {
+        out.push({ t: 'pow', v: evalSeq(it.exp) });
+      }
+      i++;
+    }
+    return out;
+  }
+  function evalSeq(s) {
+    if (s.items.length === 0) throw 'syntax';
+    var tk = tokens(s), p = 0;
+    function peek() { return tk[p]; }
+    function startsPrimary(t) { return t && (t.t === 'num' || t.t === '(' || t.t === 'fn' || t.t === 'neg'); }
+    function expr() {
+      var v = term();
+      while (peek() && peek().t === 'op' && (peek().v === '+' || peek().v === '−')) {
+        var o = tk[p++].v, r = term(); v = o === '+' ? v + r : v - r;
+      }
+      return v;
+    }
+    function term() {
+      var v = unary();
+      for (;;) {
+        var t = peek();
+        if (t && t.t === 'op' && (t.v === '×' || t.v === '÷')) {
+          p++; var r = unary();
+          if (t.v === '÷') { if (r === 0) throw 'math'; v = v / r; } else v = v * r;
+        } else if (startsPrimary(t)) { v = v * unary(); }
+        else break;
+      }
+      return v;
+    }
+    function unary() {
+      var t = peek();
+      if (t && (t.t === 'neg' || (t.t === 'op' && t.v === '−'))) { p++; return -unary(); }
+      if (t && t.t === 'op' && t.v === '+') { p++; return unary(); }
+      return power();
+    }
+    function power() {
+      var v = primary();
+      while (peek() && peek().t === 'pow') {
+        var e = tk[p++].v;
+        var r = Math.pow(v, e);
+        if (isNaN(r)) throw 'math';
+        v = r;
+      }
+      return v;
+    }
+    function primary() {
+      var t = tk[p];
+      if (!t) throw 'syntax';
+      if (t.t === 'num') { p++; return t.v; }
+      if (t.t === '(') { p++; var v = expr(); if (peek() && peek().t === ')') p++; return v; }
+      if (t.t === 'fn') {
+        p++; var a = expr(); if (peek() && peek().t === ')') p++;
+        return applyFn(t.v, a);
+      }
+      throw 'syntax';
+    }
+    var v = expr();
+    if (p < tk.length) throw 'syntax';
+    if (!isFinite(v)) throw 'math';
+    return v;
+  }
+  function applyFn(f, a) {
+    var k = deg ? Math.PI / 180 : 1;
+    switch (f) {
+      case 'log': if (a <= 0) throw 'math'; return Math.log10(a);
+      case 'ln': if (a <= 0) throw 'math'; return Math.log(a);
+      case 'sin': return clean(Math.sin(a * k));
+      case 'cos': return clean(Math.cos(a * k));
+      case 'tan': { var c = Math.cos(a * k); if (Math.abs(c) < 1e-12) throw 'math'; return clean(Math.tan(a * k)); }
+    }
+    throw 'syntax';
+  }
+  function clean(x) { return Math.abs(x) < 1e-12 ? 0 : (Math.abs(x - Math.round(x)) < 1e-12 ? Math.round(x) : x); }
+
+  // ---------------- output formatting ----------------
+  function toFraction(x) {
+    if (!isFinite(x) || Number.isInteger(x) || Math.abs(x) >= 1e6) return null;
+    var sign = x < 0 ? -1 : 1, y = Math.abs(x);
+    var h1 = 1, h0 = 0, k1 = 0, k0 = 1, b = y;
+    for (var i = 0; i < 40; i++) {
+      var a = Math.floor(b);
+      var h2 = a * h1 + h0, k2 = a * k1 + k0;
+      h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+      if (Math.abs(y - h1 / k1) < 1e-12 * Math.max(1, y)) break;
+      b = 1 / (b - a);
+      if (!isFinite(b)) break;
+    }
+    if (k1 > 1 && k1 <= 9999 && h1 < 1e7 && Math.abs(y - h1 / k1) < 1e-11) return { n: sign * h1, d: k1 };
+    return null;
+  }
+  function fmtDec(x) {
+    if (fix4) return x.toFixed(4).replace('-', '−');
+    if (x === 0) return '0';
+    var ax = Math.abs(x);
+    if (ax >= 1e10 || ax < 1e-9) {
+      var e = Math.floor(Math.log10(ax)), m = x / Math.pow(10, e);
+      var ms = parseFloat(m.toPrecision(10)).toString();
+      return ms.replace('-', '−') + '<span style="margin:0 .15em">×</span>10<span class="sup">' + String(e).replace('-', '−') + '</span>';
+    }
+    return parseFloat(x.toPrecision(10)).toString().replace('-', '−');
+  }
+  function resultHTML(x) {
+    var fr = toFraction(x);
+    if (fr && showFrac && !fix4) {
+      var neg = fr.n < 0 ? '−' : '';
+      return neg + '<span class="frac"><span class="num">' + Math.abs(fr.n) + '</span><span class="bar"></span><span class="den">' + fr.d + '</span></span>';
+    }
+    return fmtDec(x);
+  }
+
+  // ---------------- UI ----------------
+  var exprEl = document.getElementById('expr'), resEl = document.getElementById('result'), statusEl = document.getElementById('status');
+  var showingResult = false;
+  function draw() {
+    exprEl.innerHTML = renderSeq(root, !showingResult);
+    statusEl.innerHTML = '<span class="' + (deg ? 'on' : '') + '">D</span><span class="' + (fix4 ? 'on' : '') + '">FIX</span><span class="on">Math▲</span>';
+    if (lastResult === null) { resEl.classList.remove('err'); resEl.innerHTML = ''; }
+    else if (lastResult.err) { resEl.classList.add('err'); resEl.textContent = lastResult.err; }
+    else { resEl.classList.remove('err'); resEl.innerHTML = resultHTML(lastResult.v); }
+    document.getElementById('k-fix').classList.toggle('on', fix4);
+    document.getElementById('k-deg').classList.toggle('on', deg);
+    document.getElementById('k-deg').textContent = deg ? 'DEG' : 'RAD';
+    try { localStorage.setItem('mutqin-calc', JSON.stringify({ fix4: fix4, deg: deg })); } catch (e) {}
+  }
+  function compute() {
+    try {
+      var v = evalSeq(root);
+      v = clean(v);
+      lastResult = { v: v }; ans = v; showFrac = true;
+      history.unshift({ html: renderSeq(root, false), v: v, tree: snapshot() });
+      history = history.slice(0, 30);
+      drawTape();
+    } catch (e) {
+      lastResult = { err: e === 'math' ? 'خطأ رياضي' : 'خطأ في الصيغة' };
+    }
+    showingResult = true;
+  }
+  function snapshot() { return JSON.stringify(strip(root)); }
+  function strip(s) { return s.items.map(function (it) { var o = { type: it.type }; if (it.v) o.v = it.v; (it.fields || []).forEach(function (f) { o[f] = strip(it[f]); }); return o; }); }
+  function restore(json) {
+    reset();
+    (function build(list, seq) {
+      list.forEach(function (o) {
+        var it = o.type === 'ch' ? { type: 'ch', v: o.v } : node(o.type, ({ frac: ['num', 'den'], sup: ['exp'], sqrt: ['body'], logb: ['base', 'arg'] })[o.type]);
+        it._in = seq; seq.items.push(it);
+        (it.fields || []).forEach(function (f) { build(o[f], it[f]); });
+      });
+    })(JSON.parse(json), root);
+    cur = { seq: root, i: root.items.length };
+  }
+  function drawTape() {
+    var ul = document.getElementById('tape');
+    if (!history.length) { ul.innerHTML = '<li class="empty">تظهر هنا العمليات التي تحسبينها، واضغطي على أي سطر لإعادته.</li>'; return; }
+    ul.innerHTML = history.map(function (h, i) {
+      return '<li data-i="' + i + '"><span>' + h.html + '</span><span class="ans">= ' + resultHTML(h.v) + '</span></li>';
+    }).join('');
+  }
+  document.getElementById('tape').addEventListener('click', function (e) {
+    var li = e.target.closest('li[data-i]'); if (!li) return;
+    var h = history[+li.dataset.i]; restore(h.tree); lastResult = { v: h.v }; showingResult = true; draw();
+  });
+
+  function startEditIfResult(isOperator) {
+    if (!showingResult) return;
+    showingResult = false;
+    if (lastResult && !lastResult.err && isOperator) { reset(); ch('Ans'); }
+    else if (lastResult && !lastResult.err) { reset(); }
+    else { cur = { seq: root, i: root.items.length }; }
+    lastResult = null;
+  }
+
+  function press(k) {
+    var ops = ['+', '−', '×', '÷', 'sq', 'pow'];
+    if (['left', 'right', 'up', 'down'].indexOf(k) >= 0) {
+      if (showingResult) { showingResult = false; lastResult = null; cur = { seq: root, i: k === 'left' ? root.items.length : 0 }; if (k === 'left' || k === 'right') { draw(); return; } }
+      if (k === 'left') left(); else if (k === 'right') right(); else vertical(k === 'up' ? -1 : 1);
+      draw(); return;
+    }
+    if (k === 'sd') { if (lastResult && !lastResult.err) { showFrac = !showFrac; if (fix4) fix4 = false; } draw(); return; }
+    if (k === 'fix') { fix4 = !fix4; draw(); drawTape(); return; }
+    if (k === 'deg') { deg = !deg; draw(); return; }
+    if (k === 'ac') { reset(); lastResult = null; showingResult = false; draw(); return; }
+    if (k === 'del') { if (showingResult) { showingResult = false; lastResult = null; cur = { seq: root, i: root.items.length }; } else del(); draw(); return; }
+    if (k === '=') { compute(); draw(); return; }
+    startEditIfResult(ops.indexOf(k) >= 0);
+    switch (k) {
+      case 'frac': tmpl('frac'); break;
+      case 'sqrt': tmpl('sqrt'); break;
+      case 'sq': tmpl('sup'); ch('2'); exitRight(); break;
+      case 'pow': tmpl('sup'); break;
+      case 'logb': tmpl('logb'); break;
+      case 'log': ch('log('); break;
+      case 'ln': ch('ln('); break;
+      case 'sin': ch('sin('); break;
+      case 'cos': ch('cos('); break;
+      case 'tan': ch('tan('); break;
+      case 'tenx': ch('1'); ch('0'); tmpl('sup'); break;
+      case 'ex': ch('e'); tmpl('sup'); break;
+      case 'x10': ch('×'); ch('1'); ch('0'); tmpl('sup'); break;
+      case 'neg': ch('(−)'); break;
+      case 'ans': ch('Ans'); break;
+      default: ch(k);
+    }
+    draw();
+  }
+
+  // ---------------- keys ----------------
+  var PH = '<span class="ph"></span>';
+  var FN = [
+    ['frac', '<span class="seq"><span class="frac"><span class="num">' + PH + '</span><span class="bar"></span><span class="den">' + PH + '</span></span></span>', 'كسر'],
+    ['sqrt', '<span class="seq"><span class="sqrt"><span class="rad">√</span><span class="seq">' + PH + '</span></span></span>', 'جذر تربيعي'],
+    ['sq', '<span class="seq"><span class="var">x</span><span class="sup">2</span></span>', 'تربيع'],
+    ['pow', '<span class="seq"><span class="var">x</span><span class="sup">' + PH + '</span></span>', 'أس'],
+    ['logb', '<span class="seq">log<span class="sub">' + PH + '</span>' + PH + '</span>', 'لوغاريتم بأي أساس'],
+    ['log', 'log', 'لوغاريتم عشري'],
+    ['ln', 'ln', 'لوغاريتم طبيعي'],
+    ['tenx', '<span class="seq">10<span class="sup">' + PH + '</span></span>', 'عشرة أس'],
+    ['ex', '<span class="seq"><span class="var">e</span><span class="sup">' + PH + '</span></span>', 'e أس'],
+    ['(', '(', 'قوس'],
+    [')', ')', 'قوس'],
+    ['π', 'π', 'باي'],
+    ['sin', 'sin', 'جيب'],
+    ['cos', 'cos', 'جيب تمام'],
+    ['tan', 'tan', 'ظل'],
+    ['neg', '(−)', 'سالب'],
+    ['e', '<span class="var">e</span>', 'العدد e'],
+    ['x10', '<span class="seq">×10<span class="sup">' + PH + '</span></span>', 'ضرب في قوة للعدد 10']
+  ];
+  var NUM = [
+    ['7', 'num'], ['8', 'num'], ['9', 'num'], ['del', 'warn', 'حذف'], ['ac', 'warn', 'مسح'],
+    ['4', 'num'], ['5', 'num'], ['6', 'num'], ['×', ''], ['÷', ''],
+    ['1', 'num'], ['2', 'num'], ['3', 'num'], ['+', ''], ['−', ''],
+    ['0', 'num'], ['.', 'num'], ['ans', '', 'Ans'], ['=', 'eq'], ['=', 'eq']
+  ];
+  var fnEl = document.getElementById('fnkeys');
+  FN.forEach(function (f) {
+    var b = document.createElement('button'); b.className = 'k'; b.dataset.k = f[0]; b.innerHTML = f[1]; b.setAttribute('aria-label', f[2]); b.title = f[2];
+    fnEl.appendChild(b);
+  });
+  var numEl = document.getElementById('numkeys');
+  NUM.slice(0, 19).forEach(function (n) {
+    var b = document.createElement('button'); b.className = 'k ' + n[1]; b.dataset.k = n[0];
+    b.textContent = n[2] ? (n[0] === 'ans' ? 'Ans' : n[2]) : n[0];
+    if (n[0] === 'ans') { b.style.fontSize = '1rem'; }
+    if (n[0] === '=') { b.style.gridColumn = 'span 2'; }
+    numEl.appendChild(b);
+  });
+  document.getElementById('calc').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]'); if (!b) return;
+    press(b.dataset.k);
+  });
+
+  // keyboard
+  var KEYMAP = { '*': '×', '/': '÷', '-': '−', '+': '+', 'Enter': '=', '=': '=', 'Backspace': 'del', 'Escape': 'ac', 'Delete': 'ac',
+                 'ArrowLeft': 'left', 'ArrowRight': 'right', 'ArrowUp': 'up', 'ArrowDown': 'down', '^': 'pow', '(': '(', ')': ')', '.': '.', 'l': 'log', 'p': 'π' };
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = /^[0-9]$/.test(e.key) ? e.key : KEYMAP[e.key];
+    if (!k) return;
+    e.preventDefault();
+    var btn = document.querySelector('#calc button[data-k="' + (k === '=' ? '=' : k) + '"]');
+    if (btn) { btn.classList.add('pressed'); setTimeout(function () { btn.classList.remove('pressed'); }, 90); }
+    press(k);
+  });
+
+  // ---------------- lesson examples ----------------
+  var EX = [
+    { label: 'log&nbsp;5', build: function () { ch('log('); ch('5'); } },
+    { label: 'log&nbsp;0.3', build: function () { ch('log('); ch('0'); ch('.'); ch('3'); } },
+    { label: 'log<sub>3</sub>&nbsp;20', build: function () { tmpl('logb'); ch('3'); right(); ch('2'); ch('0'); } },
+    { label: '<span class="frac" style="font-size:.85em"><span class="num">log 19</span><span class="bar"></span><span class="den">log 4</span></span>', build: function () { tmpl('frac'); ch('log('); ch('1'); ch('9'); ch(')'); vertical(1); ch('log('); ch('4'); ch(')'); } },
+    { label: '10<sup>6.66</sup>', build: function () { ch('1'); ch('0'); tmpl('sup'); ch('6'); ch('.'); ch('6'); ch('6'); } },
+    { label: 'log<sub>2</sub>&nbsp;240', build: function () { tmpl('logb'); ch('2'); right(); ch('2'); ch('4'); ch('0'); } }
+  ];
+  var exEl = document.getElementById('examples');
+  EX.forEach(function (x) {
+    var b = document.createElement('button'); b.innerHTML = x.label;
+    b.addEventListener('click', function () { reset(); lastResult = null; showingResult = false; x.build(); compute(); draw(); });
+    exEl.appendChild(b);
+  });
+
+  try { var saved = JSON.parse(localStorage.getItem('mutqin-calc') || 'null'); if (saved) { fix4 = !!saved.fix4; deg = saved.deg !== false; } } catch (e) {}
+  // opening state: lesson example 5
+  EX[2].build(); compute();
+  drawTape(); draw();
+})();
+</script>
+
+</body></html>

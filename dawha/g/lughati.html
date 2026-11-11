@@ -1,0 +1,791 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
+<title>دفتر لغتي التفاعلي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: a ruled school notebook — tabs are the lessons, each page holds the rule and two activities, the teacher's pen marks answers */
+:root{
+  --paper:#F6F9FC; --rule:#DFE8F2; --margin:#E9A3A8;
+  --ink:#1D3557; --muted:#5A6D85; --card:#FFFFFF; --chip:#EDF3F9; --line:#C8D5E4;
+  --pen:#C8323C; --pen-soft:#FBE5E6; --leaf:#3B8A3A; --leaf-soft:#E2F1DE; --sky:#2B74B8; --sky-soft:#E1EEFA; --leaf-bg:#A3D392; --leaf-ink:#173A16;
+  --orange:#C25A12; --violet:#7A4DB3; --gold:#D9A21B;
+  --f-display:"Reem Kufi","Noto Naskh Arabic",Tahoma,sans-serif;
+  --f-body:"Noto Naskh Arabic","Geeza Pro",Tahoma,serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#101923; --rule:#1B2836; --margin:#5A2D33;
+  --ink:#E4ECF5; --muted:#9BAAC0; --card:#162230; --chip:#1E2C3D; --line:#2B3C51;
+  --pen:#FF6F76; --pen-soft:#3A1E23; --leaf:#7DC570; --leaf-soft:#1C3220; --sky:#71B3EE; --sky-soft:#18304A;
+  --orange:#F0A060; --violet:#B79AE8; --gold:#F0C04A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#101923; --rule:#1B2836; --margin:#5A2D33;
+  --ink:#E4ECF5; --muted:#9BAAC0; --card:#162230; --chip:#1E2C3D; --line:#2B3C51;
+  --pen:#FF6F76; --pen-soft:#3A1E23; --leaf:#7DC570; --leaf-soft:#1C3220; --sky:#71B3EE; --sky-soft:#18304A;
+  --orange:#F0A060; --violet:#B79AE8; --gold:#F0C04A;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.9;direction:rtl}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,5vw,36px);line-height:1.3;margin:0;text-wrap:balance}
+h1 small{display:block;font-family:var(--f-body);font-weight:400;font-size:15px;color:var(--muted)}
+.credit{display:inline-block;margin-top:6px;font-family:var(--f-body);font-weight:600;font-size:15px;color:var(--leaf);background:var(--leaf-soft);border-radius:999px;padding:2px 14px}
+.credit b{color:var(--ink)}
+.progress{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.dots{display:flex;gap:4px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);display:block}
+.dots i.on{background:var(--leaf);border-color:var(--leaf)}
+
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-top:6px}
+nav.tabs button{flex:0 0 auto;font-family:var(--f-display);font-size:15px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px 10px 0 0;padding:8px 14px;cursor:pointer;border-bottom-width:0}
+nav.tabs button[aria-selected="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+nav.tabs button:focus-visible,.btn:focus-visible,.chip:focus-visible,.gap:focus-visible,.leafw:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+
+.page{background:var(--card);border:1.5px solid var(--line);border-radius:0 0 14px 14px;padding-block:18px 26px;padding-inline:38px 16px;position:relative;
+  background-image:linear-gradient(to left,transparent 22px,var(--margin) 22px,var(--margin) 24px,transparent 24px);}
+.lesson-title{font-family:var(--f-display);font-size:22px;color:var(--pen);margin:0 0 4px}
+.goal{color:var(--muted);font-size:15px;margin:0 0 14px}
+
+.rule{background:var(--leaf-soft);border-radius:12px;padding:12px 16px;margin-bottom:22px}
+.rule h3{font-family:var(--f-display);font-size:16px;color:var(--leaf);margin:0 0 4px}
+.rule ul{margin:0;padding-inline-start:20px}
+.rule b{color:var(--pen)}
+
+.act{border-top:2px dashed var(--line);padding-top:16px;margin-top:22px}
+.act-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 14px;margin-bottom:8px}
+.act h2{font-family:var(--f-display);font-size:19px;margin:0}
+.act h2 span{display:inline-block;background:var(--sky-soft);color:var(--sky);border-radius:8px;font-size:13px;padding:0 8px;margin-inline-start:8px;vertical-align:middle}
+.how{color:var(--muted);font-size:15px;margin:0 0 12px}
+.score{font-family:var(--f-display);font-size:15px;color:var(--leaf);font-variant-numeric:tabular-nums}
+
+.btn{font-family:var(--f-display);font-size:16px;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;background:var(--sky);color:#fff}
+.btn.alt{background:var(--chip);color:var(--ink);border:1.5px solid var(--line)}
+.btn.pen{background:var(--pen)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.lined{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 41px,var(--rule) 41px,var(--rule) 42px);border-radius:10px;padding:10px 6px}
+
+/* flash card */
+.flash{display:grid;place-items:center;gap:14px;padding:18px 10px;text-align:center}
+.flash .word{font-size:clamp(40px,10vw,58px);font-weight:700;line-height:1.5}
+.flash .count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.choices{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.choices .btn{min-width:140px}
+
+.fb{min-height:1.9em;font-weight:600;margin-top:8px}
+.fb.ok{color:var(--leaf)} .fb.bad{color:var(--pen)}
+
+/* slot builder */
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.slot{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.slot .w{font-size:26px;font-weight:700;white-space:nowrap}
+.slot .w u{text-decoration:none;display:inline-block;min-width:1.1em;border-bottom:3px dashed var(--sky);text-align:center;color:var(--sky)}
+.slot .opts{display:flex;gap:4px}
+.mini{font-family:var(--f-body);font-size:22px;font-weight:700;width:40px;height:40px;border-radius:9px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;line-height:1}
+.mini[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+.slot.right{border-color:var(--leaf);background:var(--leaf-soft)}
+.slot.wrong{border-color:var(--pen);background:var(--pen-soft)}
+.mark{font-family:var(--f-display);font-size:22px;color:var(--pen);min-width:1em}
+.slot.right .mark{color:var(--leaf)}
+
+/* seat picker */
+.seat-word{font-size:clamp(40px,10vw,56px);font-weight:700;display:flex;justify-content:center;align-items:center;gap:2px;direction:rtl}
+.seat-box{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border:3px dashed var(--sky);border-radius:12px;color:var(--sky)}
+.seat-box.ok{border-style:solid;border-color:var(--leaf);color:var(--leaf)}
+.seat-box.no{border-style:solid;border-color:var(--pen);color:var(--pen)}
+.seat-opts .btn{min-width:72px;font-family:var(--f-body);font-size:30px;padding:4px 14px;line-height:1.5}
+.seat-opts .btn small{display:block;font-size:12px;font-family:var(--f-display);line-height:1.2}
+
+/* antonyms */
+.ant{display:grid;gap:12px}
+.ant-item{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px}
+.ant-item p{margin:0 0 6px;font-size:19px}
+.ant-item p em{font-style:normal;color:var(--pen);font-weight:700}
+.ant-item .opts{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-body);font-size:19px;font-weight:600;padding:3px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chip.ok{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.chip.no{background:var(--pen-soft);border-color:var(--pen);color:var(--pen);text-decoration:line-through}
+.chip:disabled{cursor:default}
+.ant-item .note{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* dots sentences */
+.sent{font-size:23px;line-height:2.4;margin:0;padding:2px 6px}
+.tw{font:inherit;font-weight:700;color:var(--sky);background:none;border:none;border-bottom:2px dotted var(--sky);padding:0 2px;cursor:pointer}
+.tw.right{color:var(--leaf);border-bottom-color:var(--leaf)}
+.tw.wrong{color:var(--pen);border-bottom-color:var(--pen);background:var(--pen-soft);border-radius:4px}
+
+/* baskets */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:1.5px dashed var(--line);border-radius:12px;margin-bottom:12px}
+.chip[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+.baskets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.baskets{grid-template-columns:1fr}}
+.basket{border:2px solid var(--line);border-radius:12px;padding:8px;min-height:120px;cursor:pointer;background:var(--paper);display:flex;flex-direction:column;gap:6px;text-align:start;font:inherit;color:inherit}
+.basket.ready{border-color:var(--sky);background:var(--sky-soft)}
+.basket h4{margin:0;font-family:var(--f-display);font-size:16px;display:flex;justify-content:space-between;gap:6px}
+.basket h4 b{font-family:var(--f-body);font-size:24px;color:var(--pen)}
+.basket .in{display:flex;flex-wrap:wrap;gap:6px}
+.basket .in .chip{font-size:17px;padding:1px 10px}
+
+/* leaves */
+.leaves{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:6px}
+.leafw{font-family:var(--f-body);font-size:24px;font-weight:700;color:var(--leaf-ink);background:var(--leaf-bg);border:3px solid transparent;border-radius:60% 0 60% 0;width:112px;height:72px;cursor:pointer;display:grid;place-items:center}
+.leafw:nth-child(even){border-radius:0 60% 0 60%}
+.leafw[aria-pressed="true"]{border-color:var(--pen);box-shadow:0 0 0 4px var(--pen-soft)}
+.leafw.right{background:var(--leaf);color:#fff}
+.leafw.missed{border-style:dashed;border-color:var(--pen)}
+.leafw.wrong{background:var(--pen-soft);color:var(--pen)}
+
+/* gaps */
+.gapword{display:flex;justify-content:center;align-items:center;gap:0;direction:rtl;flex-wrap:nowrap;margin:8px 0}
+.letter{font-size:clamp(34px,9vw,48px);font-weight:700;width:1.25em;text-align:center;line-height:1.6}
+.gap{width:30px;height:58px;border-radius:8px;border:2px dashed var(--line);background:transparent;cursor:pointer;font-family:var(--f-body);font-size:30px;font-weight:700;color:var(--pen);padding:0}
+.gap:hover{border-color:var(--sky);background:var(--sky-soft)}
+.gap.ok{border-color:var(--leaf);background:var(--leaf-soft);color:var(--leaf)}
+.gap.no{border-color:var(--pen);background:var(--pen-soft)}
+.said{text-align:center;color:var(--muted);font-size:17px;min-height:1.9em}
+.said b{color:var(--ink);font-size:22px}
+
+/* challenge */
+.timer{height:10px;border-radius:5px;background:var(--chip);overflow:hidden;margin:6px 0 14px}
+.timer i{display:block;height:100%;background:var(--pen);width:100%;transition:width 1s linear}
+.q{font-size:22px;font-weight:600;text-align:center;margin:6px 0 12px;min-height:2em}
+.q b{color:var(--sky)}
+.big{font-family:var(--f-display);font-size:44px;color:var(--leaf);line-height:1.2;text-align:center;font-variant-numeric:tabular-nums}
+.center{text-align:center}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.pop{animation:pop .3s ease}
+
+/* ===== section switch ===== */
+.switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--chip);border:1.5px solid var(--line);border-radius:14px;padding:5px;margin-bottom:12px}
+.switch button{font-family:var(--f-display);font-size:17px;border:0;border-radius:10px;padding:8px 6px;background:transparent;color:var(--muted);cursor:pointer;line-height:1.4}
+.switch button[aria-pressed="true"]{background:var(--card);color:var(--pen);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.switch button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+nav.tabs button .st{color:var(--gold);font-size:13px;margin-inline-start:4px}
+nav.tabs button[aria-selected="true"] .st{color:#fff}
+
+/* ===== grammar stations ===== */
+.g-stage{display:flex;flex-direction:column;gap:14px;min-height:360px}
+.g-title{font-family:var(--f-display);font-size:19px;margin:0}
+.g-stage .rule{margin-bottom:0}
+.g-stage .rule p{margin:0}
+.g-prog{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.g-bar{flex:1;height:8px;background:var(--chip);border-radius:99px;overflow:hidden}
+.g-bar i{display:block;height:100%;background:var(--leaf);border-radius:99px;transition:width .3s}
+.g-card{border-radius:12px;padding:20px 10px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;
+  background-color:var(--paper);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 41px,var(--rule) 41px,var(--rule) 42px)}
+.g-word{font-size:clamp(40px,10vw,58px);font-weight:700;line-height:1.5}
+.g-sent{font-size:clamp(21px,5vw,27px);font-weight:600;line-height:2;text-wrap:balance}
+.g-sent mark{background:var(--gold);color:#1D3557;border-radius:6px;padding:0 4px}
+.g-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.g-opt{font-family:var(--f-display);font-size:18px;padding:12px 8px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.g-opt:disabled{cursor:default;opacity:.5}
+.g-opt.ism{border-color:var(--sky);color:var(--sky)} .g-opt.fil{border-color:var(--orange);color:var(--orange)} .g-opt.harf{border-color:var(--violet);color:var(--violet)} .g-opt.pos{border-color:var(--leaf);color:var(--leaf)}
+.g-opt.right{background:var(--leaf-soft);border-color:var(--leaf);color:var(--leaf);opacity:1}
+.g-opt.wrong{background:var(--pen-soft);border-color:var(--pen);color:var(--pen);opacity:1}
+.g-fb{border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.g-fb.ok{background:var(--leaf-soft)} .g-fb.bad{background:var(--pen-soft)}
+.g-fb p{margin:0}
+.g-fb strong{font-family:var(--f-display);font-size:17px}
+.g-fb.ok strong{color:var(--leaf)} .g-fb.bad strong{color:var(--pen)}
+.g-al{font-family:var(--f-display);font-size:16px;border:2px dashed var(--leaf);background:var(--card);color:var(--leaf);border-radius:10px;padding:4px 16px;cursor:pointer}
+.g-al-on{color:var(--leaf)}
+.g-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:54px;width:100%}
+.g-chip{font-family:var(--f-body);font-size:21px;font-weight:700;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:2px 14px;cursor:pointer}
+.g-chip.used{visibility:hidden}
+.g-line{border-bottom:2px dashed var(--line);align-items:center}
+.g-line .g-chip{border-color:var(--leaf)}
+.g-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.g-grid .g-chip{width:100%}
+.g-grid .g-chip.right{background:var(--leaf-soft);border-color:var(--leaf);color:var(--leaf)}
+.g-grid .g-chip.wrong{background:var(--pen-soft);border-color:var(--pen);color:var(--pen)}
+.g-timer{height:10px;border-radius:5px;background:var(--chip);overflow:hidden}
+.g-timer i{display:block;height:100%;width:100%;background:var(--pen);transform-origin:right}
+@keyframes gshrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.g-result{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;flex:1;padding-block:20px}
+.g-stars{font-size:42px;color:var(--gold);letter-spacing:6px;line-height:1.2}
+.g-stars .off{color:var(--line)}
+.g-msg{font-family:var(--f-display);font-size:24px;margin:0}
+.g-stage .btn:focus-visible,.g-opt:focus-visible,.g-chip:focus-visible,.g-al:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+@media (max-width:420px){.g-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>دفتر لغتي التفاعلي<small>الظاهرة الإملائية والوظيفة النحوية</small><span class="credit">مشاركة الطالب: <b>يزيد أحمد عيسى</b> — رابع/٤</span></h1>
+    <div class="progress"><span id="progTxt">٠ من ١٤ نشاطًا</span><span class="dots" id="progDots"></span></div>
+  </header>
+
+  <div class="switch" role="group" aria-label="القسم">
+    <button data-sec="imla" aria-pressed="true">الظاهرة الإملائية</button>
+    <button data-sec="nahw" aria-pressed="false">الوظيفة النحوية</button>
+  </div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" aria-selected="true" data-tab="l1">القطع والوصل</button>
+    <button role="tab" aria-selected="false" data-tab="l2">الهمزة المتطرفة</button>
+    <button role="tab" aria-selected="false" data-tab="l3">التاء المربوطة والمفتوحة</button>
+    <button role="tab" aria-selected="false" data-tab="l4">الألف المحذوفة</button>
+    <button role="tab" aria-selected="false" data-tab="l5">تحدّي الدقيقة</button>
+  </nav>
+  <nav class="tabs" role="tablist" id="gtabs" hidden></nav>
+
+  <!-- ===== Lesson 1 ===== -->
+  <section class="page" id="l1">
+    <h2 class="lesson-title">الدرس الأول: همزتا القطع والوصل</h2>
+    <p class="goal">الهدف: تمييز همزة القطع من همزة الوصل عند الكتابة.</p>
+    <div class="rule"><h3>تعلّمت قواعد لا أنساها</h3><ul>
+      <li><b>همزة الوصل:</b> تُنطق في أول الكلام ولا تُنطق عند وصلها بما قبلها، وتُرسم ألفًا بلا همزة (ا).</li>
+      <li><b>همزة القطع:</b> تُنطق في أول الكلام ووسطه، وتُكتب (أ) إن كانت مفتوحة أو مضمومة، و(إ) إن كانت مكسورة.</li>
+      <li>للتمييز: أدخل الواو على الكلمة؛ إن ظهرت الهمزة فهي قطع: وَأقبل، وإن اختفت فهي وصل: وَاستقبل.</li>
+    </ul></div>
+
+    <div class="act" id="a1">
+      <div class="act-head"><h2>بطاقات الواو<span>بطاقات سريعة</span></h2><span class="score" id="a1s"></span></div>
+      <p class="how">تظهر الكلمة دون همزة. اقرأها بعد الواو، ثم حدّد نوع همزتها.</p>
+      <div class="lined"><div class="flash">
+        <div class="count" id="a1c"></div>
+        <div class="word" id="a1w"></div>
+        <div class="choices" id="a1b">
+          <button class="btn" data-v="q">همزة قطع</button>
+          <button class="btn" data-v="w" style="background:var(--leaf)">همزة وصل</button>
+        </div>
+        <div class="fb" id="a1f"></div>
+        <button class="btn alt" id="a1r" hidden>جولة جديدة</button>
+      </div></div>
+    </div>
+
+    <div class="act" id="a2">
+      <div class="act-head"><h2>أكمل الحرف الأول<span>اختيار الرسم</span></h2><span class="score" id="a2s"></span></div>
+      <p class="how">اختر رسم الحرف الأول لكل كلمة: ألف وصل (ا)، أو همزة فوق الألف (أ)، أو همزة تحته (إ). ثم اضغط «صحّح».</p>
+      <div class="slots" id="a2l"></div>
+      <div class="row" style="margin-top:12px"><button class="btn pen" id="a2c">صحّح</button><button class="btn alt" id="a2r">كلمات أخرى</button></div>
+      <div class="fb" id="a2f"></div>
+    </div>
+  </section>
+
+  <!-- ===== Lesson 2 ===== -->
+  <section class="page" id="l2" hidden>
+    <h2 class="lesson-title">الدرس الثاني: الهمزة المتطرفة</h2>
+    <p class="goal">الهدف: رسم الكلمات التي تنتهي بهمزة رسمًا صحيحًا.</p>
+    <div class="rule"><h3>تعلّمت قواعد لا أنساها</h3><ul>
+      <li>تُكتب على <b>الألف (أ)</b> إذا كان الحرف قبلها مفتوحًا: مَبْدَأ.</li>
+      <li>تُكتب على <b>الواو (ؤ)</b> إذا كان الحرف قبلها مضمومًا: لُؤْلُؤ.</li>
+      <li>تُكتب على <b>الياء (ئ)</b> إذا كان الحرف قبلها مكسورًا: شاطِئ.</li>
+      <li>تُكتب على <b>السطر (ء)</b> إذا كان الحرف قبلها ساكنًا: دِفْء. وحروف المد (ا، و، ي) سواكن: جاء، لُجوء، مجيء.</li>
+    </ul></div>
+
+    <div class="act" id="a3">
+      <div class="act-head"><h2>كرسيّ الهمزة<span>انظر إلى الحركة</span></h2><span class="score" id="a3s"></span></div>
+      <p class="how">انظر إلى حركة الحرف الذي قبل الفراغ، ثم اختر الكرسي المناسب للهمزة.</p>
+      <div class="lined"><div class="flash">
+        <div class="count" id="a3c"></div>
+        <div class="seat-word" id="a3w"></div>
+        <div class="choices seat-opts" id="a3b">
+          <button class="btn alt" data-v="أ">أ<small>على الألف</small></button>
+          <button class="btn alt" data-v="ؤ">ؤ<small>على الواو</small></button>
+          <button class="btn alt" data-v="ئ">ئ<small>على الياء</small></button>
+          <button class="btn alt" data-v="ء">ء<small>على السطر</small></button>
+        </div>
+        <div class="fb" id="a3f"></div>
+        <button class="btn alt" id="a3r" hidden>جولة جديدة</button>
+      </div></div>
+    </div>
+
+    <div class="act" id="a4">
+      <div class="act-head"><h2>الضدّ المكتوب صحيحًا<span>أضداد بهمزة متطرفة</span></h2><span class="score" id="a4s"></span></div>
+      <p class="how">ضدّ الكلمة الملوّنة ينتهي بهمزة. اختر الضدّ المكتوب كتابة صحيحة.</p>
+      <div class="ant" id="a4l"></div>
+      <div class="row" style="margin-top:12px"><button class="btn alt" id="a4r">ابدأ من جديد</button></div>
+    </div>
+  </section>
+
+  <!-- ===== Lesson 3 ===== -->
+  <section class="page" id="l3" hidden>
+    <h2 class="lesson-title">الدرس الثالث: التاء المربوطة والتاء المفتوحة</h2>
+    <p class="goal">الهدف: التمييز بين التاء المربوطة والتاء المفتوحة والهاء عند الكتابة.</p>
+    <div class="rule"><h3>تعلّمت قواعد لا أنساها</h3><ul>
+      <li><b>التاء المربوطة (ة / ـة)</b> في نهاية الأسماء: تُنطق تاءً عند الوصل وهاءً عند الوقف، ونضع فوقها نقطتين دائمًا.</li>
+      <li><b>الهاء (ه / ـه)</b> تُنطق هاءً في الوصل والوقف، ولا نضع عليها نقطتين: معه، سيارته، كتابه.</li>
+      <li><b>التاء المفتوحة (ت)</b> تُنطق تاءً عند الوقف وعند الوصل: سُررتُ، رأيتُ، المجمعات.</li>
+    </ul></div>
+
+    <div class="act" id="a5">
+      <div class="act-head"><h2>قلم النقطتين<span>من تمارين الكتاب</span></h2><span class="score" id="a5s"></span></div>
+      <p class="how">قِف على كل كلمة ملوّنة: إن نطقتها هاءً عند الوقف وتاءً عند الوصل فهي تاء مربوطة. اضغط الكلمة لتضع النقطتين أو تزيلهما، ثم اضغط «صحّح».</p>
+      <div class="lined" id="a5l"></div>
+      <div class="row" style="margin-top:12px"><button class="btn pen" id="a5c">صحّح</button><button class="btn alt" id="a5r">امسح وأعد</button></div>
+      <div class="fb" id="a5f"></div>
+    </div>
+
+    <div class="act" id="a6">
+      <div class="act-head"><h2>ثلاث سلال<span>فرز الكلمات</span></h2><span class="score" id="a6s"></span></div>
+      <p class="how">اضغط كلمة من المجموعة، ثم اضغط السلة المناسبة لحرفها الأخير.</p>
+      <div class="pool" id="a6p"></div>
+      <div class="baskets">
+        <button class="basket" data-b="ة"><h4>تاء مربوطة <b>ة</b></h4><div class="in"></div></button>
+        <button class="basket" data-b="ت"><h4>تاء مفتوحة <b>ت</b></h4><div class="in"></div></button>
+        <button class="basket" data-b="ه"><h4>هاء <b>ه</b></h4><div class="in"></div></button>
+      </div>
+      <div class="fb" id="a6f"></div>
+      <button class="btn alt" id="a6r">كلمات أخرى</button>
+    </div>
+  </section>
+
+  <!-- ===== Lesson 4 ===== -->
+  <section class="page" id="l4" hidden>
+    <h2 class="lesson-title">الدرس الرابع: كلمات حُذفت الألف من وسطها</h2>
+    <p class="goal">الهدف: كتابة الكلمات التي حُذفت الألف من وسطها، وتحديد موضع الألف المحذوفة.</p>
+    <div class="rule"><h3>تعلّمت قواعد لا أنساها</h3><ul>
+      <li>في بعض الكلمات <b>نَنطق الألف ولا نكتبها</b>: اللّٰه، الرحمٰن، إلٰه، لٰكن، ذٰلك، هٰذا، هٰذه، هٰؤلاء، أُولٰئك.</li>
+      <li>في اسم الجلالة (الله) ننطق ألفًا بعد اللام الثانية، وفي (لكن) بعد اللام، وفي (ذلك) بعد الذال.</li>
+    </ul></div>
+
+    <div class="act" id="a7">
+      <div class="act-head"><h2>أوراق الشجرة<span>ضع دائرة</span></h2><span class="score" id="a7s"></span></div>
+      <p class="how">انطق كل كلمة، وضع دائرة حول الورقة التي فيها ألف تُنطق ولا تُكتب. ثم اضغط «صحّح».</p>
+      <div class="leaves" id="a7l"></div>
+      <div class="row" style="margin-top:12px"><button class="btn pen" id="a7c">صحّح</button><button class="btn alt" id="a7r">أوراق أخرى</button></div>
+      <div class="fb" id="a7f"></div>
+    </div>
+
+    <div class="act" id="a8">
+      <div class="act-head"><h2>أين تختبئ الألف؟<span>حدّد الموضع</span></h2><span class="score" id="a8s"></span></div>
+      <p class="how">الكلمة مفكّكة إلى حروفها. اضغط الفراغ الذي ننطق فيه الألف ولا نكتبها.</p>
+      <div class="lined">
+        <div class="count center" id="a8c" style="color:var(--muted);font-size:14px"></div>
+        <div class="gapword" id="a8w"></div>
+        <div class="said" id="a8t"></div>
+        <div class="row" style="justify-content:center"><button class="btn" id="a8n" hidden>الكلمة التالية</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Challenge ===== -->
+  <section class="page" id="l5" hidden>
+    <h2 class="lesson-title">تحدّي الدقيقة</h2>
+    <p class="goal">أسئلة منوّعة من الدروس الأربعة. أجب عن أكبر عدد منها في ٦٠ ثانية.</p>
+    <div id="chStart" class="center">
+      <p class="how">أفضل نتيجة لك: <b id="chBest">—</b></p>
+      <button class="btn pen" id="chGo">ابدأ التحدّي</button>
+    </div>
+    <div id="chRun" hidden>
+      <div class="row" style="justify-content:space-between"><span class="score" id="chScore">٠ صحيحة</span><span class="score" id="chTime" style="color:var(--pen)">٦٠</span></div>
+      <div class="timer"><i id="chBar"></i></div>
+      <div class="q" id="chQ"></div>
+      <div class="choices" id="chB"></div>
+      <div class="fb center" id="chF"></div>
+    </div>
+    <div id="chEnd" hidden class="center">
+      <div class="big" id="chRes"></div>
+      <p id="chMsg"></p>
+      <div id="chMiss" style="text-align:start"></div>
+      <button class="btn pen" id="chAgain">حاول مرة أخرى</button>
+    </div>
+  </section>
+
+  <!-- ===== Grammar ===== -->
+  <section class="page" id="g" hidden>
+    <h2 class="lesson-title">الوظيفة النحوية: أنواع الكلمة والجملة</h2>
+    <p class="goal">الهدف: تمييز الاسم والفعل والحرف، والجملة الاسمية والفعلية، والمثبتة والمنفية.</p>
+    <div class="g-stage" id="gstage" aria-live="polite"></div>
+  </section>
+
+  <footer>مبني على دروس «الظاهرة الإملائية» و«الوظيفة النحوية» من كتاب الطالب — مشاركة الطالب: يزيد أحمد عيسى، الصف الرابع/٤.</footer>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const ar=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- progress ---------- */
+const done=new Set();
+const dots=$('#progDots');
+['a1','a2','a3','a4','a5','a6','a7','a8','g1','g2','g3','g4','g5','g6'].forEach(id=>{const d=document.createElement('i');d.dataset.a=id;dots.appendChild(d)});
+function finish(id){done.add(id);$$('#progDots i').forEach(d=>d.classList.toggle('on',done.has(d.dataset.a)));$('#progTxt').textContent=ar(done.size)+' من ١٤ نشاطًا'}
+
+/* ---------- section switch ---------- */
+$$('.switch button').forEach(s=>s.addEventListener('click',()=>{
+  const nahw=s.dataset.sec==='nahw';
+  $$('.switch button').forEach(x=>x.setAttribute('aria-pressed',x===s));
+  $('#tabs').hidden=nahw;$('#gtabs').hidden=!nahw;
+  if(nahw){$$('.page').forEach(p=>p.hidden=p.id!=='g')}
+  else{const t=$('#tabs button[aria-selected="true"]');$$('.page').forEach(p=>p.hidden=p.id!==t.dataset.tab)}
+}));
+
+/* ---------- tabs ---------- */
+$$('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  $$('.page').forEach(p=>p.hidden=p.id!==b.dataset.tab);
+}));
+
+/* ================= DATA ================= */
+// [bare, correct, type q=قطع w=وصل, note]
+const L1=[
+ ['انطلق','انْطَلَقَ','w'],['الجد','الجَدُّ','w'],['التفت','الْتَفَتَ','w'],['احسنت','أَحْسَنْتَ','q'],['ان','أَنَّ','q'],
+ ['اشجار','أَشْجار','q'],['اخضر','أَخْضَر','q'],['استقبل','اسْتَقْبَلَ','w'],['اقبل','أَقْبَلَ','q'],['الى','إِلى','q'],
+ ['ابتسم','ابْتَسَمَ','w'],['الا','أَلا','q'],['اسرع','أَسْرَعَ','q'],['السحاب','السَّحاب','w'],['العرق','العِرْق','w'],
+ ['اصطحب','اصْطَحَبَ','w'],['انسان','إِنْسان','q'],['اخت','أُخْت','q'],['اكتشف','اكْتَشَفَ','w'],['اندفاع','انْدِفاع','w'],
+ ['اشار','أَشارَ','q'],['ايمان','إِيمان','q'],['استغفار','اسْتِغْفار','w'],['اذا','إِذا','q'],['اكتب','اكْتُبْ','w']
+];
+// slot builder: [rest, answer]
+const L1B=[['نسان','إ'],['خت','أ'],['ستقبل','ا'],['نطلق','ا'],['شجار','أ'],['لى','إ'],['بتسم','ا'],['سرع','أ'],['يمان','إ'],['كتشف','ا'],['لتفت','ا'],['خضر','أ'],['ذا','إ'],['ندفاع','ا'],['حسنت','أ'],['شار','أ'],['صطحب','ا'],['ستغفار','ا']];
+const L1Bwhy={'ا':'همزة وصل تختفي بعد الواو','أ':'همزة قطع مفتوحة أو مضمومة','إ':'همزة قطع مكسورة'};
+
+// seat: [stem, answer, why]
+const why2={'أ':'الحرف قبلها مفتوح','ؤ':'الحرف قبلها مضموم','ئ':'الحرف قبلها مكسور','ء':'الحرف قبلها ساكن'};
+const L2=[
+ ['شاطِـ','ئ'],['سَما','ء'],['هُدو','ء'],['سَبَـ','أ'],['بُؤْبُـ','ؤ'],['مَبْدَ','أ'],['لُجو','ء'],['دِفْـ','ء'],['ظامِـ','ئ'],
+ ['امْرُ','ؤ'],['مِلْـ','ء'],['لُؤْلُـ','ؤ'],['جَرِيـ','ء'],['هانِـ','ئ'],['ضَوْ','ء'],['صَدَ','أ'],['يَتَباطَـ','أ'],['يَجْرُ','ؤ'],
+ ['يَلْتَجِـ','ئ'],['مُفاجِـ','ئ'],['أَجْوا','ء'],['غِذا','ء'],['مَسا','ء']
+];
+// antonyms: [before, word, after, correct, wrongs[], note]
+const L2B=[
+ ['عمّت','الضوضاءُ','.','الهدوءُ',['الهدوؤُ','الهدوئُ'],'قبل الهمزة واو ساكنة (مدّ) ← على السطر'],
+ ['سارت السيارة','بسرعة','.','ببطءٍ',['ببطئٍ','ببطأٍ'],'الطاء ساكنة ← على السطر'],
+ ['يحيا المؤمن في','سعادة','.','شقاءٍ',['شقائٍ','شقاؤٍ'],'قبل الهمزة ألف ساكنة ← على السطر'],
+ ['','انتهى','العامل من عمله.','بدأ',['بدئ','بدؤ'],'الدال مفتوحة ← على الألف'],
+ ['','تظهر','الحشرات من جحورها.','تختبئ',['تختبأ','تختبء'],'الباء مكسورة ← على الياء'],
+ ['الأمانة من','محاسن','الأخلاق.','مساوئ',['مساوء','مساوأ'],'الواو مكسورة ← على الياء']
+];
+
+// dots sentences: tokens; object {s:stem, a:'ة'|'ه'}
+const L3=[
+ ['أعيش في',{s:'قري',a:'ة'},{s:'صغير',a:'ة'},{s:'بعيد',a:'ة'},'عن',{s:'المدين',a:'ة'},'.'],
+ ['يؤكل لحم الخروف ويؤخذ',{s:'صوف',a:'ه'},{s:'وجلد',a:'ه'},'؛',{s:'لصناع',a:'ة'},'الملابس',{s:'والأحذي',a:'ة'},'.'],
+ ['جئت أزور الجامع الكبير في',{s:'المدين',a:'ة'},'وأشاهد',{s:'مئذنت',a:'ه'},{s:'العالي',a:'ة'},'.'],
+ ['في مدينتنا',{s:'روض',a:'ة'},'أطفال،',{s:'وعياد',a:'ة'},'وسوق',{s:'وحديق',a:'ة'},{s:'عام',a:'ة'},'.']
+];
+// baskets: [word, basket]
+const L3B=[['المنطقة','ة'],['الحديثة','ة'],['الواقعة','ة'],['الواسعة','ة'],['التجارية','ة'],['شجرة','ة'],['مدرسة','ة'],['رحلة','ة'],
+ ['سُرِرْتُ','ت'],['رأيتُ','ت'],['المجمعات','ت'],['بنات','ت'],['بيت','ت'],['صوت','ت'],['تسلّلت','ت'],['نبحت','ت'],
+ ['معه','ه'],['سيارته','ه'],['كتابُه','ه'],['وجه','ه'],['فواكه','ه'],['مياه','ه'],['تنبيه','ه'],['انتباه','ه']];
+const L3Bwhy={'ة':'تُنطق هاءً عند الوقف وتاءً عند الوصل','ت':'تُنطق تاءً في الوقف والوصل','ه':'تُنطق هاءً في الوصل والوقف'};
+
+// leaves
+const L4yes=['هذه','ذلك','أولئك','لكن','الرحمن','هؤلاء','إله','هذا','الله','هكذا'];
+const L4no=['هاتف','هتف','ذهب','لكم','قال','كتاب','هنا','ساحة','نادى','باب'];
+// gaps: [letters, gapAfterIndex, spoken, written]
+const L4G=[
+ [['ه','ذ','ه'],0,'هاذه','هذه'],[['ذ','ل','ك'],0,'ذالك','ذلك'],[['ل','ك','ن'],0,'لاكن','لكن'],
+ [['ه','ؤ','ل','ا','ء'],0,'هاؤلاء','هؤلاء'],[['أ','و','ل','ئ','ك'],2,'أولائك','أولئك'],[['إ','ل','ه'],1,'إلاه','إله'],
+ [['ا','ل','ل','ه'],2,'اللاه','الله'],[['ا','ل','ر','ح','م','ن'],4,'الرحمان','الرحمن'],[['ه','ذ','ا'],0,'هاذا','هذا'],[['ه','ك','ذ','ا'],0,'هاكذا','هكذا']
+];
+
+/* ================= A1: flash cards ================= */
+(function(){
+  let deck,i,score;
+  const w=$('#a1w'),c=$('#a1c'),f=$('#a1f'),bs=$$('#a1b button'),r=$('#a1r');
+  function start(){deck=pick(L1,10);i=0;score=0;r.hidden=true;bs.forEach(b=>b.disabled=false);show()}
+  function show(){const it=deck[i];w.textContent=it[0];w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop');c.textContent='البطاقة '+ar(i+1)+' من '+ar(deck.length);f.textContent='';f.className='fb';$('#a1s').textContent=ar(score)+' / '+ar(deck.length)}
+  bs.forEach(b=>b.addEventListener('click',()=>{
+    const it=deck[i];if(!it||b.disabled)return;
+    bs.forEach(x=>x.disabled=true);
+    const ok=b.dataset.v===it[2];if(ok)score++;
+    w.textContent=it[1];
+    f.className='fb '+(ok?'ok':'bad');
+    f.textContent=(ok?'✓ أحسنت! ':'✗ ليست كذلك. ')+(it[2]==='q'?'همزة قطع: نقول «وَ'+it[1]+'» فتظهر الهمزة.':'همزة وصل: نقول «وَ'+it[1]+'» فتختفي الهمزة.');
+    $('#a1s').textContent=ar(score)+' / '+ar(deck.length);
+    setTimeout(()=>{i++;if(i<deck.length){bs.forEach(x=>x.disabled=false);show()}else{w.textContent='انتهت البطاقات';c.textContent='';f.className='fb ok';f.textContent='نتيجتك '+ar(score)+' من '+ar(deck.length);r.hidden=false;finish('a1')}},ok?1300:2600);
+  }));
+  r.addEventListener('click',start);start();
+})();
+
+/* ================= A2: slot builder ================= */
+(function(){
+  let items;const L=$('#a2l'),f=$('#a2f');
+  function start(){items=pick(L1B,8);f.textContent='';L.innerHTML='';
+    items.forEach((it,k)=>{const d=document.createElement('div');d.className='slot';
+      d.innerHTML='<span class="w"><span class="rest">'+it[0]+'</span></span><span class="opts">'+['ا','أ','إ'].map(o=>'<button class="mini" aria-pressed="false" data-o="'+o+'">'+o+'</button>').join('')+'</span><span class="mark"></span>';
+      const w=d.querySelector('.w');
+      w.innerHTML='<u>؟</u>'+it[0];
+      d.querySelectorAll('.mini').forEach(m=>m.addEventListener('click',()=>{d.querySelectorAll('.mini').forEach(x=>x.setAttribute('aria-pressed',x===m));w.innerHTML='<u>'+m.dataset.o+'</u>'+it[0];d.className='slot';d.querySelector('.mark').textContent=''}));
+      L.appendChild(d)});
+    $('#a2s').textContent='';}
+  $('#a2c').addEventListener('click',()=>{let s=0,empty=0;
+    [...L.children].forEach((d,k)=>{const p=d.querySelector('.mini[aria-pressed="true"]');if(!p){empty++;return}
+      const ok=p.dataset.o===items[k][1];if(ok)s++;d.className='slot '+(ok?'right':'wrong');
+      d.querySelector('.mark').textContent=ok?'✓':'✗';d.title=items[k][1]+items[k][0]+': '+L1Bwhy[items[k][1]];
+      if(!ok)d.querySelector('.w').innerHTML='<u>'+items[k][1]+'</u>'+items[k][0];});
+    if(empty){f.className='fb bad';f.textContent='بقيت '+ar(empty)+' كلمات دون اختيار.';return}
+    $('#a2s').textContent=ar(s)+' / '+ar(items.length);
+    f.className='fb '+(s===items.length?'ok':'bad');
+    f.textContent=s===items.length?'✓ كلها صحيحة!':'صحّحنا لك الأخطاء بالأحمر. تذكّر: (ا) وصل، (أ) قطع مفتوحة أو مضمومة، (إ) قطع مكسورة.';
+    finish('a2')});
+  $('#a2r').addEventListener('click',start);start();
+})();
+
+/* ================= A3: hamza seat ================= */
+(function(){
+  let deck,i,score;
+  const w=$('#a3w'),c=$('#a3c'),f=$('#a3f'),bs=$$('#a3b button'),r=$('#a3r');
+  function start(){deck=pick(L2,10);i=0;score=0;r.hidden=true;bs.forEach(b=>b.disabled=false);show()}
+  function show(){const it=deck[i];w.innerHTML='<span>'+it[0]+'</span><span class="seat-box">؟</span>';c.textContent='الكلمة '+ar(i+1)+' من '+ar(deck.length);f.textContent='';f.className='fb';$('#a3s').textContent=ar(score)+' / '+ar(deck.length)}
+  bs.forEach(b=>b.addEventListener('click',()=>{
+    const it=deck[i];if(!it||b.disabled)return;bs.forEach(x=>x.disabled=true);
+    const ok=b.dataset.v===it[1];if(ok)score++;
+    const full=it[0].replace('ـ','')+it[1];
+    w.innerHTML='<span style="color:var('+(ok?'--leaf':'--pen')+')">'+full+'</span>';
+    f.className='fb '+(ok?'ok':'bad');
+    f.textContent=(ok?'✓ صحيح: ':'✗ الصواب: ')+full+' — '+why2[it[1]]+'.';
+    $('#a3s').textContent=ar(score)+' / '+ar(deck.length);
+    setTimeout(()=>{i++;if(i<deck.length){bs.forEach(x=>x.disabled=false);show()}else{w.textContent='أحسنت المحاولة';c.textContent='';f.className='fb ok';f.textContent='نتيجتك '+ar(score)+' من '+ar(deck.length);r.hidden=false;finish('a3')}},ok?1400:2700);
+  }));
+  r.addEventListener('click',start);start();
+})();
+
+/* ================= A4: antonyms ================= */
+(function(){
+  const L=$('#a4l');let s,answered;
+  function start(){s=0;answered=0;L.innerHTML='';$('#a4s').textContent='';
+    L2B.forEach(it=>{const d=document.createElement('div');d.className='ant-item';
+      d.innerHTML='<p>'+(it[0]?it[0]+' ':'')+'<em>'+it[1]+'</em> '+it[2]+'</p><div class="opts"></div><div class="note" hidden></div>';
+      const o=d.querySelector('.opts');
+      shuffle([it[3],...it[4]]).forEach(t=>{const b=document.createElement('button');b.className='chip';b.textContent=t;
+        b.addEventListener('click',()=>{const ok=t===it[3];o.querySelectorAll('.chip').forEach(x=>{x.disabled=true;if(x.textContent===it[3])x.classList.add('ok')});
+          if(!ok)b.classList.add('no');else s++;answered++;
+          const n=d.querySelector('.note');n.hidden=false;n.textContent=(ok?'✓ ':'✗ الصواب «'+it[3]+'»: ')+it[5];
+          $('#a4s').textContent=ar(s)+' / '+ar(L2B.length);if(answered===L2B.length)finish('a4')});
+        o.appendChild(b)});
+      L.appendChild(d)})}
+  $('#a4r').addEventListener('click',start);start();
+})();
+
+/* ================= A5: two dots ================= */
+(function(){
+  const L=$('#a5l'),f=$('#a5f');
+  function start(){L.innerHTML='';f.textContent='';$('#a5s').textContent='';
+    L3.forEach(sen=>{const p=document.createElement('p');p.className='sent';
+      sen.forEach((t,k)=>{if(typeof t==='string'){p.append((k&&!/^[.،؛]/.test(t)?' ':'')+t)}else{
+        p.append(k?' ':'');const b=document.createElement('button');b.className='tw';b.dataset.state='ه';b.dataset.a=t.a;b.dataset.s=t.s;b.textContent=t.s+'ه';
+        b.setAttribute('aria-label',t.s+'ه — اضغط لتبديل النقطتين');
+        b.addEventListener('click',()=>{b.dataset.state=b.dataset.state==='ه'?'ة':'ه';b.textContent=t.s+b.dataset.state;b.className='tw'});
+        p.appendChild(b)}});
+      L.appendChild(p)})}
+  $('#a5c').addEventListener('click',()=>{const all=$$('#a5l .tw');let s=0;
+    all.forEach(b=>{const ok=b.dataset.state===b.dataset.a;if(ok)s++;b.className='tw '+(ok?'right':'wrong');if(!ok)b.textContent=b.dataset.s+b.dataset.a});
+    $('#a5s').textContent=ar(s)+' / '+ar(all.length);
+    f.className='fb '+(s===all.length?'ok':'bad');
+    f.textContent=s===all.length?'✓ ممتاز! كل النقاط في مكانها.':'صُحّحت الكلمات المظلّلة بالأحمر. انتبه: صوفه، جلده، مئذنته تنتهي بهاء الضمير، فلا نقاط عليها.';
+    finish('a5')});
+  $('#a5r').addEventListener('click',start);start();
+})();
+
+/* ================= A6: baskets ================= */
+(function(){
+  const P=$('#a6p'),f=$('#a6f'),bk=$$('#l3 .basket');let sel=null,items,placed,s;
+  function start(){items=[...pick(L3B.filter(x=>x[1]==='ة'),4),...pick(L3B.filter(x=>x[1]==='ت'),4),...pick(L3B.filter(x=>x[1]==='ه'),4)];
+    items=shuffle(items);placed=0;s=0;sel=null;P.innerHTML='';f.textContent='';$('#a6s').textContent='';
+    bk.forEach(b=>{b.querySelector('.in').innerHTML='';b.classList.remove('ready')});
+    items.forEach(it=>{const c=document.createElement('button');c.className='chip';c.textContent=it[0];c.setAttribute('aria-pressed','false');
+      c.addEventListener('click',()=>{if(c.disabled)return;P.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c&&sel!==c));sel=sel===c?null:c;sel&&(sel._it=it);bk.forEach(b=>b.classList.toggle('ready',!!sel))});
+      P.appendChild(c)})}
+  bk.forEach(b=>b.addEventListener('click',()=>{if(!sel)return;const it=sel._it;const ok=it[1]===b.dataset.b;
+    const c=document.createElement('span');c.className='chip '+(ok?'ok':'no');c.textContent=it[0];
+    if(ok){s++;b.querySelector('.in').appendChild(c);f.className='fb ok';f.textContent='✓ '+it[0]+': '+L3Bwhy[it[1]]+'.'}
+    else{const cc=document.createElement('span');cc.className='chip ok';cc.textContent=it[0];document.querySelector('.basket[data-b="'+it[1]+'"] .in').appendChild(cc);f.className='fb bad';f.textContent='✗ «'+it[0]+'» مكانها سلة '+({'ة':'التاء المربوطة','ت':'التاء المفتوحة','ه':'الهاء'})[it[1]]+': '+L3Bwhy[it[1]]+'.'}
+    sel.remove();sel=null;placed++;bk.forEach(x=>x.classList.remove('ready'));
+    $('#a6s').textContent=ar(s)+' / '+ar(items.length);
+    if(placed===items.length){finish('a6');P.innerHTML='<span style="color:var(--muted)">فرزت كل الكلمات: '+ar(s)+' صحيحة من '+ar(items.length)+'</span>'}}));
+  $('#a6r').addEventListener('click',start);start();
+})();
+
+/* ================= A7: leaves ================= */
+(function(){
+  const L=$('#a7l'),f=$('#a7f');let items;
+  function start(){items=shuffle([...pick(L4yes,5),...pick(L4no,5)]);L.innerHTML='';f.textContent='';$('#a7s').textContent='';
+    items.forEach(w=>{const b=document.createElement('button');b.className='leafw';b.textContent=w;b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',()=>{if(b.dataset.locked)return;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')});L.appendChild(b)})}
+  $('#a7c').addEventListener('click',()=>{let s=0;const bs=[...L.children];
+    bs.forEach(b=>{b.dataset.locked=1;const yes=L4yes.includes(b.textContent),on=b.getAttribute('aria-pressed')==='true';
+      if(yes&&on){b.classList.add('right');s++}else if(yes&&!on){b.classList.add('missed')}else if(!yes&&on){b.classList.add('wrong')}else s++});
+    $('#a7s').textContent=ar(s)+' / '+ar(bs.length);
+    f.className='fb '+(s===bs.length?'ok':'bad');
+    f.textContent=s===bs.length?'✓ أحسنت! عرفت كل الكلمات.':'الأوراق ذات الإطار المتقطع فيها ألف محذوفة فاتتك، والوردية ليس فيها ألف محذوفة.';
+    finish('a7')});
+  $('#a7r').addEventListener('click',start);start();
+})();
+
+/* ================= A8: gaps ================= */
+(function(){
+  const W=$('#a8w'),T=$('#a8t'),C=$('#a8c'),N=$('#a8n');let deck,i,s,tries;
+  function start(){deck=shuffle(L4G);i=0;s=0;show()}
+  function show(){const it=deck[i];tries=0;N.hidden=true;T.textContent='';C.textContent='الكلمة '+ar(i+1)+' من '+ar(deck.length)+' — اكتبها: '+it[3];W.innerHTML='';
+    it[0].forEach((l,k)=>{const sp=document.createElement('span');sp.className='letter';sp.textContent=l;W.appendChild(sp);
+      if(k<it[0].length-1){const g=document.createElement('button');g.className='gap';g.setAttribute('aria-label','بعد حرف '+l);
+        g.addEventListener('click',()=>{if(!N.hidden)return;tries++;
+          if(k===it[1]){g.classList.add('ok');g.textContent='ا';if(tries===1)s++;T.innerHTML='نَنطقها <b>'+it[2]+'</b> ونكتبها <b>'+it[3]+'</b>';N.hidden=false;N.textContent=i<deck.length-1?'الكلمة التالية':'النتيجة';$('#a8s').textContent=ar(s)+' / '+ar(deck.length)}
+          else{g.classList.add('no');T.textContent='✗ ليس هنا. انطق الكلمة ببطء وحاول مرة أخرى.'}});
+        W.appendChild(g)}})}
+  N.addEventListener('click',()=>{if(i>=deck.length){start();return}i++;if(i<deck.length)show();else{W.innerHTML='';C.textContent='';T.innerHTML='أصبت من المحاولة الأولى في <b>'+ar(s)+'</b> من '+ar(deck.length)+' كلمات';N.hidden=false;N.textContent='العب مجددًا';finish('a8')}});
+  start();
+})();
+
+/* ================= Challenge ================= */
+(function(){
+  const gens=[
+    ()=>{const it=L1[Math.floor(Math.random()*L1.length)];return{q:'ما نوع الهمزة في «<b>'+it[0]+'</b>»؟',o:['همزة قطع','همزة وصل'],a:it[2]==='q'?'همزة قطع':'همزة وصل',fix:it[1]+' — '+(it[2]==='q'?'قطع':'وصل')}},
+    ()=>{const it=L2[Math.floor(Math.random()*L2.length)];const st=it[0].replace('ـ','');return{q:'اختر الكتابة الصحيحة:',o:shuffle(['أ','ؤ','ئ','ء'].map(x=>st+x)),a:st+it[1],fix:st+it[1]+' — '+why2[it[1]]}},
+    ()=>{const sen=L3[Math.floor(Math.random()*L3.length)];const toks=sen.map((t,k)=>({t,k})).filter(x=>typeof x.t!=='string');const tg=toks[Math.floor(Math.random()*toks.length)];
+      const txt=sen.map((t,k)=>typeof t==='string'?t:(k===tg.k?'<b>____</b>':t.s+t.a)).join(' ').replace(/ ([.،؛])/g,'$1');
+      return{q:txt,o:shuffle([tg.t.s+'ة',tg.t.s+'ه']),a:tg.t.s+tg.t.a,fix:tg.t.s+tg.t.a}},
+    ()=>{const y=pick(L4yes,1)[0];return{q:'أيّ كلمة فيها ألف تُنطق ولا تُكتب؟',o:shuffle([y,...pick(L4no,3)]),a:y,fix:y}}
+  ];
+  let t,left,score,cur,miss,total;
+  const best=()=>{const b=store.get('imlaa-best');$('#chBest').textContent=b?ar(b)+' إجابات':'لا توجد بعد'};best();
+  function next(){cur=gens[Math.floor(Math.random()*gens.length)]();$('#chQ').innerHTML=cur.q;$('#chF').textContent='';const B=$('#chB');B.innerHTML='';
+    cur.o.forEach(o=>{const b=document.createElement('button');b.className='btn alt';b.style.fontFamily='var(--f-body)';b.style.fontSize='22px';b.textContent=o;
+      b.addEventListener('click',()=>{if(left<=0)return;total++;const ok=o===cur.a;if(ok){score++;$('#chF').className='fb center ok';$('#chF').textContent='✓'}else{miss.push(cur.fix);$('#chF').className='fb center bad';$('#chF').textContent='✗ الصواب: '+cur.a}
+        $('#chScore').textContent=ar(score)+' صحيحة';B.querySelectorAll('button').forEach(x=>x.disabled=true);setTimeout(()=>{if(left>0)next()},ok?350:1100)});B.appendChild(b)})}
+  function go(){score=0;total=0;miss=[];left=60;$('#chStart').hidden=true;$('#chEnd').hidden=true;$('#chRun').hidden=false;$('#chScore').textContent='٠ صحيحة';$('#chTime').textContent=ar(60);$('#chBar').style.width='100%';next();
+    clearInterval(t);t=setInterval(()=>{left--;$('#chTime').textContent=ar(left);$('#chBar').style.width=(left/60*100)+'%';if(left<=0){clearInterval(t);end()}},1000)}
+  function end(){$('#chRun').hidden=true;$('#chEnd').hidden=false;$('#chRes').textContent=ar(score)+' / '+ar(total);
+    const prev=+store.get('imlaa-best')||0;if(score>prev){store.set('imlaa-best',score);$('#chMsg').textContent='رقم قياسي جديد!'}else $('#chMsg').textContent='أفضل نتيجة لك: '+ar(Math.max(prev,score));
+    const u=[...new Set(miss)];$('#chMiss').innerHTML=u.length?'<p class="how" style="margin-bottom:4px">راجع هذه الكلمات:</p><div class="row">'+u.map(m=>'<span class="chip" style="cursor:default">'+m+'</span>').join('')+'</div><br>':'';best()}
+  $('#chGo').addEventListener('click',go);$('#chAgain').addEventListener('click',go);
+})();
+
+/* ================= النحو: أنواع الكلمة والجملة ================= */
+(function(){
+  const stage=$('#gstage'),gtabs=$('#gtabs');
+  const TYPE={ism:'اسم',fil:'فعل',harf:'حرف'};
+  const HINT={ism:'يدل على معنى في نفسه غير مقترن بزمن، ويقبل (ال).',fil:'يدل على حدث مقترن بزمن.',harf:'لا يتضح معناه إلا مع غيره.'};
+  const WORDS=[['سَفَر','ism'],['حُقُول','ism'],['مِنْ','harf'],['انْطَلَقَ','fil'],['إِلَى','harf'],['مُمْتَدَّة','ism'],
+   ['أَشْجَار','ism'],['انْجِرَاف','ism'],['مَنْظَر','ism'],['فِي','harf'],['يَمْلَأُ','fil'],['سَمَاء','ism'],
+   ['أَشْرَقَ','fil'],['دَوَاء','ism'],['يُفَكِّرُ','fil'],['سَاعَدَ','fil'],['فَوَاكِه','ism'],['يَنْصَحُ','fil'],
+   ['مُتَكَامِل','ism'],['يُغَرِّدُ','fil'],['طُيُور','ism'],['عَنْ','harf'],['عَلَى','harf'],['جَهَّزَتْ','fil'],
+   ['رِحْلَة','ism'],['الْمَكَان','ism'],['قَدْ','harf']].map(([w,a])=>({w,a}));
+  const AL=[{w:'بَيْت',al:'الْبَيْت',a:'ism'},{w:'نَامَ',al:'النَّامَ',a:'fil'},{w:'شَجَرَة',al:'الشَّجَرَة',a:'ism'},
+   {w:'يَلْعَبُ',al:'الْيَلْعَبُ',a:'fil'},{w:'قَمَر',al:'الْقَمَر',a:'ism'},{w:'جَلَسَ',al:'الْجَلَسَ',a:'fil'},
+   {w:'حَدِيقَة',al:'الْحَدِيقَة',a:'ism'},{w:'كَتَبَ',al:'الْكَتَبَ',a:'fil'}];
+  const SENT=[{s:'يَخْرُجُ النَّاسُ إِلَى الرِّيَاضِ الْمُزْهِرَةِ.',f:'يَخْرُجُ',a:'fil'},{s:'الْوَعْيُ الصِّحِّيُّ مَطْلَبٌ ضَرُورِيٌّ.',f:'الْوَعْيُ',a:'ism'},
+   {s:'تَسُرُّ الْمَخْلُوقَاتِ بِجَمَالِ الطَّبِيعَةِ.',f:'تَسُرُّ',a:'fil'},{s:'صِحَّةُ الْجِسْمِ نِعْمَةٌ عَظِيمَةٌ.',f:'صِحَّةُ',a:'ism'},
+   {s:'النَّبَاتَاتُ غِذَاءٌ لِلْإِنْسَانِ.',f:'النَّبَاتَاتُ',a:'ism'},{s:'انْطَلَقَ الْجَدُّ مِشْعَلٌ مَعَ حَفِيدَيْهِ صَبَاحًا.',f:'انْطَلَقَ',a:'fil'},
+   {s:'الْبَحْرُ هَادِئٌ.',f:'الْبَحْرُ',a:'ism'},{s:'يَبْنُونَ الْقُصُورَ بِالرِّمَالِ.',f:'يَبْنُونَ',a:'fil'},
+   {s:'رَحَلَ الشِّتَاءُ بِبَرْدِهِ الْقَارِسِ.',f:'رَحَلَ',a:'fil'},{s:'السَّمَاءُ صَافِيَةٌ.',f:'السَّمَاءُ',a:'ism'}];
+  const NEG=[{s:'دُودَةُ الْقَزِّ تَصْنَعُ الْحَرِيرَ.',a:'pos'},{s:'لَنْ أُلَوِّثَ بِيئَتِي.',t:'لَنْ',a:'neg'},
+   {s:'النَّظَافَةُ أَيْسَرُ طَرِيقَةٍ لِلتَّخَلُّصِ مِنَ الْجَرَاثِيمِ.',a:'pos'},{s:'لَيْسَتِ الْأَزْهَارُ مُتَفَتِّحَةً.',t:'لَيْسَتِ',a:'neg'},
+   {s:'لَمْ تَتَفَتَّحِ الْأَزْهَارُ.',t:'لَمْ',a:'neg'},{s:'مَا تَفَتَّحَتِ الْأَزْهَارُ.',t:'مَا',a:'neg'},
+   {s:'تَفَتَّحَتِ الْأَزْهَارُ.',a:'pos'},{s:'غَابَتِ الشَّمْسُ وَنَزَلَ الْمَطَرُ.',a:'pos'},
+   {s:'لَيْسَتِ الرِّيَاحُ قَوِيَّةً.',t:'لَيْسَتِ',a:'neg'},{s:'مَا اقْتَلَعَتِ الرِّيَاحُ الْأَشْجَارَ.',t:'مَا',a:'neg'}];
+  const ORDER=[['نَظَرْتُ','إِلَى','الْقَمَرِ'],['نُحَافِظُ','عَلَى','بِيئَتِنَا','لِنَحْمِيَ','صِحَّتَنَا'],
+   ['أَحْرِصُ','عَلَى','الْغِذَاءِ','الْمُتَوَازِنِ'],['رَحَلَ','الصَّيْفُ','بِحَرِّهِ','الشَّدِيدِ']];
+  const SPEED=['شَاهَدَ','عَمِلَ','تَأَلَّمَ','فِي','يُدَافِعُ','مِنْ','رَفَعَ','إِلَى','ثَرْوَةٌ','يَجْمَعُ','يَتَغَذَّى','حَافَظَ','شَكَرَ','صَامَ','يَحْمِي'];
+  const NOUN='ثَرْوَةٌ';
+
+  const ST=[
+   {id:'g1',name:'أصنّف الكلمة',run:()=>quiz({id:'g1',title:'أصنّف الكلمة',rule:'الكلمة ثلاثة أقسام: اسمٌ وفعلٌ وحرفٌ.',items:WORDS,n:12,
+     options:[{k:'ism',l:'اسم'},{k:'fil',l:'فعل'},{k:'harf',l:'حرف'}],prompt:it=>`<div class="g-word">${it.w}</div>`,
+     explain:it=>`كلمة «${it.w}» <b>${TYPE[it.a]}</b>: ${HINT[it.a]}`})},
+   {id:'g2',name:'اختبار (ال)',run:()=>quiz({id:'g2',title:'اختبار (ال)',rule:'كي أميّز الاسم من الفعل أُدخل (ال) على الكلمة: إن قبلتها فهي اسم، وإن لم تقبلها فهي فعل.',items:AL,n:8,gate:true,
+     options:[{k:'ism',l:'تصحّ ← اسم'},{k:'fil',l:'لا تصحّ ← فعل'}],
+     prompt:it=>`<div class="g-word" id="galw">${it.w}</div><button class="g-al" id="galb">أُدخِل (ال) على الكلمة</button>`,
+     setup:(it,enable)=>{$('#galb').onclick=()=>{$('#galw').innerHTML=`<span class="g-al-on">${it.al}</span>`;$('#galb').remove();enable()}},
+     explain:it=>it.a==='ism'?`«${it.al}» تصحّ، إذن «${it.w}» <b>اسم</b>.`:`لا نقول «${it.al}»، إذن «${it.w}» <b>فعل</b>.`})},
+   {id:'g3',name:'اسمية أم فعلية',run:()=>quiz({id:'g3',title:'اسمية أم فعلية؟',rule:'الجملة نوعان: الاسمية تبدأ باسم، والفعلية تبدأ بفعل.',items:SENT,n:8,
+     options:[{k:'ism',l:'جملة اسمية'},{k:'fil',l:'جملة فعلية'}],prompt:it=>`<div class="g-sent" id="gsx">${it.s}</div>`,
+     after:it=>{$('#gsx').innerHTML=it.s.replace(it.f,`<mark>${it.f}</mark>`)},
+     explain:it=>`بدأت الجملة بـ«${it.f}» وهو ${TYPE[it.a]}، إذن هي <b>جملة ${it.a==='ism'?'اسمية':'فعلية'}</b>.`})},
+   {id:'g4',name:'مثبتة أم منفية',run:()=>quiz({id:'g4',title:'مثبتة أم منفية؟',rule:'إذا ثبت الحدث وتحقق فالجملة مثبتة، وإذا لم يتحقق فهي منفية. من أدوات النفي: ليس، لم، ما، لن.',items:NEG,n:8,
+     options:[{k:'pos',l:'مثبتة'},{k:'neg',l:'منفية',c:'fil'}],prompt:it=>`<div class="g-sent" id="gsx">${it.s}</div>`,
+     after:it=>{if(it.t)$('#gsx').innerHTML=it.s.replace(it.t,`<mark>${it.t}</mark>`)},
+     explain:it=>it.a==='neg'?`فيها أداة النفي «${it.t}»، فالحدث لم يقع: <b>جملة منفية</b>.`:`الحدث وقع وتحقق، ولا توجد أداة نفي: <b>جملة مثبتة</b>.`})},
+   {id:'g5',name:'أرتّب الجملة',run:()=>order()},
+   {id:'g6',name:'تحدّي ٥ ثوانٍ',run:()=>speed()}
+  ];
+  const gbest={};let cur=0,timer=null;
+
+  function tabs(){
+    gtabs.innerHTML=ST.map((s,i)=>`<button role="tab" aria-selected="${i===cur}" data-i="${i}">${s.name}${gbest[s.id]!=null?`<span class="st">${'★'.repeat(gbest[s.id])||'☆'}</span>`:''}</button>`).join('');
+    gtabs.querySelectorAll('button').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  }
+  function go(i){clearTimeout(timer);cur=i;tabs();ST[i].run()}
+  const head=(t,r)=>`<h3 class="g-title">${t}</h3>${r?`<div class="rule"><h3>أستنتج</h3><p>${r}</p></div>`:''}`;
+  const prog=(i,n)=>`<div class="g-prog"><span>${ar(i+1)} / ${ar(n)}</span><div class="g-bar"><i style="width:${i/n*100}%"></i></div></div>`;
+  const starsOf=(sc,n)=>sc===n?3:sc>=n*.7?2:sc>=n*.4?1:0;
+  function result(id,sc,n,extra){
+    const s=starsOf(sc,n);gbest[id]=Math.max(gbest[id]??0,s);tabs();finish(id);
+    stage.innerHTML=`<div class="g-result"><div class="g-stars">${'★'.repeat(s)}<span class="off">${'★'.repeat(3-s)}</span></div>
+      <p class="g-msg">${['حاول مرة أخرى، ستتحسّن!','بداية جيدة','أحسنت!','ممتاز! إتقان كامل'][s]}</p>
+      <p class="how">${extra||`أجبت ${ar(sc)} من ${ar(n)} إجابة صحيحة`}</p>
+      <div class="row" style="justify-content:center"><button class="btn alt" id="gagain">أعِد المحطة</button>${cur<ST.length-1?'<button class="btn" id="gnext">المحطة التالية ←</button>':''}</div></div>`;
+    $('#gagain').onclick=()=>go(cur);const nx=$('#gnext');if(nx)nx.onclick=()=>go(cur+1);
+  }
+  function quiz(c){
+    const items=pick(c.items,c.n);let i=0,sc=0;
+    const show=()=>{
+      if(i>=items.length)return result(c.id,sc,items.length);
+      const it=items[i];let done=false;
+      stage.innerHTML=head(c.title,c.rule)+prog(i,items.length)+`<div class="g-card">${c.prompt(it)}</div>
+        <div class="g-opts">${c.options.map(o=>`<button class="g-opt ${o.c||o.k}" data-k="${o.k}" ${c.gate?'disabled':''}>${o.l}</button>`).join('')}</div><div class="g-fb" id="gfb" hidden></div>`;
+      const bs=[...stage.querySelectorAll('.g-opt')];
+      if(c.setup)c.setup(it,()=>bs.forEach(b=>b.disabled=false));
+      bs.forEach(b=>b.onclick=()=>{
+        if(done)return;done=true;const ok=b.dataset.k===it.a;if(ok)sc++;
+        bs.forEach(x=>{x.disabled=true;if(x.dataset.k===it.a)x.classList.add('right')});if(!ok)b.classList.add('wrong');
+        if(c.after)c.after(it);
+        const fb=$('#gfb');fb.hidden=false;fb.className='g-fb '+(ok?'ok':'bad');
+        fb.innerHTML=`<strong>${ok?'✓ إجابة صحيحة':'✗ ليست صحيحة'}</strong><p>${c.explain(it)}</p><button class="btn" id="gnx">${i<items.length-1?'التالي ←':'النتيجة'}</button>`;
+        $('#gnx').onclick=()=>{i++;show()};$('#gnx').focus({preventScroll:true});
+      });
+    };show();
+  }
+  function order(){
+    const items=shuffle(ORDER);let i=0,sc=0;
+    const show=()=>{
+      if(i>=items.length)return result('g5',sc,items.length);
+      const right=items[i];let pool=shuffle(right.map((w,k)=>({w,k})));
+      while(pool.every((p,k)=>p.k===k))pool=shuffle(pool);
+      let picked=[],tries=0,solved=false;
+      const draw=()=>{
+        stage.innerHTML=head('أرتّب الكلمات لأكوّن معنًى مفيدًا','عندما تجتمع الكلمات لتكوين معنى مفيد فإنها تسمّى جملة.')+prog(i,items.length)+
+         `<div class="g-card"><div class="g-chips g-line" id="gline">${picked.length?picked.map((p,x)=>`<button class="g-chip" data-x="${x}">${p.w}</button>`).join(''):'<span class="how" style="margin:0">اضغط على الكلمات بالترتيب الصحيح</span>'}</div>
+          <div class="g-chips" id="gpool">${pool.map(p=>`<button class="g-chip ${picked.includes(p)?'used':''}" data-k="${p.k}">${p.w}</button>`).join('')}</div></div>
+         <div class="row"><button class="btn pen" id="gchk" ${picked.length<right.length?'disabled':''}>تحقّق</button><button class="btn alt" id="gclr">امسح</button></div><div class="g-fb" id="gfb" hidden></div>`;
+        $('#gpool').querySelectorAll('.g-chip').forEach(b=>b.onclick=()=>{const p=pool.find(q=>q.k==b.dataset.k);if(!picked.includes(p)){picked.push(p);draw()}});
+        $('#gline').querySelectorAll('.g-chip').forEach(b=>b.onclick=()=>{picked.splice(+b.dataset.x,1);draw()});
+        $('#gclr').onclick=()=>{picked=[];draw()};
+        $('#gchk').onclick=()=>{
+          const ok=picked.every((p,k)=>p.k===k);tries++;const fb=$('#gfb');fb.hidden=false;
+          if(ok){if(tries===1)sc++;fb.className='g-fb ok';fb.innerHTML=`<strong>✓ جملة مفيدة</strong><p class="g-sent" style="font-size:22px">${right.join(' ')}.</p><button class="btn" id="gnx">${i<items.length-1?'التالي ←':'النتيجة'}</button>`;
+            $('#gnx').onclick=()=>{i++;show()};$('#gchk').disabled=true;$('#gclr').disabled=true}
+          else{fb.className='g-fb bad';fb.innerHTML=`<strong>الترتيب يحتاج تعديلًا</strong><p>تلميح: الجملة تبدأ بكلمة «${right[0]}».</p>`}
+        };
+      };draw();
+    };show();
+  }
+  function speed(){
+    stage.innerHTML=head('تحدّي ٥ ثوانٍ','الاسم يدل على معنى في نفسه غير مقترن بزمن.')+
+      `<div class="g-card"><p class="g-msg">ابحث عن <span style="color:var(--sky)">اسمٍ واحدٍ فقط</span> بين الكلمات</p><p class="how" style="margin:0">لديك ٥ ثوانٍ فقط. هل أنت مستعد؟</p><button class="btn pen" id="ggo">ابدأ التحدّي</button></div>`;
+    $('#ggo').onclick=()=>{
+      let over=false;
+      stage.innerHTML=head('تحدّي ٥ ثوانٍ')+`<div class="g-timer"><i id="gtm"></i></div><div class="g-grid">${shuffle(SPEED).map(w=>`<button class="g-chip" data-w="${w}">${w}</button>`).join('')}</div><div class="g-fb" id="gfb" hidden></div>`;
+      const tm=$('#gtm');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)tm.style.animation='gshrink 5s linear forwards';
+      const end=(win,b)=>{if(over)return;over=true;clearTimeout(timer);tm.style.animationPlayState='paused';
+        stage.querySelectorAll('.g-grid .g-chip').forEach(c=>{c.disabled=true;if(c.dataset.w===NOUN)c.classList.add('right')});
+        if(b&&!win)b.classList.add('wrong');
+        const fb=$('#gfb');fb.hidden=false;fb.className='g-fb '+(win?'ok':'bad');
+        fb.innerHTML=`<strong>${win?'✓ وجدته!':(b?'✗ هذه ليست اسمًا':'⏱ انتهى الوقت')}</strong><p>«${NOUN}» هي الاسم الوحيد، وتقبل (ال): الثروة. البقية أفعال وحروف.</p><button class="btn" id="gnx">النتيجة</button>`;
+        $('#gnx').onclick=()=>result('g6',win?1:0,1,win?'أنت سريع ودقيق!':'جرّب مرة أخرى وركّز على الكلمة التي تقبل (ال).');
+      };
+      stage.querySelectorAll('.g-grid .g-chip').forEach(b=>b.onclick=()=>end(b.dataset.w===NOUN,b));
+      timer=setTimeout(()=>end(false),5000);
+    };
+  }
+  tabs();ST[0].run();
+})();
+})();
+</script>
+
+
+</body></html>

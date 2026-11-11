@@ -1,0 +1,198 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مختبر التحويلات الهندسية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
+<style>
+/* التصميم: نفس هوية موقع رحلة الإتقان (أزرق هادئ، بطاقات بيضاء، خط تجوال). رسم المنحنى هو محور الصفحة. */
+:root{
+  --bg:#eaf2f7; --card:#ffffff; --ink:#1f3140; --mute:#5d7385; --line:#d3e1eb;
+  --accent:#2f6f9f; --accent-2:#245a82; --ghost:#9db3c2; --target:#d8574a; --ok:#2e8f6a; --ok-bg:#e4f4ec; --warn-bg:#fbeae7;
+  --grid:#e3edf3; --axis:#7d93a3; --chip:#eef5fa;
+  --font:'Tajawal',Tahoma,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1a23; --card:#172632; --ink:#e6eff5; --mute:#9db3c2; --line:#26394a;
+  --accent:#6bb3e0; --accent-2:#8cc6ea; --ghost:#58707f; --target:#ff8b7d; --ok:#6fd1a5; --ok-bg:#12332a; --warn-bg:#3a1f1c;
+  --grid:#1f3140; --axis:#7d93a3; --chip:#1d3040; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a23; --card:#172632; --ink:#e6eff5; --mute:#9db3c2; --line:#26394a;
+  --accent:#6bb3e0; --accent-2:#8cc6ea; --ghost:#58707f; --target:#ff8b7d; --ok:#6fd1a5; --ok-bg:#12332a; --warn-bg:#3a1f1c;
+  --grid:#1f3140; --axis:#7d93a3; --chip:#1d3040; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.7;padding-inline:16px;padding-block:18px 40px}
+.wrap{max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+h1{font-size:1.35rem;line-height:1.4;margin:0 0 4px;text-wrap:balance;font-weight:800}
+h2{font-size:1.05rem;margin:0 0 8px;font-weight:700}
+p{margin:0}
+.sub{color:var(--mute);font-size:.95rem}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button,.btn{font-family:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer;min-height:40px}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn.main{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.btn:focus-visible,.tabs button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.eq{direction:ltr;text-align:center;font-size:1.5rem;font-weight:700;letter-spacing:.02em;padding:6px 0;font-variant-numeric:tabular-nums;color:var(--accent-2)}
+.plot{width:100%;height:auto;display:block;border-radius:12px;background:var(--card)}
+.plot text{font-family:var(--font);font-size:11px;fill:var(--mute);direction:ltr}
+.sliders{display:flex;flex-direction:column;gap:10px}
+.row{display:grid;grid-template-columns:1fr;gap:2px}
+.row label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:500}
+.row label b{direction:ltr;font-variant-numeric:tabular-nums;color:var(--accent-2);min-width:3ch;text-align:end}
+.row small{color:var(--mute)}
+input[type=range]{width:100%;direction:ltr;accent-color:var(--accent);height:34px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:.92rem}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.9rem;color:var(--mute)}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid var(--accent);vertical-align:middle;margin-inline-end:6px}
+.legend i.g{border-top:2px dashed var(--ghost)}
+.legend i.t{border-top:3px dashed var(--target)}
+.msg{border-radius:12px;padding:10px 12px;font-weight:500}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg.no{background:var(--warn-bg);color:var(--target)}
+.opts{display:grid;gap:8px;margin-top:8px}
+.opt{font-family:inherit;font-size:1rem;text-align:start;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:10px 12px;border-radius:12px;cursor:pointer;min-height:44px}
+.opt:hover{border-color:var(--accent)}
+.opt.good{border-color:var(--ok);background:var(--ok-bg)}
+.opt.bad{border-color:var(--target);background:var(--warn-bg)}
+.sol{margin-top:8px;color:var(--mute);font-size:.95rem}
+.demo{font-size:.85rem;color:var(--mute);text-align:center}
+@media (prefers-reduced-motion:no-preference){.opt{transition:border-color .15s,background .15s}}
+</style>
+
+<div class="wrap">
+  <div class="card">
+    <h1>🧪 مختبر التحويلات الهندسية</h1>
+    <p class="sub">حرّكي المنزلقات وراقبي كيف يتحرك المنحنى الأزرق عن الدالة الأم الرمادية.</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs" role="group" aria-label="الدالة الأم">
+      <button type="button" dir="ltr" data-f="sq" aria-pressed="true">x²</button>
+      <button type="button" dir="ltr" data-f="abs" aria-pressed="false">|x|</button>
+      <button type="button" dir="ltr" data-f="sqrt" aria-pressed="false">√x</button>
+    </div>
+    <div class="eq" id="eq" aria-live="polite"></div>
+    <svg id="plot" class="plot" viewBox="0 0 340 340" role="img" aria-label="منحنى الدالة بعد التحويل"></svg>
+    <div class="legend"><span><i></i>بعد التحويل</span><span><i class="g"></i>الدالة الأم</span><span id="lgT" hidden><i class="t"></i>المنحنى الهدف</span></div>
+  </div>
+
+  <div class="card sliders">
+    <div class="row"><label for="a">a — التمدد والانعكاس <b id="av"></b></label><input id="a" type="range" min="-3" max="3" step="0.5" value="1"></div>
+    <div class="row"><label for="h">h — الانسحاب الأفقي <b id="hv"></b></label><input id="h" type="range" min="-5" max="5" step="1" value="0"></div>
+    <div class="row"><label for="k">k — الانسحاب الرأسي <b id="kv"></b></label><input id="k" type="range" min="-5" max="5" step="1" value="0"></div>
+    <div class="chips" id="chips" aria-live="polite"></div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 تحدّي المطابقة</h2>
+    <p class="sub">اضبطي المنزلقات حتى ينطبق منحناكِ الأزرق على المنحنى الأحمر المتقطع.</p>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button type="button" class="btn main" id="newT">تحدٍّ جديد</button>
+      <button type="button" class="btn" id="giveUp">أرِني الحل</button>
+    </div>
+    <div id="tmsg" class="msg" style="margin-top:10px" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>ماذا لاحظتِ؟</h2>
+    <p id="q">عندما تصبح قيمة <span dir="ltr">a</span> سالبة، ماذا يحدث للمنحنى؟</p>
+    <div class="opts" id="opts"></div>
+    <p class="sol" id="sol" hidden></p>
+  </div>
+  <p class="demo">نموذج تجريبي لنشاط درس «الدوال الرئيسة والتحويلات الهندسية»</p>
+</div>
+
+<script>
+(function(){
+  var F={sq:{n:function(u){return u+'²'},f:function(x){return x*x}},abs:{n:function(u){return '|'+u+'|'},f:Math.abs},sqrt:{n:function(u){return '√'+u},f:function(x){return x<0?NaN:Math.sqrt(x)}}};
+  var cur='sq', W=340, M=22, R=8;                         // نطاق الرسم: من −8 إلى 8
+  var sc=(W-2*M)/(2*R), X=function(x){return M+(x+R)*sc}, Y=function(y){return W-M-(y+R)*sc};
+  var $=function(id){return document.getElementById(id)};
+  var st={a:1,h:0,k:0}, target=null, shown=false;
+  function sgn(n){return n<0?'−':'+'}
+  function inner(h){return h===0?'x':'(x '+sgn(-h)+' '+Math.abs(h)+')'}
+  function formula(p,name){
+    var a=p.a,h=p.h,k=p.k;
+    var core= cur==='sq'?inner(h)+'²' : cur==='abs'?'|'+(h===0?'x':'x '+sgn(-h)+' '+Math.abs(h))+'|' : '√'+(h===0?'x':'('+'x '+sgn(-h)+' '+Math.abs(h)+')');
+    if(cur==='sq'&&h===0)core='x²';
+    var pre=a===1?'':a===-1?'−':String(a).replace('-','−');
+    if(a===0) return 'y = '+(k===0?'0':String(k).replace('-','−'));
+    var kk=k===0?'':' '+sgn(k)+' '+Math.abs(k);
+    return 'y = '+pre+core+kk;
+  }
+  function path(p){
+    var d='',pen=false,N=420,fn=F[cur].f;
+    for(var i=0;i<=N;i++){
+      var x=-R+2*R*i/N, y=p.a*fn(x-p.h)+p.k;
+      if(!isFinite(y)||y>R+1||y<-R-1){pen=false;continue}
+      d+=(pen?'L':'M')+X(x).toFixed(1)+','+Y(y).toFixed(1);pen=true;
+    }
+    return d;
+  }
+  function draw(){
+    var s='';
+    for(var t=-R;t<=R;t++){
+      s+='<line x1="'+X(t)+'" y1="'+M+'" x2="'+X(t)+'" y2="'+(W-M)+'" stroke="var(--grid)" stroke-width="1"/>';
+      s+='<line x1="'+M+'" y1="'+Y(t)+'" x2="'+(W-M)+'" y2="'+Y(t)+'" stroke="var(--grid)" stroke-width="1"/>';
+    }
+    s+='<line x1="'+M+'" y1="'+Y(0)+'" x2="'+(W-M)+'" y2="'+Y(0)+'" stroke="var(--axis)" stroke-width="1.5"/>';
+    s+='<line x1="'+X(0)+'" y1="'+M+'" x2="'+X(0)+'" y2="'+(W-M)+'" stroke="var(--axis)" stroke-width="1.5"/>';
+    for(var t2=-6;t2<=6;t2+=2){ if(t2===0)continue;
+      s+='<text x="'+X(t2)+'" y="'+(Y(0)+13)+'" text-anchor="middle">'+t2+'</text>';
+      s+='<text x="'+(X(0)-5)+'" y="'+(Y(t2)+4)+'" text-anchor="end">'+t2+'</text>';
+    }
+    s+='<text x="'+(W-M+2)+'" y="'+(Y(0)-5)+'" text-anchor="end">x</text><text x="'+(X(0)+6)+'" y="'+(M+8)+'">y</text>';
+    s+='<path d="'+path({a:1,h:0,k:0})+'" fill="none" stroke="var(--ghost)" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>';
+    if(target) s+='<path d="'+path(target)+'" fill="none" stroke="var(--target)" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round"/>';
+    s+='<path d="'+path(st)+'" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    if(st.a!==0){ s+='<circle cx="'+X(st.h)+'" cy="'+Y(st.k)+'" r="5" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>'; }
+    $('plot').innerHTML=s;
+  }
+  function chips(){
+    var c=[],a=st.a,h=st.h,k=st.k;
+    if(a===0)c.push('a = 0: الدالة صارت ثابتة (خط أفقي)');
+    if(a<0)c.push('انعكاس حول محور x');
+    if(Math.abs(a)>1)c.push('تمدد رأسي ×'+Math.abs(a));
+    if(Math.abs(a)>0&&Math.abs(a)<1)c.push('تضييق رأسي ×'+Math.abs(a));
+    if(h!==0)c.push('انسحاب '+Math.abs(h)+(h>0?' يمينًا':' يسارًا'));
+    if(k!==0)c.push('انسحاب '+Math.abs(k)+(k>0?' للأعلى':' للأسفل'));
+    if(!c.length)c.push('لا تحويل: المنحنى هو الدالة الأم');
+    $('chips').innerHTML=c.map(function(t){return '<span class="chip">'+t+'</span>'}).join('');
+  }
+  function fmt(v){return String(v).replace('-','−')}
+  function upd(){
+    $('av').textContent=fmt(st.a);$('hv').textContent=fmt(st.h);$('kv').textContent=fmt(st.k);
+    $('eq').textContent=formula(st);draw();chips();check();
+  }
+  function check(){
+    var m=$('tmsg'); if(!target||shown){return}
+    var ok=Math.abs(st.a-target.a)<1e-9&&st.h===target.h&&st.k===target.k;
+    m.hidden=false;
+    if(ok){m.className='msg ok';m.textContent='أحسنتِ! المنحنيان انطبقا. المعادلة: '+formula(target)}
+    else{ var hints=[]; if(st.a!==target.a)hints.push('التمدد/الانعكاس'); if(st.h!==target.h)hints.push('الانسحاب الأفقي'); if(st.k!==target.k)hints.push('الانسحاب الرأسي');
+      m.className='msg no'; m.textContent='قريبة؟ راجعي: '+hints.join(' · ')}
+  }
+  var T=[{a:1,h:3,k:-2},{a:-1,h:-2,k:4},{a:2,h:1,k:1},{a:-2,h:0,k:3},{a:0.5,h:-3,k:-1},{a:1,h:-4,k:2}], ti=-1;
+  function newT(){
+    ti=(ti+1)%T.length; target=T[ti]; shown=false; $('lgT').hidden=false;
+    st={a:1,h:0,k:0}; ['a','h','k'].forEach(function(i){$(i).value=st[i]});
+    $('tmsg').hidden=true; upd();
+  }
+  $('newT').onclick=newT;
+  $('giveUp').onclick=function(){ if(!target)newT(); shown=true; st={a:target.a,h:target.h,k:target.k};
+    ['a','h','k'].forEach(function(i){$(i).value=st[i]}); upd(); var m=$('tmsg');m.hidden=false;m.className='msg ok';m.textContent='الحل: '+formula(target)+'. جرّبي تحديًا جديدًا.'};
+  ['a','h','k'].forEach(function(i){$(i).addEventListener('input',function(){st[i]=parseFloat(this.value);shown=false;upd()})});
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){
+    cur=b.getAttribute('data-f'); Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(x){x.setAttribute('aria-pressed',x===b)}); upd()}});
+  // سؤال «ماذا لاحظتِ؟»
+  var opts=[['ينسحب المنحنى للأعلى',0],['ينعكس المنحنى حول محور x (يصبح مقلوبًا)',1],['ينسحب المنحنى يسارًا',0]];
+  $('opts').innerHTML=opts.map(function(o,i){return '<button type="button" class="opt" data-i="'+i+'">'+o[0]+'</button>'}).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){
+    var good=opts[+b.getAttribute('data-i')][1]; Array.prototype.forEach.call(document.querySelectorAll('.opt'),function(x){x.classList.remove('good','bad')});
+    b.classList.add(good?'good':'bad'); var s=$('sol'); s.hidden=false;
+    s.textContent=good?'صحيح: الإشارة السالبة أمام الدالة تعكسها حول محور x، فتتحول قيم y إلى سالبها.':'جرّبي أن تجعلي a سالبة وتنظري إلى المنحنى مرة أخرى.'}});
+  upd();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,609 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مغامرات الأعداد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Almarai:wght@400;700;800&display=swap">
+<style>
+/* Layout: graph-paper workbook — one tab per chapter, each tab is a single game with its own mechanic */
+:root{
+  --paper:#F2F7FC; --grid:#E0EAF4; --card:#FFFFFF; --ink:#1E3350; --muted:#5D7290; --line:#D2DFEC; --chip:#EAF2F9;
+  --orange:#6A5ACD; --orange-soft:#ECE9FB; --blue:#2C7CC0; --blue-soft:#E3F0FB; --green:#1C9A8C; --green-soft:#DCF3EF;
+  --bad:#C24A72; --bad-soft:#FBE7EE; --star:#F0B43C; --rail:#9FB4CA;
+  --yellow:#E9A916; --c-units:#DFF3EF; --c-thous:#E5EFFB; --c-mill:#ECE9FA;
+  --m-red:#D9413A; --m-blue:#2F7AD0; --m-yellow:#EDB51C; --m-green:#35A35F;
+  --f-display:"Lalezar","Almarai",Tahoma,sans-serif;
+  --f-body:"Almarai","Geeza Pro",Tahoma,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.8;direction:rtl;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+h1{font-family:var(--f-display);font-weight:400;letter-spacing:.5px;font-size:clamp(28px,6vw,40px);margin:0;line-height:1.25}
+.sub{color:var(--muted);font-size:15px;margin:2px 0 6px}
+.credit{display:inline-block;font-weight:600;font-size:15px;color:var(--green);background:var(--green-soft);border-radius:999px;padding:2px 14px}
+.credit b{color:var(--ink)}
+.total{font-family:var(--f-display);font-size:15px;color:var(--muted);text-align:center;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 14px}
+.total b{display:block;font-size:26px;color:var(--orange);line-height:1.2;font-variant-numeric:tabular-nums}
+
+nav.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+nav.tabs button{font-family:var(--f-display);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:8px 10px;cursor:pointer;text-align:start;line-height:1.4}
+nav.tabs button small{display:block;font-family:var(--f-body);font-size:13px;color:var(--muted)}
+nav.tabs button span{font-size:17px}
+nav.tabs button[aria-selected="true"]{border-color:var(--orange);background:var(--orange-soft)}
+@media (max-width:520px){nav.tabs button span{font-size:15px} nav.tabs button small{font-size:12px}}
+
+.page{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding-block:18px 24px;padding-inline:18px}
+.page h2{font-family:var(--f-display);font-weight:400;font-size:23px;margin:0;color:var(--blue)}
+.lead{color:var(--muted);margin:2px 0 14px;font-size:15px}
+.lessons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.lessons span{font-size:13px;background:var(--chip);border-radius:999px;padding:1px 10px;color:var(--muted)}
+
+.mission{background:var(--blue-soft);border-radius:14px;padding:12px 16px;margin-bottom:14px}
+.mission .tag{font-family:var(--f-display);font-size:13px;color:var(--blue)}
+.mission .txt{font-size:20px;font-weight:600;line-height:1.7}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-family:var(--f-display);font-size:14px;background:var(--card);border-radius:999px;padding:1px 12px;font-variant-numeric:tabular-nums}
+
+.btn{font-family:var(--f-display);font-size:16px;border:none;border-radius:11px;padding:8px 18px;cursor:pointer;background:var(--blue);color:#fff}
+.btn.or{background:var(--orange)} .btn.gr{background:var(--green)}
+.btn.ghost{background:var(--chip);color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fb{min-height:1.8em;font-weight:600;margin-top:8px}
+.fb.ok{color:var(--green)} .fb.bad{color:var(--bad)}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* ---- place value chart ---- */
+.pv-wrap{overflow-x:auto;margin-bottom:10px}
+table.pv{border-collapse:separate;border-spacing:3px;margin:0 auto;direction:rtl}
+table.pv th{font-family:var(--f-display);font-weight:500;font-size:13px;padding:2px 4px;border-radius:8px;white-space:nowrap}
+table.pv th.per{font-size:14px}
+.u{background:var(--c-units)} .t{background:var(--c-thous)} .m{background:var(--c-mill)}
+table.pv td{border-radius:10px;padding:2px;text-align:center;width:44px}
+.pv .ar{display:block;width:100%;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;line-height:1.3;padding:2px 0}
+.pv .ar:hover{color:var(--blue)}
+.pv .dg{font-size:28px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums}
+.pv .dg.z{color:var(--muted);opacity:.45}
+@media (max-width:460px){table.pv td{width:34px} .pv .dg{font-size:22px} table.pv th{font-size:11px;padding:2px 1px} table.pv{border-spacing:2px}}
+.readout{display:grid;gap:4px;text-align:center;margin-bottom:6px}
+.readout .std{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.readout .exp{color:var(--muted);font-size:15px}
+
+/* ---- column arithmetic ---- */
+.eq{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;align-items:center;font-size:30px;font-weight:700;margin:10px 0;direction:rtl}
+.eq .box{min-width:56px;height:52px;border:3px dashed var(--orange);border-radius:12px;display:grid;place-items:center;color:var(--orange);padding:0 6px}
+.colwork{direction:ltr;display:grid;justify-content:center;margin:8px auto 4px;gap:2px}
+.colwork .r{display:flex;gap:4px;justify-content:flex-end}
+.colwork .c{width:44px;height:50px;display:grid;place-items:center;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.colwork .op{color:var(--orange)}
+.colwork .bar{height:3px;background:var(--ink);border-radius:2px;margin:2px 0}
+.colwork .in{border:2px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;color:var(--blue);font:inherit}
+.colwork .in.sel{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.colwork .in.ok{border-color:var(--green);color:var(--green)} .colwork .in.no{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+.pad{display:grid;grid-template-columns:repeat(6,48px);gap:6px;justify-content:center;margin:10px 0;direction:rtl}
+.pad button{height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;font-weight:700;cursor:pointer;font-family:var(--f-body)}
+.pad button.wide{grid-column:span 2;font-family:var(--f-display);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{font-family:var(--f-body);font-size:16px;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.ok{background:var(--green);border-color:var(--green);color:#fff}
+.chip.no{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.chip:disabled{cursor:default}
+.big-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:460px;margin:10px auto}
+.big-opts .chip{font-size:24px;border-radius:12px;padding:8px}
+
+/* ---- data lab ---- */
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.steps button{font-family:var(--f-display);font-size:14px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:3px 12px;cursor:pointer}
+.steps button[aria-current="step"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.steps button.done{border-color:var(--green);color:var(--green)}
+.resp{text-align:center;margin:8px 0 12px}
+.resp .who{color:var(--muted);font-size:14px}
+.resp .ans{font-size:28px;font-weight:700;color:var(--orange)}
+table.tally{width:100%;max-width:560px;margin:0 auto;border-collapse:collapse}
+table.tally caption{font-family:var(--f-display);font-size:16px;background:var(--blue);color:#fff;border-radius:10px 10px 0 0;padding:4px}
+table.tally th,table.tally td{border:1.5px solid var(--line);padding:6px 8px;text-align:start}
+table.tally th{font-family:var(--f-display);font-weight:500;background:var(--chip);font-size:14px}
+table.tally td.cat button{font:inherit;font-weight:600;background:none;border:none;color:var(--ink);cursor:pointer;width:100%;text-align:start}
+table.tally tr.hit td{background:var(--blue-soft)}
+table.tally tr.miss td{background:var(--bad-soft)}
+.marks{display:flex;gap:10px;flex-wrap:wrap;min-height:30px;align-items:center}
+.marks svg{height:28px;width:auto;color:var(--ink)}
+.stepper{display:flex;align-items:center;gap:6px;direction:rtl}
+.stepper button{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:18px;line-height:1}
+.stepper b{min-width:1.6em;text-align:center;font-size:20px;font-variant-numeric:tabular-nums}
+td.ok b{color:var(--green)} td.no b{color:var(--bad)}
+
+.barchart{display:grid;grid-template-columns:auto 1fr;gap:6px;max-width:560px;margin:0 auto;direction:rtl}
+.yaxis{display:flex;flex-direction:column-reverse;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.yaxis span{height:30px;display:flex;align-items:flex-end;line-height:1}
+.bars{display:grid;gap:8px;border-bottom:2px solid var(--ink);border-inline-start:2px solid var(--ink);padding-inline:8px}
+.bcol{display:flex;flex-direction:column-reverse}
+.bcell{height:30px;border:none;border-top:1px dashed var(--grid);background:transparent;cursor:pointer;padding:0}
+.bcell.on{background:var(--blue);border-top-color:var(--blue)}
+.bcol.ok .bcell.on{background:var(--green);border-top-color:var(--green)}
+.bcol.no .bcell.on{background:var(--bad);border-top-color:var(--bad)}
+.blabels{display:grid;gap:8px;padding-inline:8px;font-size:13px;text-align:center;grid-column:2;line-height:1.4}
+
+.qcard{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--paper)}
+.qcard h4{font-family:var(--f-display);font-weight:500;margin:0 0 6px;font-size:16px;color:var(--blue)}
+.q{font-weight:600;margin:8px 0 6px}
+.figure{display:flex;justify-content:center;margin:6px 0}
+.figure svg{max-width:100%;height:auto}
+
+.bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:240px;margin:6px auto;padding:16px 14px 12px;border:3px solid var(--line);border-radius:30px 30px 60px 60px;background:var(--paper);position:relative}
+.bag::before{content:"";position:absolute;top:-12px;left:50%;width:60px;height:14px;transform:translateX(-50%);border:3px solid var(--line);border-bottom:none;border-radius:12px 12px 0 0;background:var(--paper)}
+.ball{width:30px;height:30px;border-radius:50%;box-shadow:inset -4px -5px 0 rgba(0,0,0,.18),inset 4px 4px 0 rgba(255,255,255,.35)}
+.ball.picked{outline:3px solid var(--ink);outline-offset:2px}
+.b-red{background:var(--m-red)} .b-blue{background:var(--m-blue)} .b-yellow{background:var(--m-yellow)} .b-green{background:var(--m-green)}
+.center{text-align:center}
+.result{font-family:var(--f-display);font-size:40px;color:var(--green);text-align:center;line-height:1.3;font-variant-numeric:tabular-nums}
+
+/* ---- train journey ---- */
+.journey{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 16px 8px;margin-bottom:14px}
+.jhead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.jhead h3{font-family:var(--f-display);font-size:16px;margin:0;color:var(--blue)}
+.scores{display:flex;gap:8px}
+.scores span{font-family:var(--f-display);font-size:15px;background:var(--chip);border-radius:999px;padding:1px 12px;font-variant-numeric:tabular-nums}
+.scores .s b{color:var(--star)} .scores .p b{color:var(--orange)}
+.route{position:relative;height:74px;margin:6px 4% 0}
+.route .rail{position:absolute;inset-inline:0;top:44px;height:8px;border-top:3px solid var(--rail);border-bottom:3px solid var(--rail);
+  background:repeating-linear-gradient(90deg,transparent 0 9px,var(--rail) 9px 12px)}
+.route .done-rail{position:absolute;right:0;top:44px;height:8px;background:var(--green);opacity:.35;border-radius:3px;transition:width .6s ease}
+.route .stop{position:absolute;top:38px;transform:translateX(50%);display:flex;flex-direction:column;align-items:center}
+.route .stop i{width:20px;height:20px;border-radius:50%;background:var(--card);border:3px solid var(--rail);display:block}
+.route .stop.ok i{background:var(--green);border-color:var(--green)}
+.route .stop span{font-size:12px;color:var(--muted);white-space:nowrap;margin-top:1px}
+.route .train{position:absolute;top:2px;transform:translateX(50%);transition:right .7s ease}
+.train svg{width:58px;height:40px;display:block}
+.track{position:relative;display:grid;margin:0 0 14px;direction:rtl}
+.track::before{content:"";position:absolute;inset-inline:calc(50% / var(--n));top:42px;height:7px;border-top:3px solid var(--rail);border-bottom:3px solid var(--rail);
+  background:repeating-linear-gradient(90deg,transparent 0 8px,var(--rail) 8px 11px)}
+.node{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;min-width:0}
+.node .slot{height:30px;display:flex;align-items:flex-end}
+.node .slot svg{width:42px;height:28px}
+.node .st{width:28px;height:28px;border-radius:50%;background:var(--card);border:3px solid var(--rail);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--muted)}
+.node.cur .st{border-color:var(--orange);color:var(--orange)}
+.node.done .st{background:var(--green);border-color:var(--green);color:#fff}
+.node.miss .st{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.node .stars{font-size:12px;line-height:1.3;letter-spacing:-1px;color:var(--line);min-height:1.3em}
+.node .stars b{color:var(--star);font-weight:400}
+.node .lbl{font-size:11px;color:var(--muted);text-align:center;line-height:1.3}
+@media (max-width:460px){.node .st{width:24px;height:24px;font-size:11px}.node .slot svg{width:34px}.node .stars{font-size:10px}}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.shake{animation:shake .3s}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>مغامرات الأعداد</h1>
+      <p class="sub">رياضيات الصف الرابع — الفصل الدراسي الأول: نشاط تفاعلي لكل فصل</p>
+      <span class="credit">مشاركة الطالب: <b>يزيد أحمد عيسى</b> — رابع/٤</span>
+    </div>
+    
+  </header>
+  <div class="journey">
+    <div class="jhead"><h3>رحلة القطار: من محطة الفصل الأول إلى خط النهاية</h3>
+      <div class="scores"><span class="s">النجوم <b id="totStars">٠</b></span><span class="p">النقاط <b id="totalPts">٠</b></span></div></div>
+    <div class="route" id="route"></div>
+  </div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" aria-selected="true" data-tab="ch1"><small>الفصل ١</small><span>لوحة المنازل</span></button>
+    <button role="tab" aria-selected="false" data-tab="ch2"><small>الفصل ٢</small><span>ماكينة العمليات</span></button>
+    <button role="tab" aria-selected="false" data-tab="ch3"><small>الفصل ٣</small><span>مختبر البيانات</span></button>
+  </nav>
+
+  <!-- ================= CHAPTER 1 ================= -->
+  <section class="page" id="ch1">
+    <h2>الفصل الأول: القيمة المنزلية</h2>
+    <p class="lead">اقرأ المهمّة، ثم كوّن العدد في لوحة المنازل بالأسهم ▲ ▼، واضغط «تحقّق».</p>
+    <div class="lessons"><span>القيمة المنزلية ضمن مئات الألوف</span><span>ضمن الملايين</span><span>المقارنة بين الأعداد</span><span>ترتيب الأعداد</span><span>تقريب الأعداد</span></div>
+
+    <div class="track" id="tr1"></div>
+    <div class="mission">
+      <div class="mhead"><span class="tag" id="m1tag"></span><span class="pill" id="m1count"></span></div>
+      <div class="txt" id="m1txt"></div>
+    </div>
+    <div class="pv-wrap"><table class="pv" id="pv"></table></div>
+    <div class="readout"><div class="std" id="pvStd">٠</div><div class="exp" id="pvExp">الصيغة التحليلية: ٠</div></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn or" id="m1check">تحقّق</button>
+      <button class="btn ghost" id="m1clear">صفّر اللوحة</button>
+      <button class="btn ghost" id="m1show" hidden>اعرض الحل</button>
+      <button class="btn gr" id="m1next" hidden>المهمّة التالية</button>
+    </div>
+    <div class="fb center" id="m1fb"></div>
+  </section>
+
+  <!-- ================= CHAPTER 2 ================= -->
+  <section class="page" id="ch2" hidden>
+    <h2>الفصل الثاني: الجمع والطرح</h2>
+    <p class="lead">مهامّ متنوّعة: خصائص الجمع وقواعد الطرح، والتقدير، والجمع والطرح العمودي. استعمل لوحة الأرقام للإجابة.</p>
+    <div class="lessons"><span>خصائص الجمع وقواعد الطرح</span><span>تقدير المجموع والفرق</span><span>الجمع</span><span>الطرح</span><span>الطرح مع وجود الأصفار</span></div>
+
+    <div class="track" id="tr2"></div>
+    <div class="mission">
+      <div class="mhead"><span class="tag" id="m2tag"></span><span class="pill" id="m2count"></span></div>
+      <div class="txt" id="m2txt"></div>
+    </div>
+    <div id="m2work"></div>
+    <div class="fb center" id="m2fb"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn or" id="m2check">تحقّق</button>
+      <button class="btn gr" id="m2next" hidden>المهمّة التالية</button>
+    </div>
+  </section>
+
+  <!-- ================= CHAPTER 3 ================= -->
+  <section class="page" id="ch3" hidden>
+    <h2>الفصل الثالث: تنظيم البيانات وعرضها وتفسيرها</h2>
+    <p class="lead">أربع محطّات متتالية: تسجّل نتائج مسح، ثم تمثّلها بالأعمدة، ثم تقرأ التمثيلات، وتختم بالاحتمال.</p>
+    <div class="lessons"><span>جمع البيانات وتنظيمها</span><span>التمثيل بالأعمدة</span><span>التمثيل بالخطوط</span><span>التمثيل بالقطاعات الدائرية</span><span>الاحتمال</span></div>
+    <div class="track" id="tr3"></div>
+    <div class="steps" id="steps">
+      <button data-s="0" aria-current="step">١ لوحة الإشارات</button>
+      <button data-s="1">٢ التمثيل بالأعمدة</button>
+      <button data-s="2">٣ اقرأ التمثيل</button>
+      <button data-s="3">٤ كيس الكرات</button>
+    </div>
+
+    <div id="s0" class="station">
+      <div class="mission"><span class="tag">المحطة ١</span><div class="txt" id="surveyTitle"></div>
+        <div style="font-size:15px;color:var(--muted)">تظهر إجابات الطلاب واحدة بعد الأخرى. اضغط الصفّ المناسب لتضيف إشارة، ثم اكتب التكرار.</div></div>
+      <div class="resp" id="resp"></div>
+      <table class="tally" id="tally"></table>
+      <div class="fb center" id="s0fb"></div>
+      <div class="row" style="justify-content:center"><button class="btn or" id="s0check" hidden>تحقّق من التكرار</button><button class="btn gr" id="s0next" hidden>إلى التمثيل بالأعمدة</button></div>
+    </div>
+
+    <div id="s1" class="station" hidden>
+      <div class="mission"><span class="tag">المحطة ٢</span><div class="txt">مثّل بيانات الجدول التكراري بالأعمدة</div>
+        <div style="font-size:15px;color:var(--muted)">اضغط المربع الذي يصل إليه ارتفاع كل عمود.</div></div>
+      <div class="row" style="justify-content:center;gap:6px;margin-bottom:10px" id="freqRef"></div>
+      <div class="barchart" id="barchart"></div>
+      <div class="fb center" id="s1fb"></div>
+      <div class="row" style="justify-content:center"><button class="btn or" id="s1check">تحقّق من الأعمدة</button><button class="btn gr" id="s1next" hidden>إلى قراءة التمثيلات</button></div>
+    </div>
+
+    <div id="s2" class="station" hidden>
+      <div id="readQs"></div>
+      <div class="row" style="justify-content:center"><button class="btn gr" id="s2next" hidden>إلى كيس الكرات</button></div>
+    </div>
+
+    <div id="s3" class="station" hidden>
+      <div class="mission"><div class="mhead"><span class="tag">المحطة ٤</span><span class="pill" id="pcount"></span></div>
+        <div class="txt" id="ptxt"></div></div>
+      <div class="bag" id="bag"></div>
+      <div class="chips" id="pchips" style="margin-top:12px"></div>
+      <div class="fb center" id="pfb"></div>
+      <div class="row" style="justify-content:center"><button class="btn ghost" id="pdraw">اسحب كرة عشوائيًا</button><button class="btn gr" id="pnext" hidden>الكيس التالي</button></div>
+    </div>
+
+    <div id="s4" class="station" hidden>
+      <div class="result" id="labRes"></div>
+      <p class="center" id="labMsg"></p>
+      <div class="row" style="justify-content:center"><button class="btn or" id="labAgain">ابدأ مسحًا جديدًا</button></div>
+    </div>
+  </section>
+
+  <footer>الأنشطة مبنية على دروس كتاب الرياضيات للصف الرابع، الفصل الدراسي الأول.<br>مشاركة الطالب: يزيد أحمد عيسى، الصف الرابع/٤.</footer>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const A=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+const TRAIN='<svg viewBox="0 0 64 42" aria-hidden="true"><rect x="22" y="8" width="30" height="20" rx="4" fill="var(--blue)"/><rect x="40" y="2" width="16" height="26" rx="3" fill="var(--orange)"/><rect x="43" y="6" width="10" height="8" rx="2" fill="#fff"/><rect x="6" y="14" width="18" height="14" rx="3" fill="var(--blue)"/><rect x="10" y="6" width="6" height="9" rx="1.5" fill="var(--orange)"/><path d="M2 28 L8 20 L8 28 Z" fill="var(--green)"/><rect x="4" y="27" width="54" height="4" rx="2" fill="var(--ink)"/><circle cx="14" cy="34" r="5" fill="var(--ink)"/><circle cx="30" cy="34" r="5" fill="var(--ink)"/><circle cx="48" cy="34" r="6" fill="var(--ink)"/><circle cx="14" cy="34" r="2" fill="#fff"/><circle cx="30" cy="34" r="2" fill="#fff"/><circle cx="48" cy="34" r="2.4" fill="#fff"/><circle cx="20" cy="2.5" r="2.5" fill="var(--rail)"/><circle cx="14" cy="1.5" r="1.5" fill="var(--rail)"/></svg>';
+const tracks=[];
+function Track(el,n,max,labels){const st=Array(n).fill(null);let cur=0;el.style.setProperty('--n',n);el.style.gridTemplateColumns='repeat('+n+',minmax(0,1fr))';
+  function draw(){el.innerHTML=st.map((v,i)=>'<div class="node'+(v===null?(i===cur?' cur':''):(v>0?' done':' miss'))+'"><div class="slot">'+(i===cur?TRAIN:'')+'</div><div class="st">'+A(i+1)+'</div><div class="stars">'+(v===null?'':'<b>'+'★'.repeat(v)+'</b>'+'★'.repeat(max-v))+'</div>'+(labels?'<div class="lbl">'+labels[i]+'</div>':'')+'</div>').join('');updateGlobal()}
+  const t={n,max,at(i){cur=i;draw()},set(i,v){st[i]=v;draw()},reset(){starBank[tracks.indexOf(t)]+=t.stars();st.fill(null);cur=0;draw()},done:()=>st.filter(v=>v!==null).length,stars:()=>st.reduce((a,v)=>a+(v||0),0),all:()=>st.every(v=>v!==null)};
+  tracks.push(t);draw();return t}
+const starBank=[0,0,0];
+function updateGlobal(){if(tracks.length<3)return;
+  const totalStops=tracks.reduce((a,t)=>a+t.n,0),done=tracks.reduce((a,t)=>a+t.done(),0);
+  // stars accumulate over all rounds
+  $('#totStars').textContent=A(starBank.reduce((a,b)=>a+b,0)+tracks.reduce((a,t)=>a+t.stars(),0));
+  const R=$('#route');const frac=done/totalStops;const pos=[0,1/3,2/3,1];const names=['الفصل الأول','الفصل الثاني','الفصل الثالث','خط النهاية'];
+  R.innerHTML='<div class="rail"></div><div class="done-rail" style="width:'+(frac*100)+'%"></div>'+pos.map((p,i)=>'<div class="stop'+(i===0||(i<=3&&tracks[i-1]&&tracks[i-1].all())?' ok':'')+'" style="right:'+(p*100)+'%"><i></i><span>'+names[i]+'</span></div>').join('')+
+    '<div class="train" style="right:'+(frac*100)+'%">'+TRAIN+'</div>'}
+const pts={c1:0,c2:0,c3:0};
+function addPts(k,n){pts[k]+=n;$('#totalPts').textContent=A(pts.c1+pts.c2+pts.c3)}
+
+$$('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  $$('.page').forEach(p=>p.hidden=p.id!==b.dataset.tab);
+}));
+
+/* ===================================================== CHAPTER 1 */
+(function(){
+  const PL=['آحاد','عشرات','مئات'],PER=[['الوحدات','u'],['الألوف','t'],['الملايين','m']];
+  const d=new Array(9).fill(0);
+  const tbl=$('#pv');
+  // header: periods then places; DOM order i=0 (ones) first => rightmost in RTL
+  let h1='<tr>',h2='<tr>',r1='<tr>';
+  for(let p=0;p<3;p++){h1+='<th colspan="3" class="per '+PER[p][1]+'">'+PER[p][0]+'</th>'}
+  for(let i=0;i<9;i++){const c=PER[Math.floor(i/3)][1];h2+='<th class="'+c+'">'+PL[i%3]+'</th>';
+    r1+='<td class="'+c+'"><button class="ar" data-i="'+i+'" data-d="1" aria-label="زيادة '+PL[i%3]+' '+PER[Math.floor(i/3)][0]+'">▲</button><div class="dg" id="dg'+i+'">٠</div><button class="ar" data-i="'+i+'" data-d="-1" aria-label="إنقاص">▼</button></td>'}
+  tbl.innerHTML=h1+'</tr>'+h2+'</tr>'+r1+'</tr>';
+  tbl.addEventListener('click',e=>{const b=e.target.closest('.ar');if(!b||locked)return;const i=+b.dataset.i;d[i]=(d[i]+(+b.dataset.d)+10)%10;render()});
+  const val=()=>d.reduce((s,x,i)=>s+x*Math.pow(10,i),0);
+  function setVal(n){for(let i=0;i<9;i++){d[i]=Math.floor(n/Math.pow(10,i))%10}render()}
+  function expanded(n){const parts=[];let p=1,m=n;while(m>0){const dig=m%10;if(dig)parts.unshift(dig*p);m=Math.floor(m/10);p*=10}return parts.length?parts.map(A).join(' + '):'٠'}
+  function render(){const n=val();let top=8;while(top>0&&d[top]===0)top--;
+    for(let i=0;i<9;i++){const e=$('#dg'+i);e.textContent=A(d[i]);e.classList.toggle('z',i>top)}
+    $('#pvStd').textContent=A(n);$('#pvExp').textContent='الصيغة التحليلية: '+expanded(n)}
+
+  const WORDS=[
+    ['مئة واثنا عشر ألفًا وستمئة وثلاثون',112630],
+    ['تسعة عشر ألفًا وخمسمئة',19500],
+    ['مئتان وثلاثون مليونًا',230000000],
+    ['ثلاثمئة وخمسة وعشرون ألفًا وأربعمئة وستون',325460],
+    ['مليونان ومئة وخمسون ألفًا',2150000],
+    ['سبعة وأربعون ألفًا وثمانمئة وتسعة',47809],
+    ['تسعمئة ألف وستة',900006],
+    ['خمسة ملايين وثلاثمئة ألف وعشرون',5300020],
+    ['أربعة ملايين وستون ألفًا ومئتان',4060200],
+    ['ستمئة وثمانية آلاف وخمسة وسبعون',608075]
+  ];
+  const PLNAME=['الآحاد','العشرات','المئات','آحاد الألوف','عشرات الألوف','مئات الألوف','آحاد الملايين','عشرات الملايين','مئات الملايين'];
+  const gen={
+    word(){const w=pick(WORDS);return{tag:'الصيغة اللفظية',txt:'كوّن العدد: «'+w[0]+'»',ans:w[1],check:n=>n===w[1]}},
+    exp(){const len=rnd(5,8);let n=rnd(1,9)*Math.pow(10,len-1);for(let i=0;i<len-1;i++)if(Math.random()<.6)n+=rnd(1,9)*Math.pow(10,i);
+      return{tag:'الصيغة التحليلية',txt:'كوّن العدد المكتوب بالصيغة التحليلية: '+expanded(n),ans:n,check:x=>x===n}},
+    place(){const idx=shuffle([0,1,2,3,4,5,6]).slice(0,3).sort((a,b)=>b-a);let n=0;const parts=idx.map(i=>{const g=rnd(1,9);n+=g*Math.pow(10,i);return A(g)+' في منزلة '+PLNAME[i]});
+      return{tag:'منازل الأرقام',txt:'كوّن العدد: '+parts.join('، و')+'، وأصفار في بقية المنازل.',ans:n,check:x=>x===n}},
+    value(){const i=rnd(2,6),g=rnd(2,9),len=i+1+rnd(0,1);
+      return{tag:'القيمة المنزلية',txt:'كوّن أيّ عدد من '+A(len)+' أرقام، تكون فيه قيمة الرقم '+A(g)+' هي '+A(g*Math.pow(10,i))+'.',
+        ans:(()=>{let n=g*Math.pow(10,i);for(let k=0;k<len;k++)if(k!==i)n+=(k===len-1?rnd(1,9):rnd(0,9))*Math.pow(10,k);return n})(),
+        check:x=>String(x).length===len&&Math.floor(x/Math.pow(10,i))%10===g}},
+    round(){const places=[[10,'عشرة'],[100,'مئة'],[1000,'ألف'],[10000,'عشرة آلاف']];const p=pick(places);const n=rnd(p[0]*3,p[0]*99)+rnd(1,p[0]-1);
+      const a=Math.round(n/p[0])*p[0];return{tag:'تقريب الأعداد',txt:'قرّب العدد '+A(n)+' إلى أقرب '+p[1]+'، ثم كوّن الناتج.',ans:a,check:x=>x===a}},
+    big(){const k=rnd(4,6);const ds=shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,k);const large=+ds.slice().sort((a,b)=>b-a).join('');
+      const asc=ds.slice().sort((a,b)=>a-b);let first=asc.find(x=>x>0);const rest=asc.slice();rest.splice(rest.indexOf(first),1);const small=+([first,...rest].join(''));
+      const want=Math.random()<.5;const lst=ds.map(A).join('، ');
+      return{tag:'ترتيب الأعداد',txt:'استعمل الأرقام ('+lst+') كلّ رقم مرة واحدة، وكوّن '+(want?'أكبر':'أصغر')+' عدد ممكن.',ans:want?large:small,check:x=>x===(want?large:small)}},
+    between(){const a=rnd(1000,9999)*100;const b=a+100;return{tag:'المقارنة بين الأعداد',txt:'كوّن عددًا أكبر من '+A(a)+' وأصغر من '+A(b)+'.',ans:a+rnd(1,99),check:x=>x>a&&x<b}}
+  };
+  const ORDER=['place','exp','word','value','between','big','round','round','word','exp'];
+  let deck,k,cur,tries,locked=false,score=0;const T1=Track($('#tr1'),8,2);let first1=true;
+  function start(){deck=shuffle(ORDER).slice(0,8);k=0;score=0;if(!first1)T1.reset();first1=false;load()}
+  function load(){cur=gen[deck[k]]();tries=0;locked=false;setVal(0);T1.at(k);
+    $('#m1tag').textContent=cur.tag;$('#m1txt').textContent=cur.txt;$('#m1count').textContent='المهمّة '+A(k+1)+' من '+A(deck.length)+' · '+A(score)+' نقطة';
+    $('#m1fb').textContent='';$('#m1show').hidden=true;$('#m1next').hidden=true;$('#m1check').hidden=false;$('#m1clear').hidden=false}
+  $('#m1clear').addEventListener('click',()=>{if(!locked)setVal(0)});
+  $('#m1check').addEventListener('click',()=>{const n=val();const f=$('#m1fb');
+    if(n===0){f.className='fb center bad';f.textContent='اللوحة فارغة. كوّن العدد أولًا.';return}
+    if(cur.check(n)){const p=tries===0?2:1;score+=p;addPts('c1',p);T1.set(k,p);f.className='fb center ok';f.textContent='✓ صحيح! '+A(n)+(tries===0?' (+٢)':' (+١)');locked=true;
+      $('#m1check').hidden=true;$('#m1clear').hidden=true;$('#m1show').hidden=true;$('#m1next').hidden=false;$('#m1next').textContent=k<deck.length-1?'المهمّة التالية':'النتيجة'}
+    else{tries++;f.className='fb center bad';f.textContent='✗ ليس بعد. راجع المنازل وحاول مرة أخرى.';$('#m1show').hidden=false;$('#pvStd').classList.add('shake');setTimeout(()=>$('#pvStd').classList.remove('shake'),350)}});
+  $('#m1show').addEventListener('click',()=>{setVal(cur.ans);locked=true;T1.set(k,0);$('#m1fb').className='fb center bad';$('#m1fb').textContent='هذا أحد الحلول الصحيحة: '+A(cur.ans);
+    $('#m1check').hidden=true;$('#m1clear').hidden=true;$('#m1show').hidden=true;$('#m1next').hidden=false;$('#m1next').textContent=k<deck.length-1?'المهمّة التالية':'النتيجة'});
+  $('#m1next').addEventListener('click',()=>{k++;if(k<deck.length)load();else{
+    $('#m1tag').textContent='انتهت الجولة';$('#m1txt').textContent='جمعت '+A(score)+' نقطة من '+A(deck.length*2)+'.';$('#m1count').textContent='';
+    $('#m1fb').textContent='';$('#m1next').hidden=true;$('#m1check').hidden=true;$('#m1clear').hidden=true;
+    const b=$('#m1show');b.hidden=false;b.textContent='جولة جديدة';b.onclick=()=>{b.onclick=null;b.textContent='اعرض الحل';start()}}});
+  start();
+})();
+
+/* ===================================================== CHAPTER 2 */
+(function(){
+  const W=$('#m2work'),F=$('#m2fb');
+  let deck,k,cur,score=0,answered,before=0;const T2=Track($('#tr2'),8,2);let first2=true;
+  const PROPS=['خاصية الإبدال','خاصية التجميع','العنصر المحايد الجمعي','قاعدة الطرح'];
+  const tok=arr=>'<div class="eq">'+arr.map(t=>t==='■'?'<span class="box" id="eqbox">؟</span>':'<span>'+(typeof t==='number'?A(t):t)+'</span>').join('')+'</div>';
+  function pad(onDigit,onDel){const p=document.createElement('div');p.className='pad';
+    for(const n of [1,2,3,4,5,6,7,8,9,0]){const b=document.createElement('button');b.textContent=A(n);b.addEventListener('click',()=>onDigit(n));p.appendChild(b)}
+    const del=document.createElement('button');del.className='wide';del.textContent='امسح';del.addEventListener('click',onDel);p.appendChild(del);return p}
+
+  const gen={
+    prop(){const t=rnd(0,4);let eq,ans,prop;const a=rnd(11,89),b=rnd(2,9),c=rnd(2,9);
+      if(t===0){eq=[a,'+','■','=',b,'+',a];ans=b;prop=0}
+      else if(t===1){eq=['(',b,'+','■',')','+',c,'=',b,'+','(',a%10+1,'+',c,')'];ans=a%10+1;prop=1}
+      else if(t===2){eq=[0,'+','■','=',a];ans=a;prop=2}
+      else if(t===3){eq=[a,'−','■','=',a];ans=0;prop=3}
+      else{eq=[a,'−','■','=',0];ans=a;prop=3}
+      return{type:'prop',tag:'خصائص الجمع وقواعد الطرح',txt:'اكتب العدد المفقود، ثم اختر الخاصية أو القاعدة التي استعملتها.',eq,ans,prop}},
+    est(){const places=[[10,'عشرة'],[100,'مئة'],[1000,'ألف']];const p=pick(places);const add=Math.random()<.5;
+      let a=rnd(p[0]*2,p[0]*90)+rnd(1,p[0]-1),b=rnd(p[0],p[0]*40)+rnd(1,p[0]-1);if(!add&&b>a)[a,b]=[b,a];
+      const R=(x,q)=>Math.round(x/q)*q;const corr=add?R(a,p[0])+R(b,p[0]):R(a,p[0])-R(b,p[0]);
+      const exact=add?a+b:a-b;const other=p[0]===10?100:10;const alt=add?R(a,other)+R(b,other):R(a,other)-R(b,other);
+      const opts=new Set([corr]);[exact,alt,corr+p[0],corr-p[0],corr+2*p[0]].forEach(x=>{if(opts.size<4&&x>0)opts.add(x)});
+      return{type:'mcq',tag:'تقدير المجموع والفرق',txt:'قدّر ناتج '+A(a)+(add?' + ':' − ')+A(b)+' بتقريب العددين إلى أقرب '+p[1]+'.',opts:shuffle([...opts]),ans:corr,
+        why:'نقرّب: '+A(R(a,p[0]))+(add?' + ':' − ')+A(R(b,p[0]))+' = '+A(corr)}},
+    add(){const a=rnd(1000,89999),b=rnd(300,9999);return{type:'col',tag:'الجمع',txt:'أوجد ناتج الجمع. ابدأ من منزلة الآحاد.',a,b,op:'+',ans:a+b}},
+    sub(){const a=rnd(2000,98000),b=rnd(300,a-100);return{type:'col',tag:'الطرح',txt:'أوجد ناتج الطرح. ابدأ من منزلة الآحاد.',a,b,op:'−',ans:a-b}},
+    subz(){const a=pick([rnd(2,9)*1000+rnd(0,9),rnd(2,9)*1000,rnd(2,9)*10000+rnd(1,9)*100,rnd(3,9)*1000+rnd(1,9)*10]);const b=rnd(100,a-50);
+      return{type:'col',tag:'الطرح مع وجود الأصفار',txt:'أوجد ناتج الطرح. انتبه لإعادة التجميع عبر الأصفار.',a,b,op:'−',ans:a-b}}
+  };
+  const ORDER=['prop','prop','est','est','add','add','sub','subz'];
+  function start(){deck=shuffle(ORDER);k=0;score=0;if(!first2)T2.reset();first2=false;load()}
+  function load(){cur=gen[deck[k]]();answered=false;before=score;T2.at(k);F.textContent='';F.className='fb center';
+    $('#m2tag').textContent=cur.tag;$('#m2txt').textContent=cur.txt;$('#m2count').textContent='المهمّة '+A(k+1)+' من '+A(deck.length)+' · '+A(score)+' نقطة';
+    $('#m2check').hidden=cur.type==='mcq';$('#m2next').hidden=true;W.innerHTML='';
+    if(cur.type==='prop'){let v='';W.innerHTML=tok(cur.eq);
+      const setB=()=>{$('#eqbox').textContent=v===''?'؟':A(v)};
+      W.appendChild(pad(n=>{if(answered||v.length>=3)return;v=(v==='0'?'':v)+n;setB()},()=>{if(answered)return;v=v.slice(0,-1);setB()}));
+      const ch=document.createElement('div');ch.className='chips';
+      PROPS.forEach((p,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=p;b.setAttribute('aria-pressed','false');b.dataset.i=i;
+        b.addEventListener('click',()=>{if(answered)return;ch.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b))});ch.appendChild(b)});
+      W.appendChild(ch);cur.read=()=>({v:v===''?null:+v,p:ch.querySelector('[aria-pressed="true"]')});}
+    else if(cur.type==='mcq'){const o=document.createElement('div');o.className='big-opts';
+      cur.opts.forEach(x=>{const b=document.createElement('button');b.className='chip';b.textContent=A(x);b.addEventListener('click',()=>{if(answered)return;answered=true;
+        const ok=x===cur.ans;o.querySelectorAll('.chip').forEach(y=>{y.disabled=true;if(y.textContent===A(cur.ans))y.classList.add('ok')});if(!ok)b.classList.add('no');
+        F.className='fb center '+(ok?'ok':'bad');F.textContent=(ok?'✓ أحسنت. ':'✗ ')+cur.why;if(ok){score+=2;addPts('c2',2)}done()});o.appendChild(b)});W.appendChild(o)}
+    else{const len=Math.max(String(cur.a).length,String(cur.b).length,String(cur.ans).length);const cols=len;
+      const g=document.createElement('div');g.className='colwork';
+      const row=(s,op)=>{const r=document.createElement('div');r.className='r';const str=String(s).padStart(cols,' ');
+        const o=document.createElement('div');o.className='c op';o.textContent=op||'';r.appendChild(o);
+        for(const ch of str){const c=document.createElement('div');c.className='c';c.textContent=ch===' '?'':A(ch);r.appendChild(c)}return r};
+      g.appendChild(row(cur.a));g.appendChild(row(cur.b,cur.op));const bar=document.createElement('div');bar.className='bar';g.appendChild(bar);
+      const r=document.createElement('div');r.className='r';const sp=document.createElement('div');sp.className='c';r.appendChild(sp);
+      const boxes=[];for(let i=0;i<cols;i++){const b=document.createElement('button');b.className='c in';b.dataset.v='';b.setAttribute('aria-label','خانة '+(cols-i));
+        b.addEventListener('click',()=>{if(answered)return;sel=i;mark()});boxes.push(b);r.appendChild(b)}
+      g.appendChild(r);W.appendChild(g);let sel=cols-1;
+      const mark=()=>boxes.forEach((b,i)=>b.classList.toggle('sel',i===sel&&!answered));mark();
+      W.appendChild(pad(n=>{if(answered)return;boxes[sel].dataset.v=n;boxes[sel].textContent=A(n);if(sel>0)sel--;mark()},
+        ()=>{if(answered)return;if(boxes[sel].dataset.v===''&&sel<cols-1)sel++;boxes[sel].dataset.v='';boxes[sel].textContent='';mark()}));
+      cur.boxes=boxes;}
+  }
+  function done(){answered=true;T2.set(k,score-before);$('#m2check').hidden=true;const n=$('#m2next');n.hidden=false;n.textContent=k<deck.length-1?'المهمّة التالية':'النتيجة';$('#m2count').textContent='المهمّة '+A(k+1)+' من '+A(deck.length)+' · '+A(score)+' نقطة'}
+  $('#m2check').addEventListener('click',()=>{if(answered)return;
+    if(cur.type==='prop'){const r=cur.read();if(r.v===null||!r.p){F.className='fb center bad';F.textContent='اكتب العدد المفقود واختر الخاصية.';return}
+      const okV=r.v===cur.ans,okP=+r.p.dataset.i===cur.prop;let p=(okV?1:0)+(okP?1:0);score+=p;addPts('c2',p);
+      $('#eqbox').textContent=A(cur.ans);$('#eqbox').style.borderStyle='solid';$('#eqbox').style.color=okV?'var(--green)':'var(--bad)';
+      $$('#m2work .chip').forEach(c=>{c.disabled=true;if(+c.dataset.i===cur.prop)c.classList.add('ok');else if(c===r.p)c.classList.add('no')});
+      F.className='fb center '+(okV&&okP?'ok':'bad');F.textContent=okV&&okP?'✓ إجابة كاملة! (+٢)':'العدد المفقود '+A(cur.ans)+'، والقاعدة: '+PROPS[cur.prop]+'.';done()}
+    else if(cur.type==='col'){const s=cur.boxes.map(b=>b.dataset.v).join('');if(s===''){F.className='fb center bad';F.textContent='اكتب الناتج في الخانات.';return}
+      const want=String(cur.ans).padStart(cur.boxes.length,' ');let all=true;
+      cur.boxes.forEach((b,i)=>{const w=want[i]===' '?'':want[i];const got=b.dataset.v;const ok=got===w||(w===''&&got==='0');if(!ok)all=false;b.classList.remove('sel');b.classList.add(ok?'ok':'no');if(!ok){b.textContent=w?A(w):''}});
+      if(all){score+=2;addPts('c2',2)}F.className='fb center '+(all?'ok':'bad');F.textContent=all?'✓ ناتج صحيح! (+٢)':'الناتج الصحيح '+A(cur.ans)+'. الخانات الوردية صُحّحت لك.';done()}});
+  $('#m2next').addEventListener('click',()=>{k++;if(k<deck.length)load();else{
+    W.innerHTML='<div class="result">'+A(score)+' / '+A(deck.length*2)+'</div>';$('#m2tag').textContent='انتهت الجولة';$('#m2txt').textContent='أحسنت المحاولة! يمكنك بدء جولة جديدة بمسائل مختلفة.';$('#m2count').textContent='';F.textContent='';
+    const n=$('#m2next');n.textContent='جولة جديدة';n.onclick=()=>{n.onclick=null;start()}}});
+  start();
+})();
+
+/* ===================================================== CHAPTER 3 */
+(function(){
+  const SETS=[
+    {title:'الرياضة المفضّلة لدى طلاب الصف الرابع',cats:['كرة القدم','السباحة','الجري','ركوب الدراجة']},
+    {title:'الفاكهة المفضّلة لدى طلاب الصف',cats:['التفاح','البرتقال','الموز','العنب']},
+    {title:'كيف يصل الطلاب إلى المدرسة؟',cats:['الحافلة','السيارة','المشي']},
+    {title:'المادة الدراسية المفضّلة',cats:['الرياضيات','العلوم','لغتي','الحاسب']}
+  ];
+  const NAMES=['أحمد','خالد','فهد','سعد','عمر','يوسف','ماجد','سلمان','حسن','فيصل','عبدالله','تركي','نواف','بدر','ريان','زياد','سامي','مازن','هشام','وليد'];
+  let set,counts,responses,ri,tallyC,stepDone,labPts,freqIn,att0=0,att1=0;const T3=Track($('#tr3'),4,3,['الإشارات','الأعمدة','القراءة','الاحتمال']);let first3=true;
+  const steps=$$('#steps button');
+  function go(s){$$('.station').forEach((x,i)=>x.hidden=x.id!=='s'+s);steps.forEach((b,i)=>{b.toggleAttribute('aria-current',false);if(i===s)b.setAttribute('aria-current','step');b.classList.toggle('done',stepDone[i])})}
+  steps.forEach((b,i)=>b.addEventListener('click',()=>{if(i===0||stepDone[i-1])go(i)}));
+  const tallySVG=n=>{let out='';let full=Math.floor(n/5),r=n%5;
+    const grp=(k,strike)=>{let s='<svg viewBox="0 0 '+(k*9+6)+' 30" aria-hidden="true">';for(let i=0;i<k;i++)s+='<line x1="'+(5+i*9)+'" y1="3" x2="'+(5+i*9)+'" y2="27" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>';
+      if(strike)s+='<line x1="1" y1="24" x2="'+(k*9+4)+'" y2="6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>';return s+'</svg>'};
+    for(let i=0;i<full;i++)out+=grp(4,true);if(r)out+=grp(r,false);return out};
+
+  function startLab(){set=pick(SETS);const n=set.cats.length;counts=set.cats.map(()=>rnd(1,n===3?8:7));
+    responses=[];counts.forEach((c,i)=>{for(let j=0;j<c;j++)responses.push(i)});responses=shuffle(responses);
+    if(!first3)T3.reset();first3=false;T3.at(0);att0=0;att1=0;ri=0;tallyC=set.cats.map(()=>0);freqIn=set.cats.map(()=>0);stepDone=[false,false,false,false];labPts=0;
+    $('#surveyTitle').textContent='مسح: '+set.title;
+    const t=$('#tally');t.innerHTML='<caption>'+set.title+'</caption><tr><th style="width:34%">الفئة</th><th>الإشارات</th><th style="width:120px">التكرار</th></tr>'+
+      set.cats.map((c,i)=>'<tr data-i="'+i+'"><td class="cat"><button data-i="'+i+'">'+c+'</button></td><td><div class="marks" id="mk'+i+'"></div></td><td id="fq'+i+'"><div class="stepper"><button data-f="'+i+'" data-d="-1" aria-label="إنقاص">−</button><b id="fv'+i+'">٠</b><button data-f="'+i+'" data-d="1" aria-label="زيادة">+</button></div></td></tr>').join('');
+    t.querySelectorAll('td.cat button').forEach(b=>b.addEventListener('click',()=>tap(+b.dataset.i)));
+    t.querySelectorAll('[data-f]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.f;freqIn[i]=Math.max(0,Math.min(20,freqIn[i]+(+b.dataset.d)));$('#fv'+i).textContent=A(freqIn[i]);$('#fq'+i).className=''}));
+    $('#s0fb').textContent='';$('#s0check').hidden=true;$('#s0next').hidden=true;showResp();go(0)}
+  function showResp(){const r=$('#resp');if(ri<responses.length){r.innerHTML='<div class="who">الإجابة '+A(ri+1)+' من '+A(responses.length)+' — '+NAMES[ri%NAMES.length]+' اختار:</div><div class="ans">'+set.cats[responses[ri]]+'</div>'}
+    else{r.innerHTML='<div class="who">سُجّلت كل الإجابات. عُدّ الإشارات في كل صفّ واكتب التكرار.</div>';$('#s0check').hidden=false}}
+  function tap(i){if(ri>=responses.length)return;const tr=$('#tally tr[data-i="'+i+'"]');
+    if(i===responses[ri]){tallyC[i]++;$('#mk'+i).innerHTML=tallySVG(tallyC[i]);ri++;tr.className='hit';setTimeout(()=>tr.className='',300);showResp();$('#s0fb').textContent=''}
+    else{tr.className='miss';setTimeout(()=>tr.className='',400);$('#s0fb').className='fb center bad';$('#s0fb').textContent='اقرأ الإجابة مرة أخرى: «'+set.cats[responses[ri]]+'».'}}
+  $('#s0check').addEventListener('click',()=>{let ok=0;set.cats.forEach((c,i)=>{const g=freqIn[i]===counts[i];if(g)ok++;$('#fq'+i).className=g?'ok':'no'});
+    const f=$('#s0fb');if(ok===counts.length){f.className='fb center ok';f.textContent='✓ الجدول التكراري صحيح! (+٤)';labPts+=4;addPts('c3',4);stepDone[0]=true;T3.set(0,Math.max(1,3-att0));T3.at(1);$('#s0check').hidden=true;$('#s0next').hidden=false;go(0)}
+    else{att0++;f.className='fb center bad';f.textContent='بعض التكرارات (الوردية) لا تطابق عدد الإشارات. تذكّر: كل حزمة مشطوبة = ٥.'}});
+  $('#s0next').addEventListener('click',()=>{buildBars();go(1)});
+
+  let barH;const MAXY=8;
+  function buildBars(){barH=set.cats.map(()=>0);const n=set.cats.length;
+    $('#freqRef').innerHTML=set.cats.map((c,i)=>'<span class="chip" style="cursor:default">'+c+': '+A(counts[i])+'</span>').join('');
+    let y='<div class="yaxis">';for(let v=1;v<=MAXY;v++)y+='<span>'+A(v)+'</span>';y+='</div>';
+    let b='<div class="bars" style="grid-template-columns:repeat('+n+',minmax(0,1fr))">';
+    for(let i=0;i<n;i++){b+='<div class="bcol" id="bc'+i+'">';for(let v=1;v<=MAXY;v++)b+='<button class="bcell" data-i="'+i+'" data-v="'+v+'" aria-label="'+set.cats[i]+' '+v+'"></button>';b+='</div>'}
+    b+='</div><div class="blabels" style="grid-template-columns:repeat('+n+',minmax(0,1fr))">'+set.cats.map(c=>'<span>'+c+'</span>').join('')+'</div>';
+    $('#barchart').innerHTML=y+b;
+    $$('#barchart .bcell').forEach(c=>c.addEventListener('click',()=>{const i=+c.dataset.i,v=+c.dataset.v;barH[i]=barH[i]===v?v-1:v;$('#bc'+i).className='bcol';paint(i)}));
+    $('#s1fb').textContent='';$('#s1check').hidden=false;$('#s1next').hidden=true}
+  function paint(i){$$('#bc'+i+' .bcell').forEach(c=>c.classList.toggle('on',+c.dataset.v<=barH[i]))}
+  $('#s1check').addEventListener('click',()=>{let ok=0;set.cats.forEach((c,i)=>{const g=barH[i]===counts[i];if(g)ok++;$('#bc'+i).className='bcol '+(g?'ok':'no')});
+    const f=$('#s1fb');if(ok===counts.length){f.className='fb center ok';f.textContent='✓ التمثيل بالأعمدة صحيح! (+٤)';labPts+=4;addPts('c3',4);stepDone[1]=true;T3.set(1,Math.max(1,3-att1));T3.at(2);$('#s1check').hidden=true;$('#s1next').hidden=false;go(1)}
+    else{att1++;f.className='fb center bad';f.textContent='الأعمدة الملوّنة بالوردي لا تطابق التكرار. قارنها بالجدول أعلاه.'}});
+  $('#s1next').addEventListener('click',()=>{buildRead();go(2)});
+
+  function mcq(container,q,opts,ans,why,onDone){const d=document.createElement('div');d.innerHTML='<div class="q">'+q+'</div>';const ch=document.createElement('div');ch.className='chips';ch.style.justifyContent='flex-start';
+    const fb=document.createElement('div');fb.className='fb';fb.style.fontSize='15px';
+    opts.forEach(o=>{const b=document.createElement('button');b.className='chip';b.textContent=o;b.addEventListener('click',()=>{ch.querySelectorAll('.chip').forEach(x=>{x.disabled=true;if(x.textContent===ans)x.classList.add('ok')});
+      const ok=o===ans;if(!ok)b.classList.add('no');fb.className='fb '+(ok?'ok':'bad');fb.textContent=(ok?'✓ ':'✗ ')+(why||'');onDone(ok)});ch.appendChild(b)});
+    d.appendChild(ch);d.appendChild(fb);container.appendChild(d)}
+  function buildRead(){const R=$('#readQs');R.innerHTML='';let left=0,got=0;
+    let tot=0;const fin=ok=>{left--;if(ok){got++;labPts+=1;addPts('c3',1)}if(left===0){stepDone[2]=true;T3.set(2,Math.round(got/tot*3));T3.at(3);$('#s2next').hidden=false;go(2)}};
+    // bar questions
+    const c1=document.createElement('div');c1.className='qcard';c1.innerHTML='<h4>من تمثيلك بالأعمدة</h4>';R.appendChild(c1);
+    const mx=Math.max(...counts),mn=Math.min(...counts);const top=set.cats.filter((c,i)=>counts[i]===mx),low=set.cats.filter((c,i)=>counts[i]===mn);
+    const total=counts.reduce((a,b)=>a+b,0);
+    if(top.length===1){left++;mcq(c1,'ما الفئة الأكثر تكرارًا؟',shuffle(set.cats),top[0],'أطول عمود هو «'+top[0]+'» بتكرار '+A(mx)+'.',fin)}
+    else{left++;mcq(c1,'ما الفئة الأقل تكرارًا؟',shuffle(set.cats),low[0]&&low.length===1?low[0]:set.cats[0],'',fin)}
+    const i1=counts.indexOf(mx),i2=counts.indexOf(mn);
+    if(i1!==i2){left++;const diff=mx-mn;mcq(c1,'كم يزيد تكرار «'+set.cats[i1]+'» على تكرار «'+set.cats[i2]+'»؟',shuffle([...new Set([diff,diff+1,diff+2,Math.max(0,diff-1),mx+mn])].slice(0,4)).map(A),A(diff),A(mx)+' − '+A(mn)+' = '+A(diff),fin)}
+    left++;mcq(c1,'كم عدد الطلاب الذين شاركوا في المسح؟',shuffle([...new Set([total,total-1,total+2,total-3])]).map(A),A(total),'نجمع التكرارات: '+counts.map(A).join(' + ')+' = '+A(total),fin);
+    // line graph
+    const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];const temps=days.map(()=>rnd(24,39));
+    const c2=document.createElement('div');c2.className='qcard';c2.innerHTML='<h4>التمثيل بالخطوط: درجات الحرارة العظمى خلال أسبوع (س°)</h4><div class="figure">'+lineSVG(days,temps)+'</div>';R.appendChild(c2);
+    const tmax=Math.max(...temps),dmax=days[temps.indexOf(tmax)];
+    left++;mcq(c2,'في أيّ يوم كانت درجة الحرارة أعلى؟',days.slice(),dmax,'أعلى نقطة في الخط عند يوم '+dmax+' ('+A(tmax)+'°).',fin);
+    const di=rnd(1,4);const up=temps[di]>temps[di-1]?'ارتفعت':temps[di]<temps[di-1]?'انخفضت':'بقيت كما هي';
+    left++;mcq(c2,'كيف تغيّرت درجة الحرارة من يوم '+days[di-1]+' إلى يوم '+days[di]+'؟',['ارتفعت','انخفضت','بقيت كما هي'],up,'من '+A(temps[di-1])+'° إلى '+A(temps[di])+'°.',fin);
+    // pie
+    const fr=shuffle(['جدة','الرياض','الخبر','حائل']);
+    const c3=document.createElement('div');c3.className='qcard';c3.innerHTML='<h4>التمثيل بالقطاعات الدائرية: الرحلة الميدانية المفضّلة</h4><div class="figure">'+pieSVG([[fr[0],4],[fr[1],2],[fr[2],1],[fr[3],1]])+'</div>';R.appendChild(c3);
+    left++;mcq(c3,'ما الرحلة التي يفضّلها نصف الطلاب؟',fr.slice(),fr[0],'قطاع «'+fr[0]+'» يغطّي نصف الدائرة.',fin);
+    left++;mcq(c3,'ما الرحلة التي يفضّلها رُبع الطلاب؟',fr.slice(),fr[1],'قطاع «'+fr[1]+'» يغطّي ربع الدائرة.',fin);
+    tot=left;$('#s2next').hidden=true}
+  function lineSVG(days,t){const W=440,H=230,L=40,B=40,T=14,R=16,lo=20,hi=40;const x=i=>L+i*(W-L-R)/(days.length-1),y=v=>T+(hi-v)*(H-T-B)/(hi-lo);
+    let s='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" role="img" aria-label="تمثيل بالخطوط لدرجات الحرارة" style="direction:ltr">';
+    for(let v=lo;v<=hi;v+=5){s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--grid)" stroke-width="1.5"/><text x="'+(L-8)+'" y="'+(y(v)+5)+'" text-anchor="end" font-size="13" fill="var(--muted)">'+A(v)+'</text>'}
+    // days right-to-left like the book
+    const xr=i=>x(days.length-1-i);
+    s+='<polyline fill="none" stroke="var(--orange)" stroke-width="3" points="'+t.map((v,i)=>xr(i)+','+y(v)).join(' ')+'"/>';
+    t.forEach((v,i)=>{s+='<circle cx="'+xr(i)+'" cy="'+y(v)+'" r="5" fill="var(--orange)"/><text x="'+xr(i)+'" y="'+(y(v)-10)+'" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">'+A(v)+'</text><text x="'+xr(i)+'" y="'+(H-14)+'" text-anchor="middle" font-size="13" fill="var(--ink)">'+days[i]+'</text>'});
+    return s+'</svg>'}
+  function pieSVG(parts){const tot=parts.reduce((a,p)=>a+p[1],0);const cx=130,cy=120,r=100;let a0=-Math.PI/2;const cols=['var(--m-blue)','var(--m-yellow)','var(--m-green)','var(--m-red)'];
+    let s='<svg viewBox="0 0 260 240" width="260" role="img" aria-label="تمثيل بالقطاعات الدائرية">';
+    parts.forEach((p,i)=>{const a1=a0+2*Math.PI*p[1]/tot;const large=a1-a0>Math.PI?1:0;
+      s+='<path d="M'+cx+','+cy+' L'+(cx+r*Math.cos(a0))+','+(cy+r*Math.sin(a0))+' A'+r+','+r+' 0 '+large+' 1 '+(cx+r*Math.cos(a1))+','+(cy+r*Math.sin(a1))+' Z" fill="'+cols[i]+'" stroke="var(--card)" stroke-width="3"/>';
+      const am=(a0+a1)/2,lr=p[1]/tot>=.2?r*.55:r*.72;s+='<text x="'+(cx+lr*Math.cos(am))+'" y="'+(cy+lr*Math.sin(am)+5)+'" text-anchor="middle" font-size="'+(p[1]/tot>=.2?16:13)+'" font-weight="700" fill="#14213A">'+p[0]+'</text>';a0=a1});
+    return s+'</svg>'}
+  $('#s2next').addEventListener('click',()=>{startProb();go(3)});
+
+  // probability
+  const COL=[['red','حمراء'],['blue','زرقاء'],['yellow','صفراء'],['green','خضراء']];
+  const WORDS=['مؤكّد','أكثر احتمالًا','متساوي الإمكانية','أقل احتمالًا','مستحيل'];
+  let pk,bag,target,pscore;
+  function makeBag(kind){const n=rnd(6,10);let b=[];const t=rnd(0,3);const others=COL.map((c,i)=>i).filter(i=>i!==t);
+    if(kind===0)b=Array(n).fill(t);
+    else if(kind===4){for(let i=0;i<n;i++)b.push(pick(others))}
+    else if(kind===2){const h=rnd(3,5);b=[...Array(h).fill(t),...Array(h).fill(pick(others))]}
+    else if(kind===1){const k=rnd(Math.floor(n/2)+1,n-1);b=[...Array(k).fill(t)];while(b.length<n)b.push(pick(others))}
+    else{const k=rnd(1,Math.ceil(n/2)-1);b=[...Array(k).fill(t)];while(b.length<n)b.push(pick(others))}
+    return{b:shuffle(b),t}}
+  function classify(b,t){const c=b.filter(x=>x===t).length;if(c===b.length)return 0;if(c===0)return 4;if(c*2===b.length)return 2;return c*2>b.length?1:3}
+  let kinds;
+  function startProb(){kinds=shuffle([0,1,2,3,4,1,3]);pk=0;pscore=0;loadP()}
+  function loadP(){const m=makeBag(kinds[pk]);bag=m.b;target=m.t;
+    $('#bag').innerHTML=bag.map(c=>'<span class="ball b-'+COL[c][0]+'" title="'+COL[c][1]+'"></span>').join('');
+    $('#ptxt').textContent='صِف احتمال سحب كرة '+COL[target][1]+' من الكيس دون النظر.';$('#pcount').textContent='الكيس '+A(pk+1)+' من '+A(kinds.length);
+    const ch=$('#pchips');ch.innerHTML='';$('#pfb').textContent='';$('#pnext').hidden=true;
+    const ans=classify(bag,target);
+    WORDS.forEach((w,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=w;b.addEventListener('click',()=>{ch.querySelectorAll('.chip').forEach(x=>{x.disabled=true});
+      const ok=i===ans;ch.children[ans].classList.add('ok');if(!ok)b.classList.add('no');if(ok){pscore++;labPts++;addPts('c3',1)}
+      const c=bag.filter(x=>x===target).length;$('#pfb').className='fb center '+(ok?'ok':'bad');
+      $('#pfb').textContent=(ok?'✓ ':'✗ ')+'في الكيس '+A(c)+' كرات '+COL[target][1]+' من '+A(bag.length)+'، إذن السحب '+WORDS[ans]+'.';
+      $('#pnext').hidden=false;$('#pnext').textContent=pk<kinds.length-1?'الكيس التالي':'النتيجة النهائية'});ch.appendChild(b)})}
+  $('#pdraw').addEventListener('click',()=>{const balls=$$('#bag .ball');balls.forEach(b=>b.classList.remove('picked'));const i=rnd(0,balls.length-1);balls[i].classList.add('picked')});
+  $('#pnext').addEventListener('click',()=>{pk++;if(pk<kinds.length)loadP();else{stepDone[3]=true;T3.set(3,Math.round(pscore/kinds.length*3));T3.at(4);
+    $('#labRes').textContent=A(labPts)+' نقطة';$('#labMsg').textContent='أنهيت المحطات الأربع: سجّلت المسح، ومثّلته بالأعمدة، وقرأت التمثيلات، ووصفت الاحتمال.';
+    $$('.station').forEach(x=>x.hidden=x.id!=='s4');steps.forEach((b,i)=>{b.classList.toggle('done',true);b.removeAttribute('aria-current')})}});
+  $('#labAgain').addEventListener('click',startLab);
+  startLab();
+})();
+})();
+</script>
+
+</body></html>

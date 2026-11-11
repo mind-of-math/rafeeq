@@ -1,0 +1,372 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>رحلة قطرات الوضوء</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: one centered "prayer-niche" card per station, a row of water drops as the journey's progress */
+:root{
+  color-scheme: light;
+  --bg:#F2FAF6; --surface:#FFFFFF; --mint:#E1F3EA; --mint-2:#C9E8D9;
+  --green:#1F6F54; --teal:#2A9D8F; --gold:#B8901A; --ink:#22403A; --muted:#5E7E74;
+  --water:#3BA9C9; --ok:#2A9D8F; --bad:#B5473A; --bad-bg:#FBEDEA; --ok-bg:#E3F5F1;
+  --f-display:"Amiri","Traditional Arabic",serif;
+  --f-body:"Tajawal","Segoe UI",Tahoma,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 100% 0, rgba(184,144,26,.10) 0 140px, transparent 141px),
+    radial-gradient(circle at 0 100%, rgba(42,157,143,.10) 0 160px, transparent 161px);
+  color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.7;
+  padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:20px 40px;
+}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand small{display:block;color:var(--muted);font-size:14px}
+.brand h1{margin:0;font-family:var(--f-display);font-size:30px;line-height:1.3;color:var(--green);text-wrap:balance}
+.drops{display:flex;gap:8px;align-items:flex-end}
+.drop{width:26px;height:34px}
+.drop path.fill{transition:transform .6s ease}
+.niche{
+  background:var(--surface);
+  border:2px solid var(--gold);
+  border-radius:180px 180px 22px 22px / 70px 70px 22px 22px;
+  padding:56px 28px 28px; position:relative;
+  box-shadow:0 10px 30px -18px rgba(31,111,84,.45);
+}
+.niche::before{content:"";position:absolute;inset:8px;border:1px solid var(--mint-2);border-radius:inherit;pointer-events:none}
+.star{position:absolute;top:-17px;left:50%;transform:translateX(-50%);width:34px;height:34px}
+.eyebrow{color:var(--gold);font-weight:700;font-size:15px;letter-spacing:.02em;text-align:center}
+h2{font-family:var(--f-display);color:var(--green);font-size:30px;margin:2px 0 6px;text-align:center;text-wrap:balance;line-height:1.35}
+.lead{color:var(--muted);text-align:center;margin:0 auto 18px;max-width:52ch}
+.btn{font-family:var(--f-body);font-weight:700;font-size:18px;border:0;border-radius:999px;padding:12px 28px;cursor:pointer;background:var(--green);color:#fff;transition:transform .15s, background .2s}
+.btn:hover{background:#185c45}
+.btn:active{transform:scale(.97)}
+.btn.gold{background:var(--gold)} .btn.gold:hover{background:#9c7a14}
+.btn.ghost{background:var(--mint);color:var(--green)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chip:focus-visible,.opt:focus-visible,.item:focus-visible,.basket:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.center{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+input[type=text]{font-family:var(--f-body);font-size:18px;padding:12px 18px;border-radius:14px;border:2px solid var(--mint-2);background:var(--bg);color:var(--ink);width:min(100%,340px);text-align:center}
+.feedback{min-height:30px;text-align:center;font-weight:700;margin-top:12px}
+.feedback.ok{color:var(--ok)} .feedback.bad{color:var(--bad)}
+
+/* station 1: hadith fill */
+.hadith{font-family:var(--f-display);font-size:26px;line-height:2.2;text-align:center;color:var(--green);background:var(--mint);border-radius:18px;padding:18px 16px}
+.hadith .src{display:block;font-family:var(--f-body);font-size:14px;color:var(--muted);line-height:1.5}
+.blank{display:inline-block;min-width:96px;border-bottom:3px dashed var(--gold);margin:0 4px;padding:0 6px;color:var(--gold);cursor:pointer;line-height:1.6;border-radius:6px}
+.blank.active{background:#FFF6DA}
+.blank.ok{color:var(--ok);border-bottom-color:var(--ok);cursor:default}
+.blank.shake{animation:shake .4s}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+.chip{font-family:var(--f-display);font-size:22px;font-weight:700;padding:6px 20px;border-radius:999px;border:2px solid var(--teal);background:var(--surface);color:var(--green);cursor:pointer}
+.chip.used{opacity:.3;pointer-events:none}
+
+/* station 2: matching */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.col h3{margin:0;font-size:15px;color:var(--muted);text-align:center;font-weight:500}
+.item{font-family:var(--f-body);font-size:17px;font-weight:700;padding:12px 14px;border-radius:14px;border:2px solid var(--mint-2);background:var(--surface);color:var(--ink);cursor:pointer;text-align:center;transition:background .2s,border-color .2s}
+.item.sel{border-color:var(--gold);background:#FFF6DA}
+.item.done{border-color:var(--ok);background:var(--ok-bg);color:var(--green);cursor:default}
+.item.wrong{animation:shake .4s;border-color:var(--bad)}
+
+/* station 3: classify */
+.pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:54px}
+.baskets{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.basket{border:2px dashed var(--mint-2);border-radius:20px;padding:12px;min-height:170px;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;gap:8px;align-items:stretch;font-family:var(--f-body);color:var(--ink)}
+.basket h3{margin:0;text-align:center;font-size:20px}
+.basket .note{font-size:13px;color:var(--muted);text-align:center;margin-top:-6px}
+.basket.small h3{color:var(--teal)} .basket.big h3{color:var(--bad)}
+.basket.ready{border-style:solid;border-color:var(--gold);background:#FFFBEC}
+.basket .placed{background:var(--surface);border-radius:12px;padding:6px 10px;text-align:center;font-weight:700;font-size:15px}
+.basket.small .placed{color:var(--teal);border:1px solid var(--ok)} .basket.big .placed{color:var(--bad);border:1px solid var(--bad)}
+
+/* station 4: quiz */
+.qcount{text-align:center;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.question{font-size:21px;font-weight:800;text-align:center;color:var(--ink);margin:6px 0 16px;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{font-family:var(--f-body);font-size:18px;font-weight:700;text-align:right;padding:13px 18px;border-radius:16px;border:2px solid var(--mint-2);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;gap:12px;align-items:center}
+.opt .l{flex:none;width:32px;height:32px;border-radius:50%;background:var(--mint);color:var(--green);display:grid;place-items:center;font-size:16px}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)} .opt.ok .l{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)} .opt.bad .l{background:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.explain{background:var(--mint);border-radius:14px;padding:10px 14px;margin-top:12px;color:var(--green);font-weight:500}
+
+/* certificate */
+.cert-stars{display:flex;justify-content:center;gap:6px;font-size:0;margin:8px 0}
+.cert-stars svg{width:38px;height:38px}
+.score{font-family:var(--f-display);font-size:54px;color:var(--gold);text-align:center;line-height:1.2;font-variant-numeric:tabular-nums}
+.dua{font-family:var(--f-display);font-size:23px;text-align:center;color:var(--green);background:var(--mint);border-radius:18px;padding:14px;line-height:2}
+.foot{text-align:center;color:var(--muted);font-size:13px}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes rise{from{transform:translateY(10px);opacity:.4}to{transform:none;opacity:1}}
+.niche > *{animation:rise .35s ease both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:520px){
+  body{font-size:16px}
+  .brand h1{font-size:24px}
+  h2{font-size:25px}
+  .niche{padding:48px 16px 22px;border-radius:120px 120px 18px 18px / 50px 50px 18px 18px}
+  .hadith{font-size:21px}
+  .chip{font-size:19px}
+  .item{font-size:15px;padding:10px 8px}
+  .match{gap:10px}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <small>مادة الحديث • الصف الثاني متوسط • الدرس الثامن</small>
+      <h1>رحلة قطرات الوضوء</h1>
+    </div>
+    <div class="drops" id="drops" aria-label="تقدّمك في المحطات"></div>
+  </header>
+  <main class="niche" id="stage" aria-live="polite"></main>
+  <p class="foot">فضل الوضوء والصلاة في تكفير الذنوب — ص ١٢٦–١٢٨</p>
+</div>
+
+<script>
+const STAR = '<svg class="star" viewBox="0 0 100 100" aria-hidden="true"><rect x="22" y="22" width="56" height="56" fill="#B8901A"/><rect x="22" y="22" width="56" height="56" fill="#B8901A" transform="rotate(45 50 50)"/><circle cx="50" cy="50" r="18" fill="#fff"/></svg>';
+const starSvg = on => `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="${on?'#B8901A':'#D9E7E0'}"><rect x="22" y="22" width="56" height="56"/><rect x="22" y="22" width="56" height="56" transform="rotate(45 50 50)"/></g><circle cx="50" cy="50" r="16" fill="#fff"/></svg>`;
+const AR = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+const state = { name: '', step: 0, stars: [0,0,0,0], mistakes: 0 };
+const STATIONS = 4;
+const $stage = document.getElementById('stage');
+
+function renderDrops(){
+  const el = document.getElementById('drops'); el.innerHTML = '';
+  for (let i = 0; i < STATIONS; i++){
+    const done = state.step > i + 1 || state.step === 'end';
+    const cur = state.step === i + 1;
+    el.insertAdjacentHTML('beforeend', `<svg class="drop" viewBox="0 0 40 52" aria-label="المحطة ${AR(i+1)}${done?' مكتملة':''}">
+      <defs><clipPath id="c${i}"><path d="M20 2C20 2 3 24 3 34a17 17 0 0 0 34 0C37 24 20 2 20 2Z"/></clipPath></defs>
+      <path d="M20 2C20 2 3 24 3 34a17 17 0 0 0 34 0C37 24 20 2 20 2Z" fill="#fff" stroke="${cur?'#B8901A':'#3BA9C9'}" stroke-width="2.5"/>
+      <rect clip-path="url(#c${i})" x="0" y="${done?0:52}" width="40" height="52" fill="#3BA9C9"/>
+    </svg>`);
+  }
+}
+function setStage(html){ $stage.innerHTML = STAR + html; renderDrops(); window.scrollTo({top:0,behavior:'smooth'}); }
+function next(){ state.step = state.step === STATIONS ? 'end' : state.step + 1; render(); }
+function render(){
+  if (state.step === 0) return intro();
+  if (state.step === 1) return station1();
+  if (state.step === 2) return station2();
+  if (state.step === 3) return station3();
+  if (state.step === 4) return station4();
+  return certificate();
+}
+function fb(el, ok, text){ el.className = 'feedback ' + (ok ? 'ok' : 'bad'); el.textContent = text; }
+function stationDone(i, errors){
+  state.stars[i] = errors === 0 ? 3 : errors <= 2 ? 2 : 1;
+  const btn = document.getElementById('nextBtn'); btn.disabled = false; btn.focus();
+}
+
+/* ---------- intro ---------- */
+function intro(){
+  setStage(`
+    <div class="eyebrow">نشاط تفاعلي</div>
+    <h2>مع كل قطرة.. تتساقط الخطايا</h2>
+    <p class="lead">أربع محطات من درس «فضل الوضوء والصلاة في تكفير الذنوب». مع كل محطة تُكملينها تمتلئ قطرة ماء، وتجمعين نجومًا على إجاباتك الصحيحة.</p>
+    <div class="center" style="flex-direction:column;align-items:center">
+      <label for="nm" style="color:var(--muted);font-size:15px">اكتبي اسمك ليظهر في شهادتك</label>
+      <input type="text" id="nm" placeholder="اسم الطالبة" autocomplete="off" value="${state.name}">
+      <button class="btn" id="go">ابدئي الرحلة</button>
+    </div>`);
+  const go = () => { state.name = document.getElementById('nm').value.trim(); next(); };
+  document.getElementById('go').onclick = go;
+  document.getElementById('nm').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+}
+
+/* ---------- station 1: complete the hadith ---------- */
+function station1(){
+  const answers = ['الْخَمْسُ','الْجُمُعَةِ','بَيْنَهُنَّ','الْكَبَائِرُ'];
+  const words = shuffle([...answers, 'الصَّغَائِرُ', 'السَّبْعُ']);
+  let errors = 0, active = 0;
+  setStage(`
+    <div class="eyebrow">المحطة الأولى</div>
+    <h2>أكملي الحديث الشريف</h2>
+    <p class="lead">اضغطي على الكلمة المناسبة لتملأ الفراغ المضيء.</p>
+    <div class="hadith">
+      <span class="src">عن أبي هريرة رضي الله عنه أن رسول الله صلى الله عليه وسلم قال:</span>
+      «الصَّلَوَاتُ <span class="blank" data-i="0"></span> وَالْجُمُعَةُ إِلَى <span class="blank" data-i="1"></span> كَفَّارَاتٌ لِمَا <span class="blank" data-i="2"></span> مَا لَمْ تُغْشَ <span class="blank" data-i="3"></span>»
+    </div>
+    <div class="chips">${words.map(w => `<button class="chip">${w}</button>`).join('')}</div>
+    <div class="feedback" id="fb"></div>
+    <div class="center"><button class="btn" id="nextBtn" disabled>المحطة التالية</button></div>`);
+  const blanks = [...$stage.querySelectorAll('.blank')], f = document.getElementById('fb');
+  const mark = () => blanks.forEach((b, i) => b.classList.toggle('active', i === active));
+  mark();
+  blanks.forEach((b, i) => b.onclick = () => { if (!b.classList.contains('ok')) { active = i; mark(); } });
+  $stage.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    if (active < 0) return;
+    const b = blanks[active];
+    if (c.textContent === answers[active]) {
+      b.textContent = c.textContent; b.classList.add('ok'); c.classList.add('used');
+      fb(f, true, 'أحسنتِ!');
+      active = blanks.findIndex(x => !x.classList.contains('ok')); mark();
+      if (active < 0) { fb(f, true, 'ممتاز! أكملتِ الحديث: الكبائر لا تكفّرها الصلوات، بل تحتاج إلى توبة.'); stationDone(0, errors); }
+    } else {
+      errors++; state.mistakes++;
+      b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+      fb(f, false, 'ليست هذه الكلمة.. حاولي مرة أخرى');
+    }
+  });
+  document.getElementById('nextBtn').onclick = next;
+}
+
+/* ---------- station 2: matching ---------- */
+function station2(){
+  const pairs = [
+    ['غسل الوجه','تخرج خطايا النظر بالعينين'],
+    ['غسل اليدين','تخرج خطايا ما بطشته اليدان'],
+    ['غسل الرجلين','تخرج خطايا ما مشته الرجلان'],
+    ['بَطَشَتْهَا','اكتسبتها'],
+    ['تُغْشَ','تُعمَل'],
+  ];
+  const right = shuffle(pairs.map((p, i) => ({t: p[1], i})));
+  let errors = 0, sel = null, matched = 0;
+  setStage(`
+    <div class="eyebrow">المحطة الثانية</div>
+    <h2>طابقي كل عبارة بما يناسبها</h2>
+    <p class="lead">اضغطي على عبارة من العمود الأول، ثم على ما يناسبها من العمود الثاني.</p>
+    <div class="match">
+      <div class="col"><h3>العمل أو الكلمة</h3>${pairs.map((p, i) => `<button class="item L" data-i="${i}">${p[0]}</button>`).join('')}</div>
+      <div class="col"><h3>ما يناسبه</h3>${right.map(r => `<button class="item R" data-i="${r.i}">${r.t}</button>`).join('')}</div>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="center"><button class="btn" id="nextBtn" disabled>المحطة التالية</button></div>`);
+  const f = document.getElementById('fb');
+  $stage.querySelectorAll('.item.L').forEach(b => b.onclick = () => {
+    if (b.classList.contains('done')) return;
+    $stage.querySelectorAll('.item.L').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel'); sel = b;
+  });
+  $stage.querySelectorAll('.item.R').forEach(b => b.onclick = () => {
+    if (b.classList.contains('done')) return;
+    if (!sel) { fb(f, false, 'ابدئي بالضغط على عبارة من العمود الأول'); return; }
+    if (sel.dataset.i === b.dataset.i) {
+      sel.classList.remove('sel'); sel.classList.add('done'); b.classList.add('done'); sel = null; matched++;
+      fb(f, true, 'مطابقة صحيحة!');
+      if (matched === pairs.length) { fb(f, true, 'رائع! يخرج المتوضئ نقيًّا من الذنوب مع آخر قطرة ماء.'); stationDone(1, errors); }
+    } else {
+      errors++; state.mistakes++;
+      b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+      fb(f, false, 'غير مناسبة.. جرّبي عبارة أخرى');
+    }
+  });
+  document.getElementById('nextBtn').onclick = next;
+}
+
+/* ---------- station 3: classify ---------- */
+function station3(){
+  const items = shuffle([
+    {t:'السبّ والشتم', k:'small'}, {t:'عدم ردّ السلام', k:'small'}, {t:'الغضب', k:'small'},
+    {t:'الشرك بالله', k:'big'}, {t:'عقوق الوالدين', k:'big'}, {t:'شرب الخمر', k:'big'},
+  ]);
+  let errors = 0, sel = null, placed = 0;
+  setStage(`
+    <div class="eyebrow">المحطة الثالثة</div>
+    <h2>صنّفي الذنوب</h2>
+    <p class="lead">اختاري ذنبًا، ثم اضغطي على السلة المناسبة له.</p>
+    <div class="pool" id="pool">${items.map((it, i) => `<button class="chip" data-i="${i}" style="font-family:var(--f-body);font-size:17px">${it.t}</button>`).join('')}</div>
+    <div class="baskets">
+      <button class="basket small" data-k="small"><h3>صغائر</h3><span class="note">تكفّرها الطاعات كالوضوء والصلاة</span></button>
+      <button class="basket big" data-k="big"><h3>كبائر</h3><span class="note">تحتاج إلى توبة واستغفار</span></button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="center"><button class="btn" id="nextBtn" disabled>المحطة التالية</button></div>`);
+  const f = document.getElementById('fb'), baskets = $stage.querySelectorAll('.basket');
+  $stage.querySelectorAll('#pool .chip').forEach(c => c.onclick = () => {
+    $stage.querySelectorAll('#pool .chip').forEach(x => x.style.borderColor = '');
+    c.style.borderColor = 'var(--gold)'; sel = c;
+    baskets.forEach(b => b.classList.add('ready'));
+  });
+  baskets.forEach(b => b.onclick = () => {
+    if (!sel) { fb(f, false, 'اختاري ذنبًا أولًا'); return; }
+    const it = items[sel.dataset.i];
+    if (it.k === b.dataset.k) {
+      b.insertAdjacentHTML('beforeend', `<span class="placed">${it.t}</span>`);
+      sel.remove(); sel = null; placed++;
+      baskets.forEach(x => x.classList.remove('ready'));
+      fb(f, true, 'تصنيف صحيح!');
+      if (placed === items.length) { fb(f, true, 'أحسنتِ! فاحرصي على اجتناب المعاصي، وبادري بالتوبة إن وقعتِ في شيء منها.'); stationDone(2, errors); }
+    } else {
+      errors++; state.mistakes++;
+      fb(f, false, it.k === 'big' ? 'انتبهي! هذا من الكبائر التي تحتاج إلى توبة' : 'هذا من الصغائر التي تكفّرها الطاعات');
+    }
+  });
+  document.getElementById('nextBtn').onclick = next;
+}
+
+/* ---------- station 4: quiz ---------- */
+function station4(){
+  const Q = [
+    {q:'راوي حديثَي الدرس هو:', o:['أبو هريرة رضي الله عنه','أنس بن مالك رضي الله عنه','عبد الله بن عمر رضي الله عنهما'], a:0, e:'روى الحديثين أبو هريرة رضي الله عنه، وهو أكثر الصحابة رواية للحديث.'},
+    {q:'من فضائل الوضوء أن المؤمنين يُعرفون يوم القيامة:', o:['بكثرة المال','بالبياض والنور في أعضاء الوضوء','بطول القامة'], a:1, e:'يُعرف المؤمنون من أمة محمد صلى الله عليه وسلم بالنور في أعضاء الوضوء.'},
+    {q:'الطهارة بالإخلاص لله والخشوع في الصلاة هي طهارة:', o:['حسية','معنوية','لا شيء مما سبق'], a:1, e:'المعنوية بالإخلاص والخشوع، والحسية بتطهير البدن من الأوساخ.'},
+    {q:'الصلوات الخمس يكفّر الله بها:', o:['صغائر سيئات اليوم','سيئات الأسبوع','الكبائر'], a:0, e:'الصلوات الخمس تكفّر صغائر سيئات اليوم، والجمعة إلى الجمعة تكفّر سيئات الأسبوع.'},
+    {q:'ما الحكمة من تعدّد المكفّرات؟', o:['أن الذنوب لا تُغفر إلا بها','سعة فضل الله وعِظم رحمته بعباده','التخفيف عن الأغنياء فقط'], a:1, e:'كثرة الطرق التي يكفّر الله بها السيئات دليل على سعة فضله ورحمته.'},
+  ];
+  let qi = 0, errors = 0;
+  const show = () => {
+    const q = Q[qi];
+    setStage(`
+      <div class="eyebrow">المحطة الرابعة</div>
+      <h2>سباق الأسئلة</h2>
+      <div class="qcount">السؤال ${AR(qi+1)} من ${AR(Q.length)}</div>
+      <div class="question">${q.q}</div>
+      <div class="opts">${q.o.map((t, i) => `<button class="opt" data-i="${i}"><span class="l">${'أبج'[i]}</span><span>${t}</span></button>`).join('')}</div>
+      <div id="ex"></div>
+      <div class="center"><button class="btn" id="nextBtn" disabled>${qi < Q.length - 1 ? 'السؤال التالي' : 'إلى الشهادة'}</button></div>`);
+    let tried = false;
+    $stage.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const i = +b.dataset.i;
+      if (i === q.a) {
+        b.classList.add('ok');
+        $stage.querySelectorAll('.opt').forEach(x => x.disabled = true);
+        document.getElementById('ex').innerHTML = `<div class="explain">${tried ? 'صحيح بعد المحاولة. ' : 'إجابة صحيحة! '}${q.e}</div>`;
+        const n = document.getElementById('nextBtn'); n.disabled = false; n.focus();
+      } else {
+        b.classList.add('bad'); b.disabled = true;
+        if (!tried) { errors++; state.mistakes++; } tried = true;
+        document.getElementById('ex').innerHTML = `<div class="feedback bad">حاولي مرة أخرى</div>`;
+      }
+    });
+    document.getElementById('nextBtn').onclick = () => {
+      if (qi < Q.length - 1) { qi++; show(); }
+      else { state.stars[3] = errors === 0 ? 3 : errors <= 2 ? 2 : 1; next(); }
+    };
+  };
+  show();
+}
+
+/* ---------- certificate ---------- */
+function certificate(){
+  const total = state.stars.reduce((a, b) => a + b, 0);
+  const msg = total >= 11 ? 'متميّزة! أتقنتِ الدرس' : total >= 8 ? 'أحسنتِ! أداء رائع' : 'جهد طيب.. راجعي الدرس وأعيدي المحاولة';
+  setStage(`
+    <div class="eyebrow">شهادة إتمام الرحلة</div>
+    <h2>${state.name ? 'أحسنتِ يا ' + state.name.replace(/[<>&"]/g, '') : 'أحسنتِ يا مبدعة'}</h2>
+    <p class="lead">${msg}</p>
+    <div class="cert-stars">${Array.from({length:12}, (_, i) => starSvg(i < total)).join('')}</div>
+    <div class="score">${AR(total)} / ${AR(12)}</div>
+    <p class="lead">امتلأت قطراتك الأربع.. فاحرصي على أن يكون كل وضوء طهارةً لك من الذنوب.</p>
+    <div class="dua">«أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ»<br><span style="font-family:var(--f-body);font-size:14px;color:var(--muted)">الذكر بعد الوضوء — أخرجه مسلم</span></div>
+    <div class="center"><button class="btn gold" id="again">أعيدي الرحلة</button></div>`);
+  document.getElementById('again').onclick = () => { state.step = 1; state.stars = [0,0,0,0]; state.mistakes = 0; render(); };
+}
+
+render();
+</script>
+
+</body></html>

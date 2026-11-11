@@ -1,0 +1,422 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مفكّك الزوايا</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,500;1,500&display=swap">
+<style>
+/* Layout: game shell — level map strip on top, one level "console" at a time below; A = coral, B = sky, result = ink/violet */
+:root{
+  --bg:#f1f3f8; --panel:#ffffff; --ink:#18203a; --muted:#5b6582; --line:#d8ddea; --soft:#e8ebf4;
+  --a:#e4572e; --b:#1d8fd1; --r:#6a3fc1; --gold:#d99a00; --ok:#16855a; --bad:#c23b22;
+  --display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --math:"STIX Two Text","Times New Roman",serif;
+}
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75;direction:rtl}
+.wrap{max-width:1040px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:12px}
+header .eyebrow{font-size:13px;letter-spacing:.03em;color:var(--r);font-weight:600}
+header h1{font-family:var(--display);font-size:clamp(28px,5vw,40px);margin:0;line-height:1.2}
+header p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.total{font-family:var(--display);font-size:20px;display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.total .st{color:var(--gold)}
+/* level map */
+.map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:700px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lv{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:10px 12px;text-align:right;font:inherit;cursor:pointer;display:grid;gap:2px}
+.lv:hover{border-color:var(--r)}
+.lv[aria-current="true"]{border-color:var(--r);box-shadow:0 0 0 2px var(--r) inset}
+.lv .n{font-size:12px;color:var(--muted);font-weight:600}
+.lv .t{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.35}
+.lv .stars{color:var(--gold);letter-spacing:2px;font-size:15px}
+.lv .stars .off{color:var(--line)}
+/* console */
+.console{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:grid;gap:18px}
+.console h2{font-family:var(--display);font-size:24px;margin:0;line-height:1.3}
+.console .story{margin:0;color:var(--muted);max-width:70ch}
+.mission{border-radius:14px;background:var(--soft);padding:12px 16px;display:grid;gap:4px}
+.mission .tag{font-size:12px;font-weight:700;color:var(--r)}
+.mission .txt{font-weight:500;font-size:17px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+canvas{display:block;width:100%;max-width:100%;border-radius:14px;background:var(--bg)}
+.sl{display:grid;grid-template-columns:auto minmax(0,1fr) 64px;align-items:center;gap:10px}
+.sl label{font-family:var(--math);font-style:italic;font-size:20px;font-weight:500}
+.sl output{font-family:var(--math);font-size:20px;text-align:left;direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--r);direction:ltr}
+#aS{accent-color:var(--a)} #bS{accent-color:var(--b)}
+.readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rd{border-top:2px solid var(--line);padding-top:4px}
+.rd .k{font-size:14px;color:var(--muted)}
+.rd .v{font-family:var(--math);font-size:24px;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.m{font-family:var(--math);direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.m var{font-style:italic}
+.ca{color:var(--a)} .cb{color:var(--b)} .cr{color:var(--r)}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.15;margin:0 2px}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fr>span:last-child{padding:0 3px}
+.rad{border-top:1.5px solid currentColor;padding-top:1px;margin-inline-start:1px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:0;border-radius:12px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;background:var(--r);color:#fff}
+.btn.ghost{background:transparent;color:var(--r);border:1px solid var(--r)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--r);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+.opt{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 16px;font:inherit;font-size:18px;cursor:pointer;min-height:52px}
+.opt:hover:not(:disabled){border-color:var(--r)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--panel));opacity:.75}
+.fb{border-radius:12px;padding:10px 14px;font-weight:500}
+.fb.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok)}
+.fb.bad{background:color-mix(in srgb,var(--bad) 12%,var(--panel));color:var(--bad)}
+.fb.info{background:var(--soft);color:var(--ink)}
+.hint{color:var(--muted);font-size:15px}
+/* builder */
+.eq{display:flex;flex-wrap:wrap;align-items:center;gap:8px;direction:ltr;justify-content:center;font-family:var(--math);font-size:22px}
+.slot{min-width:84px;height:52px;border:2px dashed var(--line);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);font:inherit;font-size:21px;cursor:pointer;padding:0 8px}
+.slot.op{min-width:52px}
+.slot.filled{border-style:solid;border-color:var(--r)}
+.slot.next{border-color:var(--r)}
+.tiles{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;direction:ltr}
+.tile{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:8px 16px;font-family:var(--math);font-size:21px;cursor:pointer}
+.tile:hover{border-color:var(--r)}
+.tile.ang{font-size:19px}
+.tile.ang[aria-pressed="true"]{background:var(--r);color:#fff;border-color:var(--r)}
+.test{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.prog{display:flex;gap:6px}
+.prog i{width:28px;height:6px;border-radius:3px;background:var(--line)}
+.prog i.done{background:var(--ok)} .prog i.now{background:var(--r)}
+.big{font-family:var(--math);font-size:clamp(34px,7vw,52px);direction:ltr;text-align:center;line-height:1.2}
+.steps3{display:grid;gap:14px}
+.stp{display:grid;gap:8px}
+.stp .lbl{font-size:13px;font-weight:700;color:var(--r)}
+.decomp{display:grid;gap:12px;justify-items:center}
+.pick{display:grid;gap:6px;justify-items:center}
+.pick .who{font-size:13px;color:var(--muted)}
+.end{text-align:center;display:grid;gap:10px;justify-items:center;padding:20px 0}
+.end .bigstars{font-size:44px;color:var(--gold);letter-spacing:6px}
+footer{text-align:center;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:no-preference){.pop{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.96);opacity:.4}to{transform:none;opacity:1}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">رياضيات · الدرس 3-3 · المتطابقات المثلثية لمجموع زاويتين والفرق بينهما</div>
+      <h1>مفكّك الزوايا</h1>
+      <p>أربع مراحل تكتشفين فيها بنفسك كيف نجد جيب وجيب تمام زاوية لا نحفظ قيمتها، بتفكيكها إلى زاويتين خاصتين.</p>
+    </div>
+    <div class="total" aria-live="polite"><span class="st">★</span><span id="total">0 من 12</span></div>
+  </header>
+
+  <nav class="map" id="map" aria-label="مراحل اللعبة"></nav>
+
+  <main class="console pop" id="console"></main>
+
+  <footer>نشاط استكشافي · الفصل 3 المتطابقات والمعادلات المثلثية</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const rad=d=>d*Math.PI/180;
+const fmt=x=>{if(Math.abs(x)<5e-10)x=0;return x.toFixed(2).replace("-","−")};
+const F=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const R=x=>`√<span class="rad">${x}</span>`;
+const S=f=>`<span class="m">${f}</span>`;
+const LEVELS=[
+  {t:"فخّ الجمع",d:"هل نوزّع الجيب على الجمع؟"},
+  {t:"ورشة المطابقة",d:"ركّبي القانون بنفسك"},
+  {t:"فكّ الزاوية",d:"زوايا تبدو صعبة"},
+  {t:"مختبر الموجات",d:"تداخل بنّاء وهدّام"}
+];
+let stars=[0,0,0,0];
+try{const s=JSON.parse(localStorage.getItem("decoder-stars")||"null");if(Array.isArray(s)&&s.length===4)stars=s}catch(e){}
+function saveStars(){try{localStorage.setItem("decoder-stars",JSON.stringify(stars))}catch(e){}}
+let cur=0,mistakes=0,raf=null;
+
+function drawMap(){
+  const m=$("map");m.innerHTML="";
+  LEVELS.forEach((L,i)=>{
+    const b=document.createElement("button");b.className="lv";b.setAttribute("aria-current",i===cur);
+    b.innerHTML=`<span class="n">المرحلة ${i+1}</span><span class="t">${L.t}</span><span class="hint" style="font-size:13px">${L.d}</span><span class="stars">${[0,1,2].map(k=>`<span class="${k<stars[i]?"":"off"}">★</span>`).join("")}</span>`;
+    b.onclick=()=>openLevel(i);m.appendChild(b);
+  });
+  $("total").textContent=`${stars.reduce((a,b)=>a+b,0)} من 12`;
+}
+function finish(i){
+  const got=Math.max(1,3-Math.floor(mistakes/2));
+  stars[i]=Math.max(stars[i],got);saveStars();drawMap();
+  const c=$("console");c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
+  const last=i===3;
+  c.innerHTML=`<div class="end"><div class="bigstars">${"★".repeat(got)}<span style="color:var(--line)">${"★".repeat(3-got)}</span></div>
+  <h2>أنهيتِ «${LEVELS[i].t}»</h2>
+  <p class="story">${["اكتشفتِ أن sin(A + B) لا يساوي sin A + sin B. فكيف نحسبه إذن؟ هذا سؤال المرحلة التالية.","ركّبتِ متطابقات المجموع والفرق الأربع بنفسك. الآن نستعملها لإيجاد قيم دقيقة.","صرتِ تفكّكين أي زاوية إلى زاويتين خاصتين وتجدين قيمتها الدقيقة دون آلة حاسبة.","فهمتِ لماذا يتقوّى الصوت أو يختفي عند تداخل موجتين، وهذا سرّ فقرة «لماذا؟» في بداية الدرس."][i]}</p>
+  <div class="row" style="justify-content:center">${last?"":`<button class="btn" id="goNext">المرحلة التالية</button>`}<button class="btn ghost" id="again">إعادة المرحلة</button></div></div>`;
+  if(!last)$("goNext").onclick=()=>openLevel(i+1);
+  $("again").onclick=()=>openLevel(i);
+}
+function openLevel(i){
+  cur=i;mistakes=0;if(raf)cancelAnimationFrame(raf);raf=null;drawMap();
+  const c=$("console");c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
+  [level1,level2,level3,level4][i](c);
+}
+function mcq(box,opts,correct,onRight,explain){
+  box.innerHTML="";const fb=document.createElement("div");fb.className="fb";fb.hidden=true;
+  const wrap=document.createElement("div");wrap.className="opts";
+  opts.forEach((o,k)=>{const b=document.createElement("button");b.className="opt";b.innerHTML=o;
+    b.onclick=()=>{if(k===correct){b.classList.add("right");[...wrap.children].forEach(x=>x.disabled=true);fb.hidden=false;fb.className="fb ok";fb.innerHTML=explain||"إجابة صحيحة!";setTimeout(onRight,explain?0:700)}
+      else{b.classList.add("wrong");b.disabled=true;mistakes++;fb.hidden=false;fb.className="fb bad";fb.textContent="ليست هذه، حاولي مرة أخرى."}};
+    wrap.appendChild(b)});
+  box.append(wrap,fb);
+}
+function sizeCanvas(cv,ratio){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=Math.max(10,r.width*d);cv.height=Math.max(10,r.width*ratio*d);return cv.getContext("2d")}
+function C(){const s=getComputedStyle(document.documentElement);const g=k=>s.getPropertyValue(k).trim();return{a:g("--a"),b:g("--b"),r:g("--r"),ink:g("--ink"),muted:g("--muted"),line:g("--line"),ok:g("--ok")}}
+
+/* ================= LEVEL 1 ================= */
+function level1(c){
+  c.innerHTML=`<h2>فخّ الجمع</h2>
+  <p class="story">تقول إحدى الطالبات: «بما أن <span class="m">2(<var>A</var> + <var>B</var>) = 2<var>A</var> + 2<var>B</var></span>، فأكيد <span class="m">sin(<var>A</var> + <var>B</var>) = sin <var>A</var> + sin <var>B</var></span>». حرّكي الزاويتين وافحصي ادعاءها بنفسك.</p>
+  <div class="mission"><span class="tag" id="mTag">المهمة 1 من 3</span><span class="txt" id="mTxt"></span></div>
+  <div class="split">
+    <div style="display:grid;gap:12px">
+      <div class="sl"><label for="aS" class="ca">A</label><input type="range" id="aS" min="0" max="360" step="15" value="0"><output id="aO" class="ca">0°</output></div>
+      <div class="sl"><label for="bS" class="cb">B</label><input type="range" id="bS" min="0" max="360" step="15" value="0"><output id="bO" class="cb">0°</output></div>
+      <div class="readings">
+        <div class="rd"><div class="k">${S('sin <var>A</var>')}</div><div class="v ca" id="r1"></div></div>
+        <div class="rd"><div class="k">${S('sin <var>B</var>')}</div><div class="v cb" id="r2"></div></div>
+        <div class="rd"><div class="k">${S('sin <var>A</var> + sin <var>B</var>')}</div><div class="v" id="r3"></div></div>
+        <div class="rd"><div class="k">${S('sin(<var>A</var> + <var>B</var>)')}</div><div class="v cr" id="r4"></div></div>
+      </div>
+      <div id="verdict" class="fb info"></div>
+    </div>
+    <canvas id="cv1" aria-label="دائرة الوحدة تظهر الزاوية A والزاوية A + B"></canvas>
+  </div>
+  <div id="qbox"></div>`;
+  let m=0;const tried=new Set();
+  const M=["اجعلي A = 30° و B = 60°، ثم قارني بين القيمتين.",
+           "ابحثي عن زاويتين، كلٌّ منهما ليست 0° ولا 360°، يتساوى عندهما sin(A + B) و sin A + sin B.",
+           "ماذا تستنتجين؟"];
+  function setM(k){m=k;$("mTag").textContent=`المهمة ${k+1} من 3`;$("mTxt").textContent=M[k];
+    if(k===1){$("qbox").innerHTML=`<button class="btn ghost" id="h1">تلميح</button> <span class="hint" id="h1t" hidden>جرّبي زاويتين مجموعهما 360°، مثل 120° و 240°، أو A = B = 180°.</span>`;$("h1").onclick=()=>{$("h1t").hidden=false}}
+    if(k===2){mcq($("qbox"),["نعم، هي متطابقة صحيحة لكل الزوايا","لا، المساواة تتحقق لبعض القيم فقط، فهي ليست متطابقة","لا تتحقق المساواة لأي زاويتين أبدًا"],1,()=>{},
+      `صحيح. المتطابقة يجب أن تتحقق لكل القيم، ويكفي مثال مضاد واحد (مثل A = 30° و B = 60°) لنفيها. <button class="btn" id="end1" style="margin-inline-start:10px">أكملي</button>`);
+      $("qbox").addEventListener("click",e=>{if(e.target.id==="end1")finish(0)})}
+  }
+  const cv=$("cv1");
+  function upd(){
+    const A=+$("aS").value,B=+$("bS").value;$("aO").textContent=A+"°";$("bO").textContent=B+"°";
+    const s1=Math.sin(rad(A)),s2=Math.sin(rad(B)),s3=s1+s2,s4=Math.sin(rad(A+B));
+    $("r1").textContent=fmt(s1);$("r2").textContent=fmt(s2);$("r3").textContent=fmt(s3);$("r4").textContent=fmt(s4);
+    const eq=Math.abs(s3-s4)<1e-9;
+    $("verdict").className="fb "+(eq?"ok":"bad");
+    $("verdict").textContent=eq?"الطرفان متساويان هنا.":"الطرفان غير متساويين!";
+    if(m===0&&A===30&&B===60){setM(1)}
+    else if(m===1&&eq&&A%360!==0&&B%360!==0){mistakes+=0;$("verdict").textContent=`وجدتِها! عند A = ${A}° و B = ${B}° يتساوى الطرفان، لكنهما لم يتساويا عند 30° و 60°.`;setM(2)}
+    draw(A,B,s3,s4);
+  }
+  function draw(A,B,s3,s4){
+    const ctx=sizeCanvas(cv,.62),W=cv.width,H=cv.height,k=C();ctx.clearRect(0,0,W,H);
+    const cx=W*.3,cy=H/2,r=Math.min(W*.25,H*.4);
+    ctx.lineWidth=W*.004;ctx.strokeStyle=k.line;
+    ctx.beginPath();ctx.moveTo(cx-r*1.15,cy);ctx.lineTo(cx+r*1.15,cy);ctx.moveTo(cx,cy-r*1.15);ctx.lineTo(cx,cy+r*1.15);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    const ray=(ang,col,w)=>{const x=cx+r*Math.cos(rad(ang)),y=cy-r*Math.sin(rad(ang));ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();
+      ctx.setLineDash([W*.01,W*.008]);ctx.beginPath();ctx.moveTo(x,cy);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,W*.011,0,Math.PI*2);ctx.fill()};
+    ray(A,k.a,W*.006);
+    ctx.strokeStyle=k.b;ctx.lineWidth=W*.006;ctx.beginPath();ctx.arc(cx,cy,r*.32,-rad(A),-rad(A+B),true);ctx.stroke();
+    ray(A+B,k.r,W*.008);
+    // bars
+    const bx=W*.8,top=H*.1,bot=H*.9,mid=(top+bot)/2,u=(bot-top)/4;
+    ctx.strokeStyle=k.line;ctx.lineWidth=W*.003;ctx.beginPath();ctx.moveTo(bx-W*.16,mid);ctx.lineTo(bx+W*.16,mid);ctx.stroke();
+    ctx.fillStyle=k.muted;ctx.font=`${W*.028}px "STIX Two Text",serif`;ctx.textAlign="right";ctx.direction="ltr";
+    [2,1,0,-1,-2].forEach(v=>{ctx.fillText(String(v).replace("-","−"),bx-W*.165,mid-v*u+W*.01)});
+    const bar=(x,v,col)=>{ctx.fillStyle=col;const h=v*u;ctx.fillRect(x-W*.04,Math.min(mid,mid-h),W*.08,Math.max(2,Math.abs(h)))};
+    bar(bx-W*.09,s3,k.ink);bar(bx+W*.09,s4,k.r);
+    ctx.textAlign="center";ctx.font=`italic ${W*.03}px "STIX Two Text",serif`;ctx.direction="ltr";
+    ctx.fillStyle=k.ink;ctx.fillText("sin A + sin B",bx-W*.09,H*.985);ctx.fillStyle=k.r;ctx.fillText("sin(A + B)",bx+W*.09,H*.985);
+  }
+  $("aS").oninput=upd;$("bS").oninput=upd;addEventListener("resize",()=>{if(cur===0&&$("cv1"))upd()});
+  setM(0);upd();
+}
+
+/* ================= LEVEL 2 ================= */
+function level2(c){
+  const ROUNDS=[
+    {f:"sin(<var>A</var> + <var>B</var>)",fn:(A,B)=>Math.sin(A+B),h:`ابدئي بحالة سهلة: إذا كانت <span class="m"><var>B</var> = 0°</span> فإن الطرف الأيسر <span class="m">sin <var>A</var></span>. أي تركيبة تعطي <span class="m">sin <var>A</var></span> عندما <span class="m">cos 0° = 1</span> و <span class="m">sin 0° = 0</span>؟`},
+    {f:"cos(<var>A</var> + <var>B</var>)",fn:(A,B)=>Math.cos(A+B),h:`جرّبي <span class="m"><var>A</var> = <var>B</var> = 45°</span>: الطرف الأيسر cos 90° = 0. انتبهي للإشارة بين الحدّين.`},
+    {f:"sin(<var>A</var> − <var>B</var>)",fn:(A,B)=>Math.sin(A-B),h:`استبدلي <var>B</var> بـ −<var>B</var> في قانون sin(<var>A</var> + <var>B</var>)، وتذكّري أن cos(−<var>B</var>) = cos <var>B</var> و sin(−<var>B</var>) = −sin <var>B</var>.`},
+    {f:"cos(<var>A</var> − <var>B</var>)",fn:(A,B)=>Math.cos(A-B),h:`استبدلي <var>B</var> بـ −<var>B</var> في قانون cos(<var>A</var> + <var>B</var>). ماذا يحدث لإشارة الحدّ الثاني؟`}
+  ];
+  const TILES={sA:["sin <var>A</var>",a=>Math.sin(a.A)],cA:["cos <var>A</var>",a=>Math.cos(a.A)],sB:["sin <var>B</var>",a=>Math.sin(a.B)],cB:["cos <var>B</var>",a=>Math.cos(a.B)]};
+  let r=0,slots=[null,null,null,null,null]; // t1 t2 op t3 t4
+  c.innerHTML=`<h2>ورشة المطابقة</h2>
+  <p class="story">رأيتِ أن <span class="m">sin(<var>A</var> + <var>B</var>)</span> ليس مجموع الجيبين. القانون الحقيقي حدّان، كل حدّ حاصل ضرب دالتين. ركّبيه من البطاقات، ثم اختبريه بزوايا حقيقية قبل أن تعتمديه.</p>
+  <div class="row" style="justify-content:space-between"><div class="mission" style="flex:1;min-width:0"><span class="tag" id="rTag"></span><span class="txt">ركّبي قانون <span class="m cr" id="rF"></span></span></div><div class="prog" id="prog"></div></div>
+  <div class="eq" id="eq"></div>
+  <div class="tiles" id="tiles"></div>
+  <div class="row"><button class="btn ghost" id="tryB">اختبري تركيبتك</button><button class="btn" id="chkB">اعتمدي القانون</button><button class="btn ghost" id="hB">تلميح</button><button class="btn ghost" id="clrB">مسح</button></div>
+  <p class="hint" id="hT" hidden></p>
+  <div class="test" id="test"></div>
+  <div class="fb" id="fb2" hidden></div>`;
+  function drawEq(){
+    const e=$("eq");const R0=ROUNDS[r];e.innerHTML=`<span class="cr">${R0.f}</span><span>=</span>`;
+    const nextIdx=slots.findIndex(s=>s===null);
+    slots.forEach((s,i)=>{if(i===1||i===4){const d=document.createElement("span");d.textContent="·";e.appendChild(d)}
+      const b=document.createElement("button");b.className="slot"+(i===2?" op":"")+(s?" filled":"")+(i===nextIdx?" next":"");
+      b.innerHTML=s?(i===2?s:TILES[s][0]):"";b.setAttribute("aria-label",s?"إزالة":"خانة فارغة");
+      b.onclick=()=>{slots[i]=null;drawEq()};
+      if(i===3){} e.appendChild(b);
+      if(i===1){}
+    });
+    // reorder: insert dot between t1,t2 and t3,t4 already handled
+  }
+  function drawTiles(){
+    const t=$("tiles");t.innerHTML="";
+    [...Object.keys(TILES),"+","−"].forEach(k=>{const b=document.createElement("button");b.className="tile";b.innerHTML=TILES[k]?TILES[k][0]:k;
+      b.onclick=()=>{const isOp=!TILES[k];const idx=slots.findIndex((s,i)=>s===null&&(isOp?i===2:i!==2));if(idx>=0){slots[idx]=k;drawEq()}};t.appendChild(b)});
+  }
+  function evalB(A,B){const a={A,B};const p1=TILES[slots[0]][1](a)*TILES[slots[1]][1](a),p2=TILES[slots[3]][1](a)*TILES[slots[4]][1](a);return slots[2]==="+"?p1+p2:p1-p2}
+  function full(){return slots.every(s=>s!==null)}
+  function setR(k){r=k;slots=[null,null,null,null,null];$("rTag").textContent=`القانون ${k+1} من 4`;$("rF").innerHTML=ROUNDS[k].f;$("hT").hidden=true;$("hT").innerHTML=ROUNDS[k].h;$("test").innerHTML="";$("fb2").hidden=true;
+    $("prog").innerHTML=ROUNDS.map((_,i)=>`<i class="${i<k?"done":i===k?"now":""}"></i>`).join("");drawEq()}
+  const PAIRS=[[60,30],[45,45],[120,45],[30,90],[150,60]];
+  $("tryB").onclick=()=>{
+    if(!full()){$("fb2").hidden=false;$("fb2").className="fb info";$("fb2").textContent="املئي الخانات الخمس أولًا.";return}
+    const [A,B]=PAIRS[Math.floor(Math.random()*PAIRS.length)];
+    const mine=evalB(rad(A),rad(B)),real=ROUNDS[r].fn(rad(A),rad(B)),ok=Math.abs(mine-real)<1e-9;
+    $("test").insertAdjacentHTML("afterbegin",`<div class="rd"><div class="k">عند <span class="m"><var>A</var> = ${A}°، <var>B</var> = ${B}°</span></div><div class="v" style="font-size:18px">تركيبتك ${fmt(mine)} · الحقيقية <span class="cr">${fmt(real)}</span> ${ok?"✓":"✗"}</div></div>`);
+    $("fb2").hidden=true;
+  };
+  $("chkB").onclick=()=>{
+    const fb=$("fb2");fb.hidden=false;
+    if(!full()){fb.className="fb info";fb.textContent="املئي الخانات الخمس أولًا.";return}
+    let ok=true;for(let i=0;i<12;i++){const A=Math.random()*6.3,B=Math.random()*6.3;if(Math.abs(evalB(A,B)-ROUNDS[r].fn(A,B))>1e-9){ok=false;break}}
+    if(ok){fb.className="fb ok";fb.innerHTML=`ممتاز! هذا هو القانون الصحيح لـ <span class="m">${ROUNDS[r].f}</span>.`;
+      setTimeout(()=>{if(r<3)setR(r+1);else finish(1)},1300)}
+    else{mistakes++;fb.className="fb bad";fb.textContent="القانون لا يصمد أمام كل الزوايا. اختبري تركيبتك بزوايا مختلفة لتعرفي أين الخطأ."}
+  };
+  $("hB").onclick=()=>{$("hT").hidden=false};
+  $("clrB").onclick=()=>{slots=[null,null,null,null,null];drawEq()};
+  drawTiles();setR(0);
+}
+
+/* ================= LEVEL 3 ================= */
+function level3(c){
+  const P=F(R(6)+" + "+R(2),4),M=F(R(6)+" − "+R(2),4),N=F(R(2)+" − "+R(6),4),NP="−"+F(R(6)+" + "+R(2),4);
+  const Q=[
+    {fn:"sin",ang:105,ans:0,opts:[P,M,N,NP]},
+    {fn:"cos",ang:75,ans:0,opts:[M,P,N,NP]},
+    {fn:"sin",ang:15,ans:0,opts:[M,P,N,F(1,2)]},
+    {fn:"cos",ang:165,ans:0,opts:[NP,P,M,N]},
+    {fn:"cos",ang:-120,ans:0,opts:["−"+F(1,2),F(1,2),"−"+F(R(3),2),F(R(3),2)]},
+    {fn:"tan",ang:15,ans:0,opts:["2 − "+R(3),"2 + "+R(3),"−2 − "+R(3),R(3)+" − 1"]}
+  ];
+  const ANG=[30,45,60,90,120,135,150,180];
+  let qi=0,A=null,B=null,op="+";
+  c.innerHTML=`<h2>فكّ الزاوية</h2>
+  <p class="story">الآلة الحاسبة معطّلة! لإيجاد القيمة الدقيقة، فكّكي الزاوية إلى زاويتين خاصتين مجموعهما أو الفرق بينهما يساويها، ثم استعملي المتطابقة المناسبة.</p>
+  <div class="row" style="justify-content:space-between"><span class="tag" style="font-weight:700;color:var(--r);font-size:13px" id="qTag"></span><div class="prog" id="prog3"></div></div>
+  <div class="big" id="target"></div>
+  <div class="steps3">
+    <div class="stp"><div class="lbl">الخطوة 1: فكّكي الزاوية</div>
+      <div class="decomp">
+        <div class="pick"><span class="who">الزاوية الأولى</span><div class="tiles" id="pA"></div></div>
+        <div class="pick"><span class="who">العملية</span><div class="tiles" id="pOp"></div></div>
+        <div class="pick"><span class="who">الزاوية الثانية</span><div class="tiles" id="pB"></div></div>
+      </div>
+      <div class="row" style="justify-content:center"><span class="m" style="font-size:22px" id="dShow"></span><button class="btn" id="dChk">تحقّقي</button></div>
+      <div class="fb" id="dFb" hidden></div>
+    </div>
+    <div class="stp" id="s2" hidden><div class="lbl">الخطوة 2: اختاري المتطابقة بعد التعويض</div><div id="s2box"></div></div>
+    <div class="stp" id="s3" hidden><div class="lbl">الخطوة 3: القيمة الدقيقة</div><div id="s3box"></div></div>
+  </div>`;
+  const f=(fn,x)=>`${fn} ${x}°`;
+  function angTiles(id,set){const t=$(id);t.innerHTML="";ANG.forEach(a=>{const b=document.createElement("button");b.className="tile ang";b.textContent=a+"°";b.setAttribute("aria-pressed","false");b.onclick=()=>{set(a);[...t.children].forEach(x=>x.setAttribute("aria-pressed",x===b));show()};t.appendChild(b)})}
+  function show(){$("dShow").textContent=`${Q[qi].ang}° = ${A??"?"}° ${op} ${B??"?"}°`.replace("-","−")}
+  function load(){
+    const q=Q[qi];A=B=null;op="+";
+    $("qTag").textContent=`الزاوية ${qi+1} من ${Q.length}`;
+    $("prog3").innerHTML=Q.map((_,i)=>`<i class="${i<qi?"done":i===qi?"now":""}"></i>`).join("");
+    $("target").innerHTML=`${q.fn} (${String(q.ang).replace("-","−")}°)`;
+    angTiles("pA",v=>A=v);angTiles("pB",v=>B=v);
+    const po=$("pOp");po.innerHTML="";["+","−"].forEach(o=>{const b=document.createElement("button");b.className="tile ang";b.textContent=o;b.setAttribute("aria-pressed",o===op);b.onclick=()=>{op=o==="+"?"+":"−";[...po.children].forEach(x=>x.setAttribute("aria-pressed",x===b));show()};po.appendChild(b)});
+    $("dFb").hidden=true;$("s2").hidden=true;$("s3").hidden=true;$("dChk").disabled=false;show();
+  }
+  $("dChk").onclick=()=>{
+    const q=Q[qi],fb=$("dFb");fb.hidden=false;
+    if(A===null||B===null){fb.className="fb info";fb.textContent="اختاري الزاويتين أولًا.";return}
+    const v=op==="+"?A+B:A-B;
+    if(v!==q.ang){mistakes++;fb.className="fb bad";fb.textContent=`${A}° ${op} ${B}° = ${String(v).replace("-","−")}°، وليس ${String(q.ang).replace("-","−")}°. جرّبي زاويتين أخريين.`;return}
+    if(q.fn==="tan"&&(A===90||B===90)){fb.className="fb bad";fb.textContent="tan 90° غير معرّف، فلا يصلح هذا التفكيك. اختاري زاويتين أخريين.";return}
+    fb.className="fb ok";fb.textContent="تفكيك صحيح!";$("dChk").disabled=true;step2();
+  };
+  function formulas(fn,o,a,b){
+    const s=x=>f("sin",x),co=x=>f("cos",x),t=x=>f("tan",x);
+    const SIN={"+":[`${s(a)} ${co(b)} + ${co(a)} ${s(b)}`,`${s(a)} ${co(b)} − ${co(a)} ${s(b)}`,`${co(a)} ${co(b)} − ${s(a)} ${s(b)}`],
+               "−":[`${s(a)} ${co(b)} − ${co(a)} ${s(b)}`,`${s(a)} ${co(b)} + ${co(a)} ${s(b)}`,`${co(a)} ${co(b)} + ${s(a)} ${s(b)}`]};
+    const COS={"+":[`${co(a)} ${co(b)} − ${s(a)} ${s(b)}`,`${co(a)} ${co(b)} + ${s(a)} ${s(b)}`,`${s(a)} ${co(b)} + ${co(a)} ${s(b)}`],
+               "−":[`${co(a)} ${co(b)} + ${s(a)} ${s(b)}`,`${co(a)} ${co(b)} − ${s(a)} ${s(b)}`,`${s(a)} ${co(b)} − ${co(a)} ${s(b)}`]};
+    const TAN={"+":[F(`${t(a)} + ${t(b)}`,`1 − ${t(a)} ${t(b)}`),F(`${t(a)} + ${t(b)}`,`1 + ${t(a)} ${t(b)}`),`${t(a)} + ${t(b)}`],
+               "−":[F(`${t(a)} − ${t(b)}`,`1 + ${t(a)} ${t(b)}`),F(`${t(a)} − ${t(b)}`,`1 − ${t(a)} ${t(b)}`),`${t(a)} − ${t(b)}`]};
+    return {sin:SIN,cos:COS,tan:TAN}[fn][o];
+  }
+  function shuffleIdx(n){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+  function step2(){
+    const q=Q[qi];$("s2").hidden=false;const fs=formulas(q.fn,op,A,B),ord=shuffleIdx(3);
+    mcq($("s2box"),ord.map(i=>`<span class="m">${fs[i]}</span>`),ord.indexOf(0),step3);
+  }
+  function step3(){
+    const q=Q[qi];$("s3").hidden=false;const ord=shuffleIdx(4);
+    mcq($("s3box"),ord.map(i=>`<span class="m">${q.opts[i]}</span>`),ord.indexOf(q.ans),()=>{},
+      `صحيح! <button class="btn" id="n3" style="margin-inline-start:10px">${qi<Q.length-1?"الزاوية التالية":"إنهاء المرحلة"}</button>`);
+  }
+  $("s3box").addEventListener("click",e=>{if(e.target.id==="n3"){qi++;if(qi<Q.length)load();else finish(2)}});
+  load();
+}
+
+/* ================= LEVEL 4 ================= */
+function level4(c){
+  c.innerHTML=`<h2>مختبر الموجات</h2>
+  <p class="story">في فقرة «لماذا؟» فقدتِ إشارة الإنترنت لأن موجتين تداخلتا. هنا الموجة الأولى <span class="m ca">y = sin <var>x</var></span> ثابتة، والثانية <span class="m cb">y = sin(<var>x</var> + <var>B</var>)</span> تزيحينها بالمنزلق. الخط الداكن هو مجموع الموجتين.</p>
+  <div class="mission"><span class="tag" id="wTag">المهمة 1 من 3</span><span class="txt" id="wTxt"></span></div>
+  <canvas id="cv4" aria-label="رسم الموجتين ومجموعهما"></canvas>
+  <div class="sl"><label for="wS" class="cb">B</label><input type="range" id="wS" min="0" max="360" step="15" value="90"><output id="wO" class="cb">90°</output></div>
+  <div class="fb info" id="wFb"></div>
+  <div id="wq"></div>`;
+  let m=0;
+  const T=["حرّكي B حتى تصبح الموجة الناتجة أعلى ما يمكن (تداخل بنّاء).","حرّكي B حتى تختفي الموجة الناتجة تمامًا (تداخل هدّام).","أعيدي B إلى 90°، ثم أجيبي عن السؤال."];
+  function setM(k){m=k;$("wTag").textContent=`المهمة ${k+1} من 3`;$("wTxt").textContent=T[k];
+    if(k===2){mcq($("wq"),[S(R(2)),S("2"),S("1"),S("0")],0,()=>{},
+      `صحيح! باستعمال متطابقة المجموع: <span class="m">sin(<var>x</var> + 90°) = sin <var>x</var> cos 90° + cos <var>x</var> sin 90° = cos <var>x</var></span>، فالمجموع <span class="m">sin <var>x</var> + cos <var>x</var></span>، وأعلى قيمة له ${S(R(2))} عند <span class="m"><var>x</var> = 45°</span>. <button class="btn" id="end4" style="margin-inline-start:10px">أكملي</button>`);
+      $("wq").insertAdjacentHTML("afterbegin",`<p style="margin:0 0 8px;font-weight:500">عندما <span class="m"><var>B</var> = 90°</span>، ما أعلى ارتفاع للموجة الناتجة؟</p>`);
+      $("wq").addEventListener("click",e=>{if(e.target.id==="end4")finish(3)})}
+  }
+  const cv=$("cv4");
+  function draw(){
+    const B=+$("wS").value;$("wO").textContent=B+"°";
+    const ctx=sizeCanvas(cv,.42),W=cv.width,H=cv.height,k=C();ctx.clearRect(0,0,W,H);
+    const x0=W*.06,x1=W*.98,mid=H/2,u=H*.21;
+    ctx.strokeStyle=k.line;ctx.lineWidth=W*.0015;
+    [-2,-1,1,2].forEach(v=>{ctx.beginPath();ctx.moveTo(x0,mid-v*u);ctx.lineTo(x1,mid-v*u);ctx.stroke()});
+    ctx.lineWidth=W*.0025;ctx.beginPath();ctx.moveTo(x0,mid);ctx.lineTo(x1,mid);ctx.stroke();
+    ctx.fillStyle=k.muted;ctx.font=`${W*.018}px "STIX Two Text",serif`;ctx.textAlign="right";ctx.direction="ltr";
+    [2,1,0,-1,-2].forEach(v=>ctx.fillText(String(v).replace("-","−"),x0-W*.008,mid-v*u+W*.006));
+    ctx.textAlign="center";[90,180,270,360,450,540,630,720].forEach(d=>{const x=x0+(x1-x0)*d/720;ctx.fillText(d+"°",x,mid+W*.024)});
+    const curve=(fn,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();for(let i=0;i<=360;i++){const d=i*2,x=x0+(x1-x0)*d/720,y=mid-fn(rad(d))*u;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke()};
+    curve(x=>Math.sin(x),k.a,W*.004);curve(x=>Math.sin(x+rad(B)),k.b,W*.004);curve(x=>Math.sin(x)+Math.sin(x+rad(B)),k.ink,W*.007);
+    const amp=2*Math.abs(Math.cos(rad(B)/2));
+    const fb=$("wFb");
+    if(m===0&&amp>1.999){fb.className="fb ok";fb.textContent=`تداخل بنّاء! عند B = ${B}° تنطبق الموجتان فيصبح ارتفاع الناتج 2، ضعف كل موجة.`;setM(1)}
+    else if(m===1&&amp<1e-6){fb.className="fb ok";fb.textContent="تداخل هدّام! عند B = 180° تكون كل قمة مقابل قاع، فيلغي كلٌّ منهما الآخر وتختفي الإشارة. لهذا يفقد المزوّد الإشارة أحيانًا.";setM(2)}
+    else if(m<2){fb.className="fb info";fb.textContent=amp>1.4?"الموجة الناتجة أعلى من كل موجة وحدها.":amp<.6?"الموجة الناتجة تضعف...":"راقبي ارتفاع الخط الداكن وأنتِ تحرّكين B."}
+  }
+  $("wS").oninput=draw;addEventListener("resize",()=>{if(cur===3&&$("cv4"))draw()});
+  setM(0);draw();
+}
+
+drawMap();openLevel(0);
+</script>
+
+</body></html>

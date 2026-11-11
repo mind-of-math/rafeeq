@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>دَوحة | ألعاب وأنشطة تفاعلية في مكان واحد</title>
+<meta name="description" content="دَوحة: ألعاب وأنشطة تفاعلية لكل مرحلة وصف في مكان واحد.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#FBF8F2; --card:#fff; --ink:#1f2a44; --muted:#6b7390; --soft:#8a90a8; --line:#EFE9F7;
+  --teal:#14b8a6; --display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif; --body:"IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --math-bg:#EDE7FF; --math-ink:#4c33a8; --qud-bg:#FFF1D6; --qud-ink:#8a5200; --oth-bg:#FFE4EF; --oth-ink:#a3245c; --tool-bg:#DFF2FF; --tool-ink:#1f5aa8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-left)) 60px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.3}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:58px;height:58px}
+.brand h1{font-size:30px;font-weight:700}
+.brand p{margin:0;color:var(--muted);font-size:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.pill b{color:var(--ink);font-weight:600}
+.btn{border:0;border-radius:999px;padding:9px 18px;font-weight:600;font-family:var(--display);font-size:14px}
+.btn-hot{background:linear-gradient(135deg,#ff9f43,#e8378a);color:#fff}
+.btn-cool{background:linear-gradient(135deg,#14c3b5,#2f6fd6);color:#fff}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn-danger{background:#fff;border:1.5px solid #e5484d;color:#c62a2f}
+.who{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.link{background:none;border:0;color:#5b3fc4;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.chip{border:0;border-radius:999px;padding:7px 18px;font-size:14px;font-weight:500}
+.chip[data-c="all"]{background:#E3F6F3;color:#0b6b60}
+.chip[data-c="math"]{background:var(--math-bg);color:var(--math-ink)}
+.chip[data-c="qudrat"]{background:var(--qud-bg);color:var(--qud-ink)}
+.chip[data-c="other"]{background:var(--oth-bg);color:var(--oth-ink)}
+.chip[data-c="tools"]{background:var(--tool-bg);color:var(--tool-ink)}
+.chip[aria-pressed="true"]{background:var(--teal);color:#fff}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.filters select,.filters input{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:150px}
+.filters input{flex:1;min-width:180px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.card{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:start;display:flex;flex-direction:column;gap:2px;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px -14px rgba(60,40,120,.35)}
+.card .open{position:absolute;inset:0;border:0;background:transparent;border-radius:18px}
+.card .open:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.card svg.ic{width:52px;height:52px;margin-bottom:8px}
+.card h3{font-size:16px;font-weight:600}
+.card .lesson{font-size:13px;font-weight:500}
+.card .foot{margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;gap:6px;font-size:12px;color:var(--soft)}
+.card .views{display:inline-flex;align-items:center;gap:3px;font-variant-numeric:tabular-nums}
+.card .edit{position:absolute;top:10px;left:10px;z-index:2;width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.card .edit:hover{color:#5b3fc4;border-color:#cfc3f5}
+.c-math .lesson{color:#5b3fc4}.c-qudrat .lesson{color:#c25a12}.c-other .lesson{color:#c42a6d}.c-tools .lesson{color:#2c63c9}
+.empty{background:#fff;border:1.5px dashed #e3dcf2;border-radius:18px;padding:36px;text-align:center;color:var(--muted)}
+.section-title svg{width:30px;height:30px;flex:none}
+.section-title{white-space:nowrap;display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:18px;margin:22px 0 10px}
+/* gate */
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.gbox{background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px 24px;width:min(420px,100%);text-align:center;box-shadow:0 20px 50px -30px rgba(60,40,120,.4)}
+.gbox img{width:76px;height:76px}
+.gbox h1{font-size:26px;margin:8px 0 2px}
+.gbox p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.field{display:block;text-align:start;margin-bottom:12px}
+.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:#FCFBFE;border:1.5px solid #e6e0f3;border-radius:12px;padding:10px 12px}
+.field input:focus,.field select:focus{outline:none;border-color:#14c3b5}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#F4F1FA;border-radius:14px;padding:4px;margin-bottom:16px}
+.tabs button{border:0;background:transparent;border-radius:11px;padding:8px;font-weight:600;font-family:var(--display);color:var(--muted)}
+.tabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 2px 8px -4px rgba(0,0,0,.2)}
+.err{color:#c62a2f;font-size:13px;min-height:20px;margin:4px 0 0}
+.wide{width:100%;padding:12px;font-size:16px;border-radius:14px}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(31,42,68,.45);display:flex;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:50}
+.modal{background:#fff;border-radius:22px;padding:22px;width:min(640px,100%)}
+.modal h2{font-size:21px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.modal .x{border:0;background:#F4F1FA;border-radius:10px;width:34px;height:34px;font-size:18px}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.row,.row2{grid-template-columns:1fr}}
+.drop{border:2px dashed #cfc3f5;border-radius:16px;padding:18px;text-align:center;color:var(--muted);background:#FBFAFF;margin-bottom:12px;transition:.15s}
+.drop.on{border-color:#14c3b5;background:#EAFBF8;color:#0b6b60}
+.drop strong{display:block;color:var(--ink);font-family:var(--display)}
+.drop .file{margin-top:6px;font-size:13px;color:#0b6b60;font-weight:600}
+.icons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.icons button{border:2px solid transparent;background:none;padding:2px;border-radius:12px}
+.icons button[aria-pressed="true"]{border-color:#14c3b5}
+.icons svg{width:38px;height:38px;display:block}
+.actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hint{font-size:12px;color:var(--soft);margin:-6px 0 10px;text-align:start}
+table.rep{width:100%;border-collapse:collapse;font-size:14px}
+table.rep th,table.rep td{padding:8px;border-bottom:1px solid var(--line);text-align:start}
+table.rep th{color:var(--muted);font-weight:500}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1f2a44;color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;z-index:99}
+footer{margin-top:34px;text-align:center;color:var(--soft);font-size:13px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate" hidden>
+  <div class="gbox">
+    <img src="icon.svg" alt="">
+    <h1>أهلًا بكِ في دَوحة</h1>
+    <p>ألعاب وأنشطة تفاعلية في مكان واحد</p>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tStu" aria-selected="true">طالبة</button>
+      <button role="tab" id="tTea" aria-selected="false">معلمة</button>
+    </div>
+    <form id="fStu">
+      <label class="field"><span>اسمك</span><input id="sName" maxlength="60" autocomplete="name" placeholder="اكتبي اسمك"></label>
+      <div class="row2">
+        <label class="field"><span>المرحلة</span><select id="sStage"></select></label>
+        <label class="field"><span>الصف</span><select id="sGrade"></select></label>
+      </div>
+      <p class="err" id="sErr"></p>
+      <button class="btn btn-cool wide" type="submit">دخول</button>
+    </form>
+    <form id="fTea" hidden>
+      <label class="field"><span>رمز المعلمات</span><input id="tCode" type="password" autocomplete="off" placeholder="الرمز الذي وصلكِ" style="direction:ltr;text-align:center"></label>
+      <p class="err" id="tErr"></p>
+      <button class="btn btn-hot wide" type="submit">دخول المعلمات</button>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="wrap" hidden>
+  <header class="top">
+    <div class="brand">
+      <img src="icon.svg" alt="">
+      <div><h1>دَوحة</h1><p>ألعاب وأنشطة تفاعلية في مكان واحد</p></div>
+    </div>
+    <div class="meta">
+      <span class="pill"><b id="nAct">0</b> نشاطًا</span>
+      <span class="pill"><b id="nVis">0</b> زيارة</span>
+      <span id="teacherBtns" hidden>
+        <button class="btn btn-hot" id="addBtn">+ أضيفي نشاطك</button>
+        <button class="btn btn-ghost" id="repBtn">تفاعل الطالبات</button>
+        <button class="btn btn-ghost" id="codesBtn" hidden>الرموز</button>
+      </span>
+    </div>
+  </header>
+  <div class="who"><span id="whoTxt"></span><button class="link" id="logout">خروج</button></div>
+  <div class="chips" id="chips">
+    <button class="chip" data-c="all" aria-pressed="true">الكل</button>
+    <button class="chip" data-c="math" aria-pressed="false">الرياضيات</button>
+    <button class="chip" data-c="qudrat" aria-pressed="false">القدرات</button>
+    <button class="chip" data-c="other" aria-pressed="false">مواد أخرى</button>
+    <button class="chip" data-c="tools" aria-pressed="false">أدوات</button>
+  </div>
+  <div class="filters" id="tFilters" hidden>
+    <select id="fStage"><option value="">كل المراحل</option></select>
+    <select id="fGrade"><option value="">كل الصفوف</option></select>
+    <select id="fSubject"><option value="">كل المواد</option></select>
+    <input id="fSearch" type="search" placeholder="ابحثي باسم النشاط أو الدرس أو المعلمة">
+  </div>
+  <div id="list"></div>
+  <footer>دَوحة · المعلمة عهود جويهر</footer>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+const SB='https://geruvshyzwgjcmcakpfs.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlcnV2c2h5endnamNtY2FrcGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjYzMjIsImV4cCI6MjEwNzIwMjMyMn0.sB5UPCVpAEHCYOrGwH8KjL6Wn2lyijQeN3mtulzAJF4';
+async function rpc(fn,args){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
+  const t=await r.text(); let d=null; try{d=t?JSON.parse(t):null}catch(e){d=t}
+  if(!r.ok){throw new Error((d&&d.message)||'تعذّر الاتصال، حاولي مرة أخرى')}
+  return d;
+}
+const store={get(k){try{return JSON.parse(localStorage.getItem('dawha_'+k))}catch(e){return null}},set(k,v){try{localStorage.setItem('dawha_'+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem('dawha_'+k)}catch(e){}}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>Number(n||0).toLocaleString('en-US');
+
+const STAGES={'ابتدائي':6,'متوسط':3,'ثانوي':3};
+const ORD=['','الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
+const STAGE_ADJ={'ابتدائي':'الابتدائي','متوسط':'المتوسط','ثانوي':'الثانوي'};
+const gradeLabel=(st,g)=>st==='معلمات'?'للمعلمات':(g?('الصف '+ORD[g]+' '+STAGE_ADJ[st]):('كل صفوف '+(STAGE_ADJ[st]==='الثانوي'?'المرحلة الثانوية':STAGE_ADJ[st]==='المتوسط'?'المرحلة المتوسطة':'المرحلة الابتدائية')));
+const SUBJECTS=['الرياضيات','القدرات','لغتي','اللغة العربية','العلوم','الكيمياء','الفيزياء','الأحياء','الدراسات الإسلامية','الاجتماعيات','اللغة الإنجليزية','المهارات الرقمية','التفكير الناقد','أخرى'];
+const catOf=a=>a.is_tool?'tools':a.subject==='الرياضيات'?'math':a.subject==='القدرات'?'qudrat':'other';
+const CAT_NAME={math:'الرياضيات',qudrat:'القدرات',other:'مواد أخرى',tools:'أدوات'};
+
+/* ===== icons (her style: gradient tile + white drawing + yellow/orange accents) ===== */
+const GRAD={math:['#9b7bf0','#5b3fc4'],qudrat:['#ffc93c','#ff7a3d'],other:['#ff9f43','#e8378a'],tools:['#38c6f4','#3b6fe0']};
+const Y='#ffd23f',O='#ff9f43',D='#2b2350';
+const ICONS={
+ scale:`<rect x="30.5" y="15" width="3" height="32" rx="1.5" fill="#fff"/><rect x="12" y="17" width="40" height="3.2" rx="1.6" fill="#fff"/><path d="M14 20 L8 33 H20 Z M50 20 L44 33 H56 Z" fill="#fff" opacity=".9"/><path d="M8 33 a6 4 0 0 0 12 0 M44 33 a6 4 0 0 0 12 0" fill="${Y}"/><rect x="22" y="46" width="20" height="5" rx="2.5" fill="${Y}"/>`,
+ angle:`<path d="M12 50 H52" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M12 50 L44 16" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M12 50 L50 34" stroke="${Y}" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/><path d="M26 50 A14 14 0 0 0 22.5 39" fill="none" stroke="${Y}" stroke-width="3.5"/><path d="M33 50 A21 21 0 0 0 29.5 41.5" fill="none" stroke="${O}" stroke-width="3"/>`,
+ chest:`<rect x="12" y="28" width="40" height="22" rx="4" fill="#fff"/><path d="M12 30 a20 14 0 0 1 40 0 Z" fill="#fff" opacity=".85"/><rect x="12" y="29" width="40" height="4" fill="${Y}"/><rect x="28" y="30" width="8" height="10" rx="2" fill="${O}"/><circle cx="32" cy="35" r="1.6" fill="${D}"/><path d="M50 12 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5-4 l-4-1.5 l4-1.5 Z" fill="#fff"/>`,
+ flag:`<rect x="17" y="11" width="3.4" height="43" rx="1.7" fill="#fff"/><path d="M20 13 H48 L42 21.5 L48 30 H20 Z" fill="#fff"/><g fill="${D}"><rect x="24" y="15" width="5" height="4"/><rect x="34" y="15" width="5" height="4"/><rect x="29" y="19" width="5" height="4"/><rect x="24" y="23" width="5" height="4"/><rect x="34" y="23" width="5" height="4"/></g><text x="34" y="52" font-size="17" font-family="Georgia,serif" font-style="italic" fill="${Y}">xⁿ</text>`,
+ pairs:`<circle cx="23" cy="22" r="7" fill="#fff"/><circle cx="41" cy="22" r="7" fill="#fff"/><path d="M11 46 a12 12 0 0 1 24 0 Z" fill="#fff"/><path d="M29 46 a12 12 0 0 1 24 0 Z" fill="#fff" opacity=".85"/><circle cx="32" cy="52" r="5" fill="${Y}"/><path d="M29.8 52 l1.6 1.6 l3-3.2" stroke="${D}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+ race:`<path d="M10 46 Q32 30 54 46" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M10 46 Q32 30 54 46" fill="none" stroke="${D}" stroke-width="1.4" stroke-dasharray="3 4"/><circle cx="21" cy="25" r="6" fill="${Y}"/><circle cx="35" cy="20" r="6" fill="#fff"/><circle cx="47" cy="26" r="6" fill="${O}"/><path d="M45 12 v10 M45 12 h8 l-2 3 l2 3 h-8" fill="#fff" stroke="#fff" stroke-width="1.5"/>`,
+ wave:`<path d="M10 50 H54 M14 54 V12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><path d="M14 20 Q24 52 32 52 T52 20" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".55"/><path d="M20 14 Q30 46 38 46 T58 14" fill="none" stroke="${Y}" stroke-width="3.6" stroke-linecap="round"/><path d="M30 33 l6 -1 l-2 5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+ triangle:`<path d="M32 12 L54 50 H10 Z" fill="#fff"/><path d="M32 12 L54 50 H10 Z" fill="none" stroke="${Y}" stroke-width="3" stroke-linejoin="round"/><path d="M21 31 l4 2 M43 31 l-4 2" stroke="${O}" stroke-width="3" stroke-linecap="round"/><path d="M30 50 v-4 M34 50 v-4" stroke="${O}" stroke-width="3" stroke-linecap="round"/>`,
+ numbers:`<rect x="10" y="14" width="44" height="36" rx="8" fill="#fff"/><text x="32" y="40" text-anchor="middle" font-size="20" font-family="Readex Pro,Arial" font-weight="700" fill="${D}">123</text><circle cx="50" cy="16" r="6" fill="${Y}"/>`,
+ star:`<path d="M32 10 L38.2 24.5 L53.5 25.6 L41.8 35.6 L45.6 50.6 L32 42.4 L18.4 50.6 L22.2 35.6 L10.5 25.6 L25.8 24.5 Z" fill="#fff"/><path d="M32 10 L38.2 24.5 L32 29.5 Z" fill="#ffe9a8"/><path d="M51 8 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5-4 l-4-1.5 l4-1.5 Z" fill="#fff"/>`,
+ balloons:`<path d="M32 38 L22 52 M32 38 L42 52 M32 38 V54" stroke="#fff" stroke-width="2" stroke-linecap="round"/><ellipse cx="32" cy="21" rx="8" ry="10" fill="#fff"/><ellipse cx="17" cy="30" rx="7" ry="9" fill="${Y}"/><ellipse cx="47" cy="30" rx="7" ry="9" fill="#fff" opacity=".85"/><circle cx="32" cy="38" r="3.6" fill="${D}"/>`,
+ book:`<path d="M9 18 Q20 13 31 18 V50 Q20 45 9 50 Z" fill="#fff"/><path d="M55 18 Q44 13 33 18 V50 Q44 45 55 50 Z" fill="#fff" opacity=".88"/><path d="M14 26 h11 M14 32 h11 M39 26 h11 M39 32 h11" stroke="${Y}" stroke-width="2.4" stroke-linecap="round"/><circle cx="48" cy="12" r="4.5" fill="${Y}"/>`,
+ words:`<rect x="8" y="14" width="28" height="15" rx="7.5" fill="#fff"/><rect x="28" y="34" width="28" height="15" rx="7.5" fill="${Y}"/><path d="M15 21.5 h14 M35 41.5 h14" stroke="${D}" stroke-width="2.6" stroke-linecap="round"/><path d="M40 20 l6 6 M20 38 l6 6" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
+ pen:`<rect x="10" y="40" width="44" height="12" rx="6" fill="#fff" opacity=".85"/><path d="M42 10 L50 18 L26 42 L16 44 L18 34 Z" fill="#fff"/><path d="M42 10 L50 18 L46 22 L38 14 Z" fill="${Y}"/><path d="M16 44 L18 34 L26 42 Z" fill="${O}"/>`,
+ moon:`<path d="M38 12 a20 20 0 1 0 14 32 a16 16 0 1 1 -14 -32 Z" fill="#fff"/><path d="M44 18 l1.6 4.4 l4.4 1.6 l-4.4 1.6 l-1.6 4.4 l-1.6-4.4 l-4.4-1.6 l4.4-1.6 Z" fill="${Y}"/>`,
+ drop:`<path d="M32 10 C32 10 16 30 16 40 a16 16 0 0 0 32 0 C48 30 32 10 32 10 Z" fill="#fff"/><path d="M24 40 a8 8 0 0 0 8 8" fill="none" stroke="${Y}" stroke-width="3.2" stroke-linecap="round"/><circle cx="48" cy="16" r="4" fill="#fff" opacity=".8"/>`,
+ calc:`<rect x="14" y="9" width="36" height="46" rx="7" fill="#fff"/><rect x="19" y="14" width="26" height="10" rx="3" fill="${D}"/><text x="42" y="22" text-anchor="end" font-size="8" font-family="Arial" fill="${Y}">log</text><g fill="#e3dcfb"><rect x="19" y="29" width="7" height="6" rx="2"/><rect x="28.5" y="29" width="7" height="6" rx="2"/><rect x="19" y="38" width="7" height="6" rx="2"/><rect x="28.5" y="38" width="7" height="6" rx="2"/><rect x="19" y="47" width="7" height="4" rx="2"/><rect x="28.5" y="47" width="7" height="4" rx="2"/></g><rect x="38" y="29" width="7" height="22" rx="2" fill="${Y}"/>`,
+ magic:`<path d="M14 50 L40 24" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M40 24 L44 20" stroke="${Y}" stroke-width="5" stroke-linecap="round"/><path d="M44 8 l2 5 l5 2 l-5 2 l-2 5 l-2-5 l-5-2 l5-2 Z" fill="#fff"/><path d="M54 26 l1.4 3.4 l3.4 1.4 l-3.4 1.4 l-1.4 3.4 l-1.4-3.4 l-3.4-1.4 l3.4-1.4 Z" fill="${Y}"/><circle cx="26" cy="16" r="2.6" fill="#fff"/>`,
+ atom:`<ellipse cx="32" cy="32" rx="21" ry="8" fill="none" stroke="#fff" stroke-width="2.8"/><ellipse cx="32" cy="32" rx="21" ry="8" fill="none" stroke="#fff" stroke-width="2.8" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="21" ry="8" fill="none" stroke="#fff" stroke-width="2.8" transform="rotate(-60 32 32)"/><circle cx="32" cy="32" r="5" fill="${Y}"/>`,
+ globe:`<circle cx="32" cy="32" r="20" fill="#fff"/><path d="M12 32 H52 M32 12 C22 22 22 42 32 52 C42 42 42 22 32 12" fill="none" stroke="${D}" stroke-width="1.8" opacity=".55"/><path d="M20 22 q6 4 10 0 q4 6 -2 9 q-6 2 -8 -9 Z" fill="${Y}"/>`,
+ leaf:`<path d="M14 50 C14 26 30 14 52 12 C50 34 38 50 14 50 Z" fill="#fff"/><path d="M16 48 C26 36 36 26 46 18" fill="none" stroke="${Y}" stroke-width="3" stroke-linecap="round"/>`,
+ abc:`<rect x="9" y="16" width="46" height="32" rx="8" fill="#fff"/><text x="32" y="40" text-anchor="middle" font-size="18" font-family="Readex Pro,Arial" font-weight="700" fill="${D}">أ ب</text><circle cx="52" cy="17" r="5" fill="${Y}"/>`,
+ puzzle:`<path d="M14 18 h12 a5 5 0 1 1 10 0 h12 v12 a5 5 0 1 0 0 10 v12 H36 a5 5 0 1 0 -10 0 H14 Z" fill="#fff"/><circle cx="25" cy="31" r="4" fill="${Y}"/><circle cx="38" cy="40" r="3" fill="${O}"/>`
+};
+const ICON_KEYS=Object.keys(ICONS);
+const SUBJ_ICON={'الرياضيات':'triangle','القدرات':'star','لغتي':'abc','اللغة العربية':'abc','العلوم':'atom','الكيمياء':'atom','الفيزياء':'atom','الأحياء':'leaf','الدراسات الإسلامية':'moon','الاجتماعيات':'globe','اللغة الإنجليزية':'book','المهارات الرقمية':'calc','التفكير الناقد':'puzzle'};
+let gid=0;
+function iconSVG(key,cat,cls){
+  const g=GRAD[cat]||GRAD.other, id='gr'+(++gid);
+  return `<svg class="${cls||'ic'}" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g[0]}"/><stop offset="1" stop-color="${g[1]}"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#${id})"/>${ICONS[key]||ICONS.puzzle}</svg>`;
+}
+
+/* ===== state ===== */
+let ME=store.get('me'); // {role:'student',name,stage,grade} | {role:'teacher'|'admin',code}
+let ITEMS=[], CAT='all';
+
+function fillStageSelect(sel,withTeachers){
+  sel.innerHTML=Object.keys(STAGES).map(s=>`<option value="${s}">المرحلة ${s==='ابتدائي'?'الابتدائية':s==='متوسط'?'المتوسطة':'الثانوية'}</option>`).join('')+(withTeachers?'<option value="معلمات">للمعلمات فقط</option>':'');
+}
+function fillGradeSelect(sel,stage,withAll){
+  const n=STAGES[stage]||0; let h=withAll?'<option value="0">كل الصفوف</option>':'';
+  for(let i=1;i<=n;i++)h+=`<option value="${i}">الصف ${ORD[i]}</option>`;
+  sel.innerHTML=h; sel.disabled=!n;
+}
+
+/* ===== gate ===== */
+function showGate(){
+  $('app').hidden=true; $('gate').hidden=false;
+  fillStageSelect($('sStage')); fillGradeSelect($('sGrade'),$('sStage').value);
+}
+$('sStage').onchange=()=>fillGradeSelect($('sGrade'),$('sStage').value);
+function setTab(t){$('tStu').setAttribute('aria-selected',t==='s');$('tTea').setAttribute('aria-selected',t==='t');$('fStu').hidden=t!=='s';$('fTea').hidden=t!=='t'}
+$('tStu').onclick=()=>setTab('s'); $('tTea').onclick=()=>setTab('t');
+$('sName').oninput=()=>$('sErr').textContent='';
+$('tCode').oninput=()=>$('tErr').textContent='';
+$('fStu').onsubmit=e=>{
+  e.preventDefault();
+  const name=$('sName').value.trim();
+  if(name.length<2){$('sErr').textContent='اكتبي اسمك أولًا';return}
+  ME={role:'student',name,stage:$('sStage').value,grade:+$('sGrade').value};
+  store.set('me',ME); start();
+};
+$('fTea').onsubmit=async e=>{
+  e.preventDefault();
+  const code=$('tCode').value.trim();
+  if(!code){$('tErr').textContent='اكتبي رمز المعلمات';return}
+  try{const role=await rpc('dawha_check',{p_code:code});
+    if(!role){$('tErr').textContent='الرمز غير صحيح';return}
+    ME={role,code}; store.set('me',ME); start();
+  }catch(err){$('tErr').textContent=err.message}
+};
+$('logout').onclick=()=>{store.del('me');ME=null;showGate()};
+
+/* ===== app ===== */
+async function start(){
+  $('gate').hidden=true; $('app').hidden=false;
+  const teacher=ME.role!=='student';
+  $('teacherBtns').hidden=!teacher; $('tFilters').hidden=!teacher; $('codesBtn').hidden=ME.role!=='admin';
+  $('whoTxt').textContent=teacher?(ME.role==='admin'?'مرحبًا أستاذة عهود · لوحة المالكة':'مرحبًا بكِ · دخول المعلمات'):('مرحبًا '+ME.name+' · '+gradeLabel(ME.stage,ME.grade));
+  if(teacher){fillStageSelect($('fStage'),true);$('fStage').insertAdjacentHTML('afterbegin','<option value="">كل المراحل</option>');$('fStage').value='';fillGradeSelect($('fGrade'),'',false);$('fGrade').innerHTML='<option value="">كل الصفوف</option>'}
+  try{ if(!sessionStorage.getItem('dawha_hit')){sessionStorage.setItem('dawha_hit','1');rpc('dawha_hit',{p_kind:'site',p_activity:null,p_student:ME.name||null,p_stage:ME.stage||null,p_grade:ME.grade||null,p_role:ME.role}).catch(()=>{})} }catch(e){}
+  await load();
+}
+async function load(){
+  try{
+    const [items,vis]=await Promise.all([rpc('dawha_list'),rpc('dawha_stats')]);
+    ITEMS=items||[]; $('nVis').textContent=num(vis);
+  }catch(e){$('list').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  if(ME.role!=='student'){
+    const subs=[...new Set(ITEMS.map(a=>a.subject))].sort();
+    const cur=$('fSubject').value; $('fSubject').innerHTML='<option value="">كل المواد</option>'+subs.map(s=>`<option>${esc(s)}</option>`).join(''); $('fSubject').value=cur;
+  }
+  render();
+}
+function visible(){
+  let a=ITEMS;
+  if(ME.role==='student') a=a.filter(x=>x.stage===ME.stage&&(x.grade===0||x.grade===ME.grade));
+  else{
+    const st=$('fStage').value,gr=$('fGrade').value,su=$('fSubject').value,q=$('fSearch').value.trim();
+    if(st)a=a.filter(x=>x.stage===st); if(gr)a=a.filter(x=>x.grade===+gr||x.grade===0); if(su)a=a.filter(x=>x.subject===su);
+    if(q)a=a.filter(x=>(x.title+' '+x.lesson+' '+x.teacher+' '+x.subject).includes(q));
+  }
+  return a;
+}
+function render(){
+  const all=visible(); $('nAct').textContent=num(all.length);
+  document.querySelectorAll('.chip').forEach(c=>{const n=c.dataset.c; c.hidden=n!=='all'&&!all.some(x=>catOf(x)===n)});
+  if(CAT!=='all'&&!all.some(x=>catOf(x)===CAT))CAT='all';
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.c===CAT));
+  const a=CAT==='all'?all:all.filter(x=>catOf(x)===CAT);
+  if(!a.length){$('list').innerHTML=`<div class="empty">${ME.role==='student'?'لا توجد أنشطة لصفّك بعد، ستضيفها معلمتك قريبًا.':'لا توجد أنشطة بهذه التصفية.'}</div>`;return}
+  const groups=CAT==='all'?['math','qudrat','other','tools'].map(c=>[c,a.filter(x=>catOf(x)===c)]).filter(g=>g[1].length):[[CAT,a]];
+  const teacher=ME.role!=='student';
+  $('list').innerHTML=groups.map(([c,arr])=>`${groups.length>1?`<div class="section-title">${iconSVG(c==='math'?'triangle':c==='qudrat'?'star':c==='tools'?'calc':'book',c,'sec')}${CAT_NAME[c]}</div>`:''}<div class="grid">${arr.map(x=>`
+    <article class="card c-${c}">
+      <button class="open" data-open="${x.id}" aria-label="افتحي ${esc(x.title)}"></button>
+      ${teacher?`<button class="edit" data-edit="${x.id}" aria-label="تعديل ${esc(x.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.8 2.8 0 0 0-4-4L4 16v4"/><path d="M13.5 6.5l4 4"/></svg></button>`:''}
+      ${iconSVG(x.icon||SUBJ_ICON[x.subject]||'puzzle',c)}
+      <h3>${esc(x.title)}</h3>
+      <div class="lesson">${esc(x.lesson)}</div>
+      <div class="foot"><span>${esc(gradeLabel(x.stage,x.grade))}${x.subject&&!['الرياضيات','القدرات'].includes(x.subject)?' · '+esc(x.subject):''}<br>${esc(x.teacher)}</span>
+      <span class="views" title="مرات الفتح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>${num(x.opens)}</span></div>
+    </article>`).join('')}</div>`).join('');
+}
+$('chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;CAT=b.dataset.c;render()};
+['fStage','fGrade','fSubject'].forEach(id=>$(id).onchange=()=>{if(id==='fStage'){const st=$('fStage').value;if(STAGES[st]){fillGradeSelect($('fGrade'),st,false);$('fGrade').insertAdjacentHTML('afterbegin','<option value="">كل الصفوف</option>');$('fGrade').value=''}else{$('fGrade').innerHTML='<option value="">كل الصفوف</option>'}}render()});
+$('fSearch').oninput=render;
+
+$('list').onclick=e=>{
+  const ed=e.target.closest('[data-edit]'); if(ed){openForm(ITEMS.find(x=>x.id===ed.dataset.edit));return}
+  const op=e.target.closest('[data-open]'); if(!op)return;
+  const x=ITEMS.find(i=>i.id===op.dataset.open); if(!x)return;
+  const url=x.has_file?('play.html?id='+x.id):x.url;
+  const w=window.open(url,'_blank','noopener'); if(!w)location.href=url;
+  x.opens++; render();
+  rpc('dawha_hit',{p_kind:'open',p_activity:x.id,p_student:ME.name||null,p_stage:ME.stage||null,p_grade:ME.grade||null,p_role:ME.role==='student'?'student':'teacher'}).catch(()=>{});
+};
+
+/* ===== modal helpers ===== */
+function modal(html){
+  $('modalRoot').innerHTML=`<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  $('ov').onclick=e=>{if(e.target.id==='ov'||e.target.closest('.x'))closeModal()};
+  document.onkeydown=e=>{if(e.key==='Escape')closeModal()};
+}
+function closeModal(){$('modalRoot').innerHTML='';document.onkeydown=null}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+
+/* ===== add / edit form ===== */
+function openForm(item){
+  const isEdit=!!item, admin=ME.role==='admin';
+  let file=null, icon=item?.icon||'';
+  modal(`<h2>${isEdit?'تعديل النشاط':'إضافة نشاط جديد'}<button class="x" aria-label="إغلاق">×</button></h2>
+  <form id="af" novalidate>
+    <div class="row2">
+      <label class="field"><span>اسم المعلمة</span><input id="aTeacher" maxlength="80" value="${esc(item?.teacher||store.get('teacherName')||'')}"></label>
+      <label class="field"><span>المادة</span><select id="aSubject">${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}${item&&!SUBJECTS.includes(item.subject)?`<option>${esc(item.subject)}</option>`:''}</select></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span>المرحلة</span><select id="aStage"></select></label>
+      <label class="field"><span>الصف</span><select id="aGrade"></select></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span>اسم الدرس</span><input id="aLesson" maxlength="200" value="${esc(item?.lesson||'')}"></label>
+      <label class="field"><span>اسم النشاط</span><input id="aTitle" maxlength="120" value="${esc(item?.title||'')}"></label>
+    </div>
+    <label class="field" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="aTool" style="width:auto" ${item?.is_tool?'checked':''}> <span style="margin:0">هذه أداة وليست لعبة (تظهر في قسم «أدوات»)</span></label>
+    <div class="drop" id="drop"><strong>اسحبي ملف النشاط (HTML) وأفلتيه هنا</strong>أو <button type="button" class="link" id="pick">اختاري ملفًا</button><input type="file" id="fileIn" accept=".html,.htm,text/html" hidden><div class="file" id="fileName">${item?.has_file?'الملف الحالي محفوظ في دوحة':''}</div></div>
+    <label class="field"><span>أو الصقي رابط النشاط</span><input id="aUrl" dir="ltr" placeholder="https://..." value="${esc(item&&!item.has_file?item.url||'':'')}"></label>
+    <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:6px;text-align:start">الأيقونة</span>
+    <div class="icons" id="icons"></div>
+    ${isEdit?(admin?'':`<label class="field"><span>رمز التعديل الخاص بهذا النشاط</span><input id="aCode" type="password" autocomplete="off"></label>`)
+      :`<label class="field"><span>اختاري رمز تعديل لنشاطك (4 أحرف أو أرقام على الأقل)</span><input id="aCode" type="password" autocomplete="off"></label><p class="hint">احفظيه، فبه وحده تعدّلين نشاطك أو تحذفينه.</p>`}
+    <p class="err" id="aErr"></p>
+    <div class="actions">
+      <button class="btn btn-cool" type="submit">${isEdit?'حفظ التعديل':'إضافة النشاط'}</button>
+      ${isEdit?'<button class="btn btn-danger" type="button" id="delBtn">حذف النشاط</button>':''}
+    </div>
+  </form>`);
+  fillStageSelect($('aStage'),true); $('aStage').value=item?.stage||'ثانوي';
+  const syncGrade=()=>{fillGradeSelect($('aGrade'),$('aStage').value,true); if(!STAGES[$('aStage').value])$('aGrade').innerHTML='<option value="0">—</option>'};
+  syncGrade(); if(item)$('aGrade').value=String(item.grade); else $('aGrade').value=STAGES[$('aStage').value]?'1':'0';
+  $('aStage').onchange=()=>{syncGrade();$('aGrade').value=STAGES[$('aStage').value]?'1':'0';drawIcons()};
+  if(item)$('aSubject').value=item.subject;
+  const curCat=()=>catOf({is_tool:$('aTool').checked,subject:$('aSubject').value});
+  function drawIcons(){
+    const sel=icon||SUBJ_ICON[$('aSubject').value]||'puzzle';
+    $('icons').innerHTML=ICON_KEYS.map(k=>`<button type="button" data-k="${k}" aria-pressed="${k===sel}" aria-label="أيقونة">${iconSVG(k,curCat(),'')}</button>`).join('');
+  }
+  drawIcons();
+  $('icons').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;icon=b.dataset.k;drawIcons()};
+  $('aSubject').onchange=drawIcons; $('aTool').onchange=drawIcons;
+  const drop=$('drop');
+  const takeFile=f=>{
+    if(!f)return;
+    if(!/\.html?$/i.test(f.name)&&f.type!=='text/html'){$('aErr').textContent='الملف يجب أن يكون صفحة HTML';return}
+    if(f.size>5*1024*1024){$('aErr').textContent='حجم الملف أكبر من 5 ميجابايت';return}
+    const r=new FileReader(); r.onload=()=>{file=r.result;$('fileName').textContent='✓ '+f.name;$('aUrl').value='';$('aErr').textContent='';if(!$('aTitle').value){const m=/<title>([^<]{1,120})<\/title>/i.exec(file);if(m)$('aTitle').value=m[1].trim()}}; r.readAsText(f,'utf-8');
+  };
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('on')}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('on')}));
+  drop.addEventListener('drop',e=>{
+    const f=e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(f){takeFile(f);return}
+    const u=(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain')||'').trim();
+    if(/^https?:\/\//.test(u)){$('aUrl').value=u;file=null;$('fileName').textContent=''}
+  });
+  $('pick').onclick=()=>$('fileIn').click(); $('fileIn').onchange=e=>takeFile(e.target.files[0]);
+  $('aUrl').oninput=()=>{if($('aUrl').value.trim()){file=null;$('fileName').textContent=''}};
+  $('af').querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>$('aErr').textContent=''));
+  $('af').onsubmit=async e=>{
+    e.preventDefault();
+    const p={teacher:$('aTeacher').value.trim(),subject:$('aSubject').value,stage:$('aStage').value,grade:+$('aGrade').value||0,lesson:$('aLesson').value.trim(),title:$('aTitle').value.trim(),is_tool:$('aTool').checked,icon:icon||SUBJ_ICON[$('aSubject').value]||'puzzle'};
+    const url=$('aUrl').value.trim();
+    if(!p.teacher)return $('aErr').textContent='اكتبي اسم المعلمة';
+    if(!p.lesson)return $('aErr').textContent='اكتبي اسم الدرس';
+    if(!p.title)return $('aErr').textContent='اكتبي اسم النشاط';
+    if(url&&!/^https?:\/\/\S+$/i.test(url))return $('aErr').textContent='الرابط غير صحيح، يجب أن يبدأ بـ https://';
+    if(!isEdit&&!url&&!file)return $('aErr').textContent='اسحبي ملف النشاط أو الصقي رابطه';
+    if(url)p.url=url; else if(file)p.url=null;
+    const code=admin?ME.code:($('aCode')?.value.trim()||'');
+    if(!admin&&code.length<4)return $('aErr').textContent=isEdit?'اكتبي رمز التعديل':'اختاري رمز تعديل من 4 أحرف على الأقل';
+    const btn=e.submitter||$('af').querySelector('[type=submit]'); btn.disabled=true; btn.textContent='جارٍ الحفظ…';
+    try{
+      if(isEdit){ if(!url&&!file&&!item.has_file)delete p.url; if(!url&&item.has_file)delete p.url;
+        await rpc('dawha_update',{p_id:item.id,p,p_code:code,p_html:file});
+      } else {
+        await rpc('dawha_add',{p,p_teacher_code:ME.code,p_edit_code:admin?ME.code:code,p_html:file});
+      }
+      store.set('teacherName',p.teacher); closeModal(); toast(isEdit?'حُفظ التعديل':'أُضيف النشاط إلى دوحة'); load();
+    }catch(err){$('aErr').textContent=err.message;btn.disabled=false;btn.textContent=isEdit?'حفظ التعديل':'إضافة النشاط'}
+  };
+  if(isEdit)$('delBtn').onclick=async()=>{
+    const code=admin?ME.code:($('aCode').value.trim());
+    if(!code)return $('aErr').textContent='اكتبي رمز التعديل أولًا';
+    if(!confirm('هل أنتِ متأكدة من حذف هذا النشاط؟ لا يمكن التراجع.'))return;
+    try{await rpc('dawha_delete',{p_id:item.id,p_code:code});closeModal();toast('حُذف النشاط');load()}catch(err){$('aErr').textContent=err.message}
+  };
+}
+$('addBtn').onclick=()=>openForm(null);
+
+/* ===== report ===== */
+$('repBtn').onclick=async()=>{
+  modal(`<h2>تفاعل الطالبات<button class="x" aria-label="إغلاق">×</button></h2><div id="rep">جارٍ التحميل…</div>`);
+  try{
+    const rows=await rpc('dawha_report',{p_code:ME.code});
+    if(!rows.length){$('rep').innerHTML='<div class="empty">لم تفتح أي طالبة نشاطًا بعد.</div>';return}
+    const fmt=d=>new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    $('rep').innerHTML=`<div class="filters"><input id="rq" type="search" placeholder="ابحثي باسم طالبة أو نشاط"></div><div style="overflow:auto"><table class="rep"><thead><tr><th>الطالبة</th><th>الصف</th><th>النشاط</th><th>الوقت</th></tr></thead><tbody id="rb"></tbody></table></div>`;
+    const draw=()=>{const q=$('rq').value.trim();$('rb').innerHTML=rows.filter(r=>!q||(r.student+' '+r.title).includes(q)).map(r=>`<tr><td>${esc(r.student)}</td><td>${esc(gradeLabel(r.stage,r.grade))}</td><td>${esc(r.title)}</td><td dir="ltr" style="text-align:end">${fmt(r.created_at)}</td></tr>`).join('')};
+    $('rq').oninput=draw; draw();
+  }catch(e){$('rep').textContent=e.message}
+};
+
+/* ===== codes (owner) ===== */
+$('codesBtn').onclick=()=>{
+  modal(`<h2>رموز الدخول<button class="x" aria-label="إغلاق">×</button></h2>
+  <form id="cf"><label class="field"><span>رمز المعلمات الجديد (يعطى للمعلمات للدخول والإضافة)</span><input id="cT" autocomplete="off"></label>
+  <label class="field"><span>رمزكِ الخاص الجديد (للتعديل والحذف في كل الأنشطة)</span><input id="cA" autocomplete="off"></label>
+  <p class="hint">اتركي الخانة فارغة إن لم تريدي تغييرها.</p><p class="err" id="cErr"></p>
+  <button class="btn btn-cool" type="submit">حفظ</button></form>`);
+  $('cf').onsubmit=async e=>{e.preventDefault();
+    const t=$('cT').value.trim(),a=$('cA').value.trim();
+    if(!t&&!a)return $('cErr').textContent='اكتبي رمزًا جديدًا';
+    if((t&&t.length<4)||(a&&a.length<4))return $('cErr').textContent='الرمز 4 أحرف على الأقل';
+    try{await rpc('dawha_set_codes',{p_admin:ME.code,p_new_admin:a||null,p_new_teacher:t||null}); if(a){ME.code=a;store.set('me',ME)} closeModal(); toast('حُفظت الرموز')}catch(err){$('cErr').textContent=err.message}
+  };
+};
+
+if(ME&&ME.role)start(); else showGate();
+</script>
+</body>
+</html>

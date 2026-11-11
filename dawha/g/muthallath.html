@@ -1,0 +1,328 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>عرض المثلث للقدرات</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&display=swap">
+<style>
+/* Layout: a fixed 1280×720 slide stage scaled to fit, drawn like a geometry notebook page (graph grid, ink, highlighter). */
+:root{
+  --paper:#EDF2F1; --sheet:#F8FAF9; --grid:rgba(22,50,79,.065); --card:#FFFFFF;
+  --ink:#16324F; --muted:#56697C; --line:rgba(22,50,79,.15);
+  --mark:#F0C04A; --mark-soft:rgba(240,192,74,.28); --mark-ink:#5B4200;
+  --teal:#0E767C; --teal-soft:rgba(14,118,124,.10);
+  --ok:#2C8655; --ok-soft:#DFF1E6; --bad:#BF433A; --bad-soft:#FAE3E0;
+  --figfill:rgba(14,118,124,.07); --leaf:#5E9C5A; --trunk:#9A6A3C;
+  --display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+:root,:root[data-theme]{color-scheme:light}
+
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);overflow:hidden}
+#vp{position:fixed;inset:0;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center;
+  background-color:var(--sheet);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;border-radius:18px;box-shadow:0 10px 40px rgba(10,30,50,.12);overflow:hidden;direction:rtl}
+.slide{position:absolute;inset:0 0 72px 0;padding:44px 64px 20px;display:none;flex-direction:column}
+.slide.on{display:flex;animation:in .35s ease}
+@keyframes in{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}.opt.wrong{animation:none!important}}
+
+.m{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:var(--body)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;font-weight:700}
+.eyebrow{font-size:20px;font-weight:600;color:var(--teal);letter-spacing:.02em}
+hl,.hl{background:linear-gradient(transparent 55%,var(--mark-soft) 55%);padding:0 4px}
+
+/* title */
+.title{justify-content:center;gap:22px;padding-inline:96px}
+.title h1{font-size:150px;line-height:1.05}
+.title p{font-size:32px;color:var(--muted);margin:0;max-width:760px;line-height:1.6}
+.title .src{font-size:20px;margin-top:30px;color:var(--muted)}
+.title svg{position:absolute;left:70px;top:110px;width:440px;height:400px}
+
+/* concept slides */
+.concept h2{font-size:52px;margin:8px 0 26px}
+.cgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;flex:1;min-height:0}
+.rules{display:flex;flex-direction:column;gap:16px;min-width:0}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 22px}
+.rule b{display:block;font-size:21px;color:var(--teal);margin-bottom:6px;font-weight:600}
+.rule div{font-size:27px;line-height:1.6}
+.figcard{display:flex;align-items:center;justify-content:center;min-width:0}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;flex:1}
+.cols3 .rule div{font-size:24px}
+.cols3 ul{margin:4px 0 0;padding-right:24px;font-size:23px;line-height:1.75}
+.twofig{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:10px}
+.twofig .rule{display:flex;flex-direction:column;gap:6px}
+.twofig svg{height:230px}
+
+/* divider */
+.divider{justify-content:center;gap:20px;padding-inline:96px}
+.divider h2{font-size:96px}
+.divider p{font-size:30px;color:var(--muted);line-height:1.7;margin:0;max-width:820px}
+.keys{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.keys span{font-size:22px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 16px}
+
+/* question slides */
+.qhead{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.qnum{font-family:var(--display);font-size:30px;font-weight:700;background:var(--ink);color:var(--sheet);border-radius:12px;padding:4px 18px}
+.tag{font-size:20px;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:6px 16px;font-weight:600}
+.status{margin-inline-start:auto;font-size:20px;font-weight:600}
+.qbody{display:grid;grid-template-columns:1.08fr .92fr;gap:40px;flex:1;min-height:0}
+.qside{display:flex;flex-direction:column;gap:18px;min-width:0}
+.qtext{font-size:33px;line-height:1.6;margin:0;font-weight:500}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:14px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 16px;font:500 29px var(--body);color:var(--ink);cursor:pointer;text-align:right;transition:border-color .15s,background .15s,transform .1s}
+.opt:hover{border-color:var(--teal)}
+.opt:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.opt:active{transform:scale(.98)}
+.opt .l{flex:none;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal);font:700 24px var(--display)}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .l{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+.opt.wrong .l{background:var(--bad);color:#fff}
+.opt.done:not(.correct){opacity:.55}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.sol{background:var(--card);border:1px solid var(--line);border-inline-start:6px solid var(--mark);border-radius:12px;padding:12px 20px;font-size:25px;line-height:1.7}
+.sol h4{margin:0 0 2px;font:700 22px var(--display);color:var(--mark-ink)}
+.sol p{margin:0}
+.figbox{background:var(--card);border:1px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;padding:14px;min-width:0;min-height:0}
+.figbox svg{width:100%;height:100%;max-height:440px}
+.qtools{display:flex;gap:12px}
+.tbtn{font:600 21px var(--body);color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:7px 16px;cursor:pointer}
+.tbtn:hover{border-color:var(--teal);color:var(--teal)}
+.tbtn:focus-visible{outline:3px solid var(--mark)}
+.compare{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:26px;text-align:center}
+.compare div{padding:8px;background:var(--card)}
+.compare .h{background:var(--mark-soft);font-weight:700}
+
+/* svg figures */
+.fig{overflow:visible}
+.fig line,.fig path,.fig polygon,.fig circle{stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fig polygon.shape{fill:var(--figfill)}
+.fig .thin{stroke-width:2}
+.fig .tick{stroke-width:2.5;stroke:var(--teal)}
+.fig .arc{stroke-width:2;stroke:var(--teal)}
+.fig .dash{stroke-dasharray:7 6;stroke-width:2.2;stroke:var(--muted)}
+.fig .trunk{stroke:var(--trunk);stroke-width:6}
+.fig circle.leaf{fill:var(--leaf);stroke:none;opacity:.85}
+.fig circle.dot{fill:var(--ink);stroke:none}
+.fig circle.circ{stroke:var(--teal);stroke-width:2.2;stroke-dasharray:3 6}
+.fig text{fill:var(--ink);font:500 21px var(--body);text-anchor:middle;dominant-baseline:central}
+.fig text.pt{font:700 22px var(--display);fill:var(--teal)}
+.fig text.ang{font-size:18px;fill:var(--teal);font-weight:600}
+.fig text.big{font-size:26px}
+
+/* bottom bar */
+.bar{position:absolute;inset:auto 0 0 0;height:72px;display:flex;align-items:center;gap:18px;padding:0 40px;border-top:1px solid var(--line);background:var(--sheet)}
+.nbtn{font:600 22px var(--body);color:var(--sheet);background:var(--ink);border:0;border-radius:12px;padding:10px 22px;cursor:pointer}
+.nbtn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.nbtn:disabled{opacity:.3;cursor:default}
+.nbtn:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.prog{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--teal);border-radius:99px;transition:width .3s}
+.count,.score{font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.score{color:var(--mark-ink);background:var(--mark-soft);padding:6px 14px;border-radius:10px}
+
+/* results */
+.results{justify-content:center;align-items:flex-start;gap:20px;padding-inline:96px}
+.results h2{font-size:64px}
+.big{font:700 120px var(--display);line-height:1;color:var(--teal)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;max-width:960px}
+.chip{font:600 22px var(--body);width:64px;height:52px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chip.first{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.later{background:var(--mark-soft);border-color:var(--mark)}
+.chip.shown{background:var(--bad-soft);border-color:var(--bad)}
+.legend{display:flex;gap:22px;font-size:20px;color:var(--muted);flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:4px;margin-left:8px;vertical-align:-2px;background:var(--c)}
+</style>
+
+<div id="vp"><div id="stage">
+  <div id="slides"></div>
+  <nav class="bar">
+    <button class="nbtn ghost" id="prev" aria-label="السابق">→ السابق</button>
+    <span class="count" id="count"></span>
+    <div class="prog"><i id="progfill"></i></div>
+    <span class="score" id="score"></span>
+    <button class="nbtn ghost" id="fs" aria-label="ملء الشاشة">⛶</button>
+    <button class="nbtn" id="next" aria-label="التالي">التالي ←</button>
+  </nav>
+</div></div>
+
+<script>
+const AR='٠١٢٣٤٥٦٧٨٩';const ar=s=>String(s).replace(/\d/g,d=>AR[d]);
+const m=t=>`<span class="m">${t}</span>`;
+/* ---------- svg helpers ---------- */
+const r1=n=>Math.round(n*10)/10;
+const U=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);return[dx/l,dy/l]};
+const add=(p,v,k=1)=>[p[0]+v[0]*k,p[1]+v[1]*k];
+const P=p=>`${r1(p[0])} ${r1(p[1])}`;
+const S=(inner,w=400,h=300)=>`<svg class="fig" viewBox="0 0 ${w} ${h}" aria-hidden="true">${inner}</svg>`;
+const ln=(a,b,c='')=>`<line x1="${r1(a[0])}" y1="${r1(a[1])}" x2="${r1(b[0])}" y2="${r1(b[1])}" class="${c}"/>`;
+const pg=(pts,c='shape')=>`<polygon points="${pts.map(p=>r1(p[0])+','+r1(p[1])).join(' ')}" class="${c}"/>`;
+const tx=(p,t,c='')=>`<text x="${r1(p[0])}" y="${r1(p[1])}" class="${c}"${/√/.test(t)?' direction="ltr"':''}>${t}</text>`;
+function tk(a,b,n=1){const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2],u=U(a,b),v=[-u[1],u[0]];let s='';for(let i=0;i<n;i++){const c=add(mid,u,(i-(n-1)/2)*7);s+=ln(add(c,v,-8),add(c,v,8),'tick')}return s}
+function ra(V,A,B,s=16){const u=U(V,A),w=U(V,B),p1=add(V,u,s),p2=add(p1,w,s),p3=add(V,w,s);return`<path d="M${P(p1)}L${P(p2)}L${P(p3)}" class="thin"/>`}
+function ang(V,A,B,r=28,label='',lr){const u=U(V,A),w=U(V,B),p1=add(V,u,r),p2=add(V,w,r),cr=u[0]*w[1]-u[1]*w[0];let s=`<path d="M${P(p1)}A${r} ${r} 0 0 ${cr>0?1:0} ${P(p2)}" class="arc"/>`;if(label){const bi=[u[0]+w[0],u[1]+w[1]],bl=Math.hypot(...bi)||1;s+=tx(add(V,[bi[0]/bl,bi[1]/bl],lr||r+18),label,'ang')}return s}
+const dot=p=>`<circle cx="${r1(p[0])}" cy="${r1(p[1])}" r="4.5" class="dot"/>`;
+
+/* ---------- figures ---------- */
+const F={};
+{const A=[200,40],B=[70,250],C=[330,250];F[13]=S(pg([A,B,C])+tk(A,B)+tk(A,C)+tx([102,138],'١٣ سم')+tx([316,138],'٥س + ٣')+tx([200,278],'٤س − ٣'));}
+{let s='',y=150,h=69.3;const xs=[40,120,200,280,360];for(let i=0;i<4;i++){const a=[xs[i],y],b=[xs[i+1],y],ap=[(xs[i]+xs[i+1])/2,i%2?y+h:y-h];s+=pg([a,b,ap])}
+ F[14]=S(s+ln([40,y],[360,y])+tx([22,y],'ب','pt')+tx([378,y],'أ','pt')+tx([200,268],'أب = ١٦ سم'));}
+{const A=[240,70],B=[240,240],C=[70,240];F[15]=S(pg([A,B,C])+ra(B,A,C)+tk(A,B)+tk(B,C)+tx([128,138],'٣√٢','big')+tx([240,50],'أ','pt')+tx([258,258],'ب','pt')+tx([52,258],'ج','pt'));}
+{const B=[100,250],A=[269,79.6],T=[340,150],R=[340,250];F[16]=S(pg([B,A,T,R])+ra(A,B,T)+ra(R,T,B)+tx([318,100],'٥')+tx([360,200],'٥')+tx([220,276],'١٢')+tx([264,58],'أ','pt')+tx([84,264],'ب','pt'));}
+{const A=[330,50],B=[198,50],C=[330,226],D=[111.5,252.5];F[17]=S(pg([B,A,C,D])+ln(B,C)+ra(A,B,C)+tk(B,D)+tk(B,C)+ang(B,C,D,34,'٦٠°',58)+tx([264,30],'٦')+tx([352,138],'٨')+tx([348,38],'أ','pt')+tx([184,36],'ب','pt')+tx([344,242],'ج','pt')+tx([96,266],'د','pt'));}
+{const A=[100,250],Fo=[280,250],T=[280,78];F[18]=S(`<circle cx="280" cy="62" r="40" class="leaf"/><circle cx="252" cy="80" r="24" class="leaf"/><circle cx="308" cy="80" r="24" class="leaf"/>`+ln(Fo,T,'trunk')+ln(A,Fo)+ln(A,T,'dash')+ra(Fo,A,T)+ang(A,Fo,T,40,'٤٥°',62)+tx([190,276],'١٠٠ م')+tx([306,170],'؟','big'));}
+{const A=[60,240],Fo=[320,240],T=[320,92];F[19]=S(`<circle cx="320" cy="78" r="38" class="leaf"/><circle cx="294" cy="96" r="22" class="leaf"/><circle cx="346" cy="96" r="22" class="leaf"/>`+ln(Fo,T,'trunk')+ln(A,Fo)+ln(A,T)+ra(Fo,A,T)+ang(A,Fo,T,48,'٣٠°',72)+tx([172,144],'١٠٠ م')+tx([346,172],'؟','big'));}
+{const W=[200,110],L=[100,283.2],R=[300,283.2],N=[150,196.6],M=[250,196.6];F[20]=S(`<circle cx="200" cy="110" r="100" class="circ"/>`+pg([W,L,R])+ln(N,M,'dash')+dot(W)+dot(N)+dot(M)+tx([200,90],'و','pt')+tx([130,190],'ن','pt')+tx([270,190],'م','pt')+tx([200,302],'٦ سم'),400,315);}
+{const T=[80,50],Mi=[80,122],B=[80,230],R=[350,230],I=[188,122];F[21]=S(pg([T,B,R])+ln(Mi,I)+ra(B,T,R)+ra(Mi,T,I,12)+tx([60,86],'٤')+tx([60,176],'٦')+tx([215,256],'١٥')+tx([134,104],'س','big'));}
+{const Lt=[113.8,116],Lb=[113.8,267.7],Rb=[285.3,215],Rt=[285.2,25.4];F[22]=S(pg([[190,160],Lt,Lb])+pg([[190,160],Rt,Rb])+tx([158,121],'٨')+tx([172,232],'١٢')+tx([226,212],'س + ١')+tx([208,76],'٢س − ٣'));}
+{const R=[80,250],T=[80,80],H=[250,250];F[23]=S(pg([R,T,H])+ln(T,[80,28])+ra(R,T,H)+tk(R,T)+tk(R,H)+ang(T,[80,28],H,30,'س',52));}
+{const L=[150,70],R=[250,70],X=[200,207.4];F[24]=S(ln([20,70],[380,70])+ln([136.3,32.4],[212,240])+ln([263.7,32.4],[188,240])+ang(L,[100,70],[136.3,32.4],26,'٧٠°',50)+ang(R,[300,70],[263.7,32.4],26,'٧٠°',50)+ang(X,L,R,30,'س',52));}
+{const L=[50,250],Pp=[200,250],R=[350,250],T=[275,120.1];F[25]=S(pg([L,R,T])+ln(T,Pp)+tk(L,Pp)+tk(Pp,T)+tk(Pp,R)+ang(L,R,T,44,'٣٠°',68)+ang(T,Pp,R,30,'س',52));}
+{const B=[90,230],C=[290,230],A=[124.7,33];F[26]=S(pg([A,B,C])+ln(C,[385,230])+ang(B,C,A,30,'٨٠°',54)+ang(C,[385,230],A,28,'١٣٠°',54)+tx([124,14],'أ','pt')+tx([72,244],'ب','pt')+tx([292,256],'ج','pt'));}
+{const B=[60,240],C=[340,240],A=[125.8,99];F[27]=S(pg([A,B,C])+tx([200,264],'٩')+tx([76,164],'٥')+tx([250,154],'؟','big'));}
+{const C=[80,260],H=[80,200],A=[80,50],B=[170,260],D=[290,260];F[28]=S(pg([A,C,B],'shape')+ln(A,D)+ln(H,D)+ln(C,D)+ra(C,A,D)+tx([62,125],'٥')+tx([62,232],'٢')+tx([125,284],'٣')+tx([230,284],'٤')+tx([80,32],'أ','pt')+tx([58,198],'هـ','pt')+tx([62,276],'ج','pt')+tx([170,284],'ب','pt')+tx([304,276],'د','pt'));}
+
+/* concept figures */
+const CF={};
+{const A=[70,230],B=[290,230],C=[170,60];CF.ang=S(pg([A,B,C])+ln(B,[385,230])+ang(C,A,B,30,'أ',52)+ang(A,B,C,32,'ب',54)+ang(B,C,A,26,'ج',46)+ang(B,[385,230],C,30,'د',52));}
+{const A=[60,240],B=[340,240],C=[250,60],H=[250,240];CF.area=S(pg([A,B,C])+ln(C,H,'dash')+ra(H,C,B,14)+tx([170,266],'القاعدة')+tx([272,150],'ع','big'));}
+{const R=[80,240],T=[80,80],H=[293,240];CF.py=S(pg([R,T,H])+ra(R,T,H)+tx([58,160],'٣','big')+tx([186,266],'٤','big')+tx([206,146],'٥','big'));}
+{const R=[40,220],T=[40,60],H=[200,220];CF.s45=S(pg([R,T,H])+ra(R,T,H)+ang(T,R,H,30,'٤٥°',54)+ang(H,R,T,36,'٤٥°',60)+tx([20,140],'س')+tx([120,246],'س')+tx([142,126],'س√٢'),260,260);}
+{const R=[40,220],T=[40,120],H=[213,220];CF.s30=S(pg([R,T,H])+ra(R,T,H)+ang(T,R,H,24,'٦٠°',46)+ang(H,R,T,46,'٣٠°',70)+tx([20,170],'س')+tx([126,246],'س√٣')+tx([138,150],'٢س'),260,260);}
+
+/* ---------- questions ---------- */
+const Q=[
+ {n:13,tag:'المحيط',q:'أوجد محيط المثلث في الشكل المقابل.',o:['٣١','٤٣','٤٤','٤٩'],a:0,
+  s:`الضلعان المعلَّمان متطابقان: ٥س + ٣ = ١٣ ← س = ٢<br>القاعدة = ٤(٢) − ٣ = ٥<br>المحيط = ١٣ + ١٣ + ٥ = <b class="hl">٣١ سم</b>`},
+ {n:14,tag:'المحيط',q:'المثلثات متطابقة الأضلاع ومتطابقة فيما بينها، وطول أب = ١٦ سم. أوجد محيط الشكل كاملًا.',o:['٣٦','٤٨','٦٠','٦٤'],a:1,
+  s:`أب مكوَّن من ٤ أضلاع ← طول الضلع = ١٦ ÷ ٤ = ٤ سم<br>عدد الأضلاع = ٤ مثلثات × ٣ = ١٢ ضلعًا<br>المحيط = ١٢ × ٤ = <b class="hl">٤٨ سم</b>`},
+ {n:15,tag:'مثلث ٤٥ – ٤٥ – ٩٠',q:'أوجد محيط المثلث أ ب ج في الشكل المقابل.',o:['٣',m('٢√٢'),m('٦ + ٣√٢'),m('٦√٢')],a:2,
+  s:`أب = بج والزاوية ب قائمة ← مثلث ٤٥° – ٤٥° – ٩٠°<br>الضلع = الوتر ÷ ${m('√٢')} = ${m('٣√٢ ÷ √٢')} = ٣<br>المحيط = ٣ + ٣ + ${m('٣√٢')} = <b class="hl">${m('٦ + ٣√٢')}</b>`},
+ {n:16,tag:'فيثاغورس',q:'اعتمادًا على الرسم المقابل، أوجد طول أ ب.',o:['٢٠','١٣','١٢','٨'],a:2,
+  s:`صِل القطر من الرأس العلوي إلى ب: طوله ١٣ (الثلاثية ٥، ١٢، ١٣)<br>في المثلث القائم عند أ: أب² = ١٣² − ٥² = ١٤٤ ← أب = <b class="hl">١٢</b>`},
+ {n:17,tag:'فيثاغورس',q:'اعتمادًا على الرسم المقابل، أوجد طول ج د.',o:['٨','١٠','١٢','١٦'],a:1,
+  s:`المثلث أبج قائم عند أ ← بج = ١٠ (الثلاثية ٦، ٨، ١٠)<br>بد = بج = ١٠ والزاوية بينهما ٦٠° ← المثلث بجد متطابق الأضلاع<br>جد = <b class="hl">١٠</b>`},
+ {n:18,tag:'مثلث ٤٥ – ٤٥ – ٩٠',q:'اعتمادًا على الرسم المقابل، كم طول الشجرة؟',o:['١٠٠',m('٥٠'),m('√٥٠'),'٢٥'],a:0,
+  s:`مثلث قائم فيه زاوية ٤٥° ← الضلعان القائمان متساويان<br>طول الشجرة = المسافة على الأرض = <b class="hl">١٠٠ م</b>`},
+ {n:19,tag:'مثلث ٣٠ – ٦٠ – ٩٠',q:'اعتمادًا على الرسم المقابل، كم طول الشجرة؟',o:['١٠٠','٥٠','٤٠','٢٠'],a:1,
+  s:`الشجرة هي الضلع المقابل للزاوية ٣٠°<br>المقابل للزاوية ٣٠° = الوتر ÷ ٢ = ١٠٠ ÷ ٢ = <b class="hl">٥٠ م</b>`},
+ {n:20,tag:'منتصفات الأضلاع',q:'مثلث متطابق الأضلاع، أحد رؤوسه (و) مركز الدائرة. طول ضلعه ٦ سم، والنقطتان م، ن منتصفا ضلعيه. ما طول م ن؟',o:['١','٢','٣','٤'],a:2,
+  s:`القطعة الواصلة بين منتصفي ضلعين = نصف الضلع الثالث<br>م ن = ٦ ÷ ٢ = <b class="hl">٣ سم</b>`},
+ {n:21,tag:'التشابه',q:'ما قيمة س في الشكل المقابل؟',o:['٣','٦','٩','١٢'],a:1,
+  s:`س يوازي القاعدة ← المثلث الصغير يشابه الكبير<br>س ÷ ١٥ = ٤ ÷ (٤ + ٦) ← س = ١٥ × ٤ ÷ ١٠ = <b class="hl">٦</b>`},
+ {n:22,tag:'التشابه',q:'في الشكل المقابل، إذا كان المثلثان متشابهين فما قيمة س؟',o:['٣','٦','٩','١٢'],a:2,
+  s:`نسبة التشابه: ٨ ÷ (س + ١) = ١٢ ÷ (٢س − ٣)<br>١٦س − ٢٤ = ١٢س + ١٢ ← ٤س = ٣٦ ← س = <b class="hl">٩</b><br>تحقق: الطولان ١٠ و ١٥، و ٨ : ١٠ = ١٢ : ١٥`},
+ {n:23,tag:'الزاوية الخارجية',q:'ما قيمة س في الشكل المقابل؟',o:['٤٥°','١٣٠°','١٣٥°','١٤٠°'],a:2,
+  s:`مثلث قائم متطابق الضلعين ← كل زاوية من زاويتي القاعدة = ٤٥°<br>س زاوية خارجية = ١٨٠° − ٤٥° = <b class="hl">١٣٥°</b>`},
+ {n:24,tag:'مجموع الزوايا',q:'ما قيمة س في الشكل المقابل؟',o:['٤٠°','٥٠°','٧٠°','١٤٠°'],a:0,
+  s:`كل زاوية ٧٠° تقابل بالرأس زاوية داخلية في المثلث = ٧٠°<br>س = ١٨٠° − (٧٠° + ٧٠°) = <b class="hl">٤٠°</b>`},
+ {n:25,tag:'متطابق الضلعين',q:'ما قيمة س في الشكل المقابل؟',o:['٤٠°','٥٠°','٦٠°','٨٠°'],a:2,
+  s:`المثلث الأيسر متطابق الضلعين ← زاويته العليا = ٣٠° أيضًا<br>الزاوية الخارجية عند نقطة القاعدة = ٣٠° + ٣٠° = ٦٠°<br>المثلث الأيمن متطابق الضلعين وفيه ٦٠° ← متطابق الأضلاع ← س = <b class="hl">٦٠°</b>`},
+ {n:26,tag:'مقارنة',q:'اعتمادًا على الشكل المقابل، قارن بين:',cmp:['طول أ ب','طول ب ج'],o:['القيمة الأولى أكبر','القيمة الثانية أكبر','القيمتان متساويتان','المعطيات غير كافية'],a:2,
+  s:`الزاوية ج الداخلية = ١٨٠° − ١٣٠° = ٥٠°، والزاوية أ = ١٨٠° − (٨٠° + ٥٠°) = ٥٠°<br>أب يقابل ج، و بج يقابل أ، والزاويتان متساويتان ← <b class="hl">الطولان متساويان</b>`},
+ {n:27,tag:'متباينة المثلث',q:'مثلث طول ضلعه الأول ٥ وطول ضلعه الثاني ٩، الضلع الثالث لا يمكن أن يكون…',o:['٤','٧','١٢','١٣'],a:0,
+  s:`٩ − ٥ &lt; الضلع الثالث &lt; ٩ + ٥ ← ٤ &lt; الضلع &lt; ١٤<br>القيمة <b class="hl">٤</b> مرفوضة: ٥ + ٤ = ٩ وليس أكبر من ٩`},
+ {n:28,tag:'المساحة',q:'أوجد الفرق بين مساحة المثلث أ ب ج ومساحة المثلث د ج هـ.',o:['٢٫٥','٣','٣٫٥','٤'],a:2,
+  s:`مساحة أبج = ½ × ٣ × ٧ = ١٠٫٥<br>مساحة دجهـ = ½ × ٧ × ٢ = ٧<br>الفرق = ١٠٫٥ − ٧ = <b class="hl">٣٫٥</b>`},
+];
+const LET=['أ','ب','ج','د'];
+
+/* ---------- slides ---------- */
+const slides=[];
+slides.push(`<section class="slide title"><span class="eyebrow">القدرات – الجزء الكمي · الهندسة</span><h1>المثلث</h1>${S(pg([[60,370],[400,370],[120,40]])+ra([60,370],[120,40],[400,370])+ang([400,370],[60,370],[120,40],60,'')+tk([60,370],[400,370],2),440,400)}</section>`);
+const concept=(eb,h,rules,fig)=>`<section class="slide concept"><span class="eyebrow">${eb}</span><h2>${h}</h2><div class="cgrid"><div class="rules">${rules.map(r=>`<div class="rule"><b>${r[0]}</b><div>${r[1]}</div></div>`).join('')}</div><div class="figcard">${fig}</div></div></section>`;
+slides.push(concept('المفهوم ١','زوايا المثلث',[
+ ['مجموع الزوايا الداخلية','أ + ب + ج = <span class="hl">١٨٠°</span>'],
+ ['الزاوية الخارجية','د = أ + ب<br><small style="font-size:22px;color:var(--muted)">تساوي مجموع الزاويتين الداخليتين البعيدتين</small>'],
+ ['مجموع الزوايا الخارجية','زاوية واحدة عند كل رأس ← المجموع = <span class="hl">٣٦٠°</span>']],CF.ang));
+slides.push(concept('المفهوم ٢','الأضلاع والمساحة',[
+ ['متباينة المثلث','الضلع الثالث أكبر من <b style="display:inline;color:inherit">فرق</b> الضلعين وأصغر من <b style="display:inline;color:inherit">مجموعهما</b><br>٩ − ٥ &lt; الضلع &lt; ٩ + ٥'],
+ ['المحيط والمساحة','المحيط = مجموع أطوال الأضلاع<br>المساحة = ½ × القاعدة × الارتفاع'],
+ ['مساحة المثلث المتطابق الأضلاع',m('(الضلع)² × √٣ ÷ ٤')]],CF.area));
+slides.push(concept('المفهوم ٣','نظرية فيثاغورس',[
+ ['في المثلث القائم','(الوتر)² = (الضلع الأول)² + (الضلع الثاني)²<br><small style="font-size:22px;color:var(--muted)">الوتر أطول الأضلاع ويقابل الزاوية القائمة</small>'],
+ ['ثلاثيات مشهورة (ومضاعفاتها)','(٣، ٤، ٥) ← (٦، ٨، ١٠)<br>(٥، ١٢، ١٣) ← (١٠، ٢٤، ٢٦)'],
+ ['نصيحة القدرات','لاحظ الثلاثية قبل أن تحسب الجذر']],CF.py));
+slides.push(`<section class="slide concept"><span class="eyebrow">المفهوم ٤</span><h2>الأنواع والتطابق والتشابه</h2><div class="cols3">
+ <div class="rule"><b>حسب الزوايا والأضلاع</b><ul><li>حاد الزوايا: كل زواياه حادة</li><li>منفرج: فيه زاوية منفرجة</li><li>قائم: فيه زاوية قائمة</li><li>متطابق الضلعين: زاويتا القاعدة متطابقتان</li><li>متطابق الأضلاع: كل زاوية ٦٠°</li></ul></div>
+ <div class="rule"><b>يتطابق المثلثان إذا تطابق</b><ul><li>ثلاثة أضلاع</li><li>ضلعان وزاوية محصورة بينهما</li><li>زاويتان وضلع محصور بينهما</li></ul></div>
+ <div class="rule"><b>التشابه ومنتصفات الأضلاع</b><ul><li>المثلثان المتشابهان: زواياهما متساوية وأضلاعهما متناسبة</li><li>خط يوازي ضلعًا يصنع مثلثًا مشابهًا</li><li>القطعة الواصلة بين منتصفي ضلعين = نصف الضلع الثالث</li></ul></div>
+</div></section>`);
+slides.push(`<section class="slide concept"><span class="eyebrow">المفهوم ٥</span><h2>المثلثات القائمة الخاصة</h2><div class="twofig">
+ <div class="rule"><b>مثلث ٤٥° – ٤٥° – ٩٠°</b><div>الوتر = الضلع × ${m('√٢')}<br>الضلع = الوتر ÷ ${m('√٢')}</div>${CF.s45}</div>
+ <div class="rule"><b>مثلث ٣٠° – ٦٠° – ٩٠°</b><div>الوتر = ٢ × المقابل لـ ٣٠°<br>المقابل لـ ٦٠° = (الوتر ÷ ٢) × ${m('√٣')}</div>${CF.s30}</div>
+</div></section>`);
+slides.push(`<section class="slide divider"><span class="eyebrow">التطبيق</span><h2>أسئلة القدرات</h2><p>اختر الإجابة. إذا أخطأت تظهر باللون الأحمر ويمكنك المحاولة مرة أخرى، وعند الإجابة الصحيحة يظهر الحل خطوة بخطوة.</p><div class="keys"><span>← التالي</span><span>→ السابق</span><span>زر «الحل» لعرض الخطوات</span></div></section>`);
+const QSTART=slides.length;
+Q.forEach((q,i)=>{
+ slides.push(`<section class="slide qs" data-q="${i}"><div class="qhead"><span class="qnum">سؤال ${ar(q.n)}</span><span class="tag">${q.tag}</span><span class="status"></span></div>
+ <div class="qbody"><div class="qside"><p class="qtext">${q.q}</p>
+ ${q.cmp?`<div class="compare"><div class="h">القيمة الأولى</div><div class="h">القيمة الثانية</div><div>${q.cmp[0]}</div><div>${q.cmp[1]}</div></div>`:''}
+ <div class="opts">${q.o.map((o,j)=>`<button class="opt" id="q${q.n}o${j}" data-j="${j}"><span class="l">${LET[j]}</span><span>${o}</span></button>`).join('')}</div>
+ <div class="sol" hidden><h4>الحل</h4><p>${q.s}</p></div>
+ <div class="qtools"><button class="tbtn show">عرض الحل</button><button class="tbtn reset">إعادة السؤال</button></div></div>
+ <div class="figbox">${F[q.n]}</div></div></section>`);
+});
+slides.push(`<section class="slide results"><span class="eyebrow">النتيجة</span><h2>أحسنتِ المحاولة</h2><div class="big" id="bigscore"></div><div class="legend"><span style="--c:var(--ok)">صحيحة من أول محاولة</span><span style="--c:var(--mark)">صحيحة بعد محاولة</span><span style="--c:var(--bad)">عُرض الحل</span></div><div class="chips" id="chips"></div><button class="nbtn" id="restart">إعادة كل الأسئلة</button></section>`);
+
+const host=document.getElementById('slides');host.innerHTML=slides.join('');
+const els=[...host.children];
+const state=Q.map(()=>({tries:0,res:null})); // res: first|later|shown
+let cur=0;
+
+function score(){return state.filter(s=>s.res==='first').length}
+function refreshScore(){document.getElementById('score').textContent=`النقاط ${ar(score())} / ${ar(Q.length)}`}
+function paintQ(i){
+ const el=els[QSTART+i],st=state[i],q=Q[i];
+ el.querySelectorAll('.opt').forEach(b=>{b.classList.remove('correct','done');if(!st.res&&!b.dataset.wrong)b.classList.remove('wrong')});
+ el.querySelector('.sol').hidden=!st.res;
+ const s=el.querySelector('.status');
+ if(st.res){el.querySelector(`[data-j="${q.a}"]`).classList.add('correct');el.querySelectorAll('.opt').forEach(b=>b.classList.add('done'));}
+ s.textContent=st.res==='first'?'✓ إجابة صحيحة':st.res==='later'?'✓ صحيحة بعد محاولة':st.res==='shown'?'تم عرض الحل':'';
+ s.style.color=st.res==='first'?'var(--ok)':st.res==='later'?'var(--mark-ink)':'var(--muted)';
+ refreshScore();
+}
+host.addEventListener('click',e=>{
+ const sec=e.target.closest('.qs');if(!sec)return;const i=+sec.dataset.q,st=state[i],q=Q[i];
+ const o=e.target.closest('.opt');
+ if(o){if(st.res)return;const j=+o.dataset.j;
+  if(j===q.a){st.res=st.tries?'later':'first';paintQ(i)}
+  else{st.tries++;o.dataset.wrong=1;o.classList.remove('wrong');void o.offsetWidth;o.classList.add('wrong')}
+  return}
+ if(e.target.closest('.show')){if(!st.res){st.res='shown';paintQ(i)}return}
+ if(e.target.closest('.reset')){state[i]={tries:0,res:null};sec.querySelectorAll('.opt').forEach(b=>{delete b.dataset.wrong;b.classList.remove('wrong')});paintQ(i)}
+});
+
+function go(n){
+ cur=Math.max(0,Math.min(els.length-1,n));
+ els.forEach((el,k)=>el.classList.toggle('on',k===cur));
+ document.getElementById('count').textContent=`${ar(cur+1)} / ${ar(els.length)}`;
+ document.getElementById('progfill').style.width=`${(cur+1)/els.length*100}%`;
+ document.getElementById('prev').disabled=cur===0;document.getElementById('next').disabled=cur===els.length-1;
+ if(cur===els.length-1){
+  document.getElementById('bigscore').textContent=`${ar(score())} / ${ar(Q.length)}`;
+  document.getElementById('chips').innerHTML=Q.map((q,i)=>`<button class="chip ${state[i].res||''}" data-go="${QSTART+i}">${ar(q.n)}</button>`).join('');
+ }
+ try{localStorage.setItem('tri-deck-slide',cur)}catch(e){}
+}
+document.getElementById('prev').onclick=()=>go(cur-1);
+document.getElementById('next').onclick=()=>go(cur+1);
+host.addEventListener('click',e=>{const c=e.target.closest('[data-go]');if(c)go(+c.dataset.go);if(e.target.id==='restart'){state.forEach((s,i)=>{state[i]={tries:0,res:null}});host.querySelectorAll('.opt').forEach(b=>{delete b.dataset.wrong;b.classList.remove('wrong')});Q.forEach((_,i)=>paintQ(i));go(QSTART)}});
+document.addEventListener('keydown',e=>{if(['ArrowLeft','PageDown',' '].includes(e.key)&&!e.target.closest('button')){e.preventDefault();go(cur+1)}else if(e.key==='ArrowLeft'){go(cur+1)}else if(['ArrowRight','PageUp'].includes(e.key)){go(cur-1)}});
+let sx=null;document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>60)go(dx>0?cur+1:cur-1);sx=null});
+document.getElementById('fs').onclick=()=>{try{const d=document;if(d.fullscreenElement)d.exitFullscreen();else d.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+
+const stage=document.getElementById('stage'),vp=document.getElementById('vp');
+function fit(){const cs=getComputedStyle(vp),w=vp.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),h=vp.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);stage.style.transform=`translate(-50%,-50%) scale(${Math.min(w/1280,h/720)})`}
+addEventListener('resize',fit);fit();
+Q.forEach((_,i)=>paintQ(i));
+let start=0;try{start=+localStorage.getItem('tri-deck-slide')||0}catch(e){}
+go(start);
+</script>
+
+</body></html>

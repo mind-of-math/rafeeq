@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>دَوحة</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+html,body{margin:0;height:100%;background:#FBF8F2;font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif}
+iframe{border:0;width:100%;height:100%;display:block}
+.msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#6b7390}
+.msg a{color:#5b3fc4}
+</style>
+</head>
+<body>
+<div class="msg" id="msg">جارٍ فتح النشاط…</div>
+<script>
+const SB='https://geruvshyzwgjcmcakpfs.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlcnV2c2h5endnamNtY2FrcGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MjYzMjIsImV4cCI6MjEwNzIwMjMyMn0.sB5UPCVpAEHCYOrGwH8KjL6Wn2lyijQeN3mtulzAJF4';
+const id=new URLSearchParams(location.search).get('id');
+(async()=>{
+  try{
+    const r=await fetch(SB+'/rest/v1/rpc/dawha_get_file',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_id:id})});
+    const html=r.ok?await r.json():null;
+    if(!html)throw 0;
+    const m=/<title>([^<]*)<\/title>/i.exec(html); if(m)document.title=m[1]+' | دَوحة';
+    const f=document.createElement('iframe');
+    f.setAttribute('allow','fullscreen; autoplay; clipboard-write');
+    f.setAttribute('allowfullscreen','');
+    f.srcdoc=html; document.body.appendChild(f); document.getElementById('msg').remove();
+  }catch(e){document.getElementById('msg').innerHTML='تعذّر فتح النشاط. <a href="./">العودة إلى دوحة</a>'}
+})();
+</script>
+</body>
+</html>
