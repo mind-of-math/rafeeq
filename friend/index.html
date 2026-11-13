@@ -152,6 +152,8 @@ body.slide .grid{grid-template-columns:repeat(auto-fill,minmax(7.5em,1fr))}
 .wheelWrap .hub:disabled{opacity:.85;cursor:default}
 .pick .pickName{font-size:2.3em;min-width:50%}
 .gtop{display:flex;gap:.4em;flex-wrap:wrap;align-items:center;margin-bottom:.6em}
+.rkc{margin-top:.8em;background:#fff;border:2px solid var(--line);border-radius:.9em;padding:.6em .8em}.rkr{display:flex;align-items:center;gap:.6em;margin:.35em 0}.rkp{width:1.7em;height:1.7em;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}.rkp.f{background:var(--gold);color:#fff}.rkn{width:6.5em;font-weight:700;flex:none}.rkb{flex:1;height:1.1em;border-radius:.6em;background:#f0ebf8;overflow:hidden;min-width:3em}.rkb i{display:block;height:100%;border-radius:.6em}.rkv{min-width:3.6em;font-weight:800}.rkm{font-size:.85em;white-space:nowrap}
+.gtbl{width:100%;border-collapse:collapse;margin-top:.4em}.gtbl th,.gtbl td{padding:.3em .5em;border-bottom:1px solid var(--line);text-align:right}.gtbl th{color:#7a6f92;font-weight:600}
 .ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:.6em}
 .gcard{background:#fff;border:2px solid var(--line);border-radius:.9em;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
 .gcard.hl{transform:scale(1.03);box-shadow:0 0 0 4px var(--gold),0 .6em 1.4em rgba(0,0,0,.18)}
@@ -294,7 +296,7 @@ body.guest #lnkBox{display:none!important}
 <script>
 (function(){
 "use strict";
-var BUILD = 2026110901; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
+var BUILD = 2026111301; // يزداد مع كل تحديث؛ يستعمله فحص التحديث وحماية البيانات
 var GUEST = true, GUESTKEY = "rf_g_w-wE6zCJsqmqnK4Crof2ZVsQSFb38vEK"; // نسخة المعلمة الضيفة تُولَّد بتحويل آلي
 var KEY = "mulhimg-alhessa-v1";
 if(GUEST) document.body.classList.add("guest");
@@ -1191,6 +1193,9 @@ function renderGroups(){
       '</div><div class="gf"><button class="green" data-gs="'+k+'"'+(mem.length?'':' disabled')+'>⭐ نجمة للمجموعة</button></div></div>';
   }
   h += '</div>';
+  var rk = [0, 1, 2, 3].map(function(k){ var mem = c.students.filter(function(s){ return g.map[s.id] === k; }), tot = 0; mem.forEach(function(s){ tot += s.points; }); return {k: k, n: mem.length, tot: tot, avg: mem.length ? tot / mem.length : 0}; }).filter(function(x){ return x.n; }).sort(function(a, b){ return b.tot - a.tot; });
+  if(rk.length){ var mx = rk[0].tot || 1;
+    h += '<div class="rkc"><b>🏆 ترتيب المجموعات</b> <span class="muted">(مجموع نجوم الحصة)</span>'+rk.map(function(x, i){ return '<div class="rkr"><span class="rkp'+(i === 0 ? ' f' : '')+'">'+(i + 1)+'</span><span class="rkn" style="color:'+cols[x.k]+'">'+esc(g.names[x.k])+'</span><div class="rkb"><i style="width:'+Math.max(4, Math.round(100 * x.tot / mx))+'%;background:'+cols[x.k]+'"></i></div><span class="rkv">⭐ '+x.tot+'</span><span class="muted rkm">'+x.n+' 👤 • متوسط '+(Math.round(x.avg * 10) / 10)+'</span></div>'; }).join("")+'<div class="muted">المتوسط للطالبة الواحدة لعدالة المقارنة بين مجموعات مختلفة العدد.</div></div>'; }
   var un = c.students.filter(function(s){ var v = g.map[s.id]; return v === undefined || v === null; });
   if(un.length) h += '<div class="unas"><div class="muted" style="margin-bottom:.35em">بدون مجموعة ('+un.length+') — اضغطي على الاسم لإضافته:</div><div class="gm" style="display:flex;flex-wrap:wrap;gap:.35em">'+
     un.map(function(s){ return '<span class="chip'+(absentToday(c)[s.id] ? ' absent' : '')+'" data-s="'+s.id+'">'+esc(shortName(s.name))+'<i>'+s.points+'</i></span>'; }).join("")+'</div></div>';
@@ -1506,6 +1511,13 @@ function renderTests(){
         '<div class="muted">القاعدة: من حصلت على 5 أو 4.5 في القصير تُضاف لها درجة، ومن حصلت على 4.25 أو 4 أو 3.75 يُضاف لها نصف درجة.</div>';
     }
     if(st) h += '<div class="attsum"><span>عدد المُدخَل: '+st.n+'</span><span>المتوسط: <b>'+st.avg+'</b></span><span style="color:var(--green)">الأعلى: '+st.max+'</span><span style="color:var(--red)">الأدنى: '+st.min+'</span>'+(cur.max ? '<span>الناجحات (50% فأكثر): '+st.pass+'</span>' : '')+'</div>';
+    (function(){ var gg = c.groups && c.groups[gKind]; if(!gg || !Object.keys(gg.map || {}).length) return;
+      var cols = GCOL[gKind], rows = [0, 1, 2, 3].map(function(k){ var v = []; c.students.forEach(function(s){ if(gg.map[s.id] === k){ var x = (cur.g || {})[s.id]; if(x != null) v.push(x + (cur.kind === "per" ? bonusFor(c, cur, s.id) : 0)); } });
+        var mem = c.students.filter(function(s){ return gg.map[s.id] === k; }).length;
+        return {k: k, mem: mem, n: v.length, avg: v.length ? Math.round(v.reduce(function(a, b){ return a + b; }, 0) / v.length * 100) / 100 : null, hi: v.length ? Math.max.apply(null, v) : null, lo: v.length ? Math.min.apply(null, v) : null}; }).filter(function(x){ return x.mem; });
+      if(!rows.some(function(x){ return x.n; })) return;
+      h += '<div class="rkc"><b>📝 نتائج الاختبار حسب المجموعة</b> <span class="muted">('+(gKind === "orig" ? "المجموعات الأصلية" : "مجموعات التمايز")+')</span><table class="gtbl"><tr><th>المجموعة</th><th>المُدخَل</th><th>المتوسط</th><th>الأعلى</th><th>الأدنى</th></tr>'+
+        rows.map(function(x){ return '<tr><td style="color:'+cols[x.k]+';font-weight:700">'+esc(gg.names[x.k])+'</td><td>'+x.n+' / '+x.mem+'</td><td><b>'+(x.avg == null ? "—" : x.avg + (cur.max ? " / " + cur.max : ""))+'</b></td><td>'+(x.hi == null ? "—" : num(x.hi))+'</td><td>'+(x.lo == null ? "—" : num(x.lo))+'</td></tr>'; }).join("")+'</table></div>'; })();
     if(cur.kind === "per" && cur.max && !GUEST) h += '<div class="attbar"><button class="primary" id="tHonor">🌟 إرسال الحاصلات على الدرجة النهائية إلى مُتقِن</button></div><div class="muted">تُحسب الدرجة مع الدرجة المرحّلة من القصير. إعادة الضغط تحدّث القائمة.</div>';
     h += '<div class="attlist">' + c.students.map(function(s){ var g = (cur.g || {})[s.id];
       return '<div class="attrow"><div class="nm">'+esc(s.name)+'</div><input type="number" class="gin" data-g="'+s.id+'" step="any" min="0" placeholder="الدرجة" value="'+(g == null ? "" : g)+'">'+
