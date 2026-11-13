@@ -193,6 +193,18 @@
   "term": "1"
  },
  {
+  "id": "g3-3-5",
+  "num": "3-5",
+  "title": "حل المعادلات المثلثية",
+  "en": "Solving Trigonometric Equations",
+  "grade": "الثالث الثانوي",
+  "chapter": "الفصل 3: المتطابقات والمعادلات المثلثية",
+  "path": "lessons/g3-3-5/",
+  "slides": 20,
+  "added": "2026-11-13",
+  "term": "1"
+ },
+ {
   "id": "g1-review-2",
   "num": "مراجعة",
   "type": "page",
