@@ -263,6 +263,7 @@ button:focus-visible,.opt:focus-visible{outline-color:#8a78d8}
 .guide{margin:0;text-align:center}.guide img{max-height:72vh;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 @media (max-width:980px){.rules{grid-template-columns:repeat(2,minmax(0,1fr))}.vid-wrap{grid-template-columns:minmax(0,1fr)}.vid{max-height:60vh;margin:0 auto;display:block;width:auto;max-width:100%}.act-frame{height:70vh}}
 @media (max-width:560px){.rules{grid-template-columns:minmax(0,1fr)}}
+.grp-qr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.gq{display:flex;flex-direction:column;align-items:center;gap:3px;background:#fff;border-radius:12px;padding:6px 2px}.gq .qrc img,.gq .qrc canvas{width:100%!important;max-width:92px;height:auto!important}.gq b{font-size:.8rem;white-space:nowrap}.pcard.grp{flex:none;padding:12px 14px}.pcard.lv{overflow:hidden!important;min-height:130px}#lvList{overflow:auto;min-height:0}#panel{overflow-y:auto}.gq .qrc img,.gq .qrc canvas{max-width:72px!important}
 </style>
 
 <div class="app" id="app">
@@ -285,6 +286,7 @@ button:focus-visible,.opt:focus-visible{outline-color:#8a78d8}
       <div class="pcard lv t-live"><div class="lv-top"><h3>النتائج المباشرة</h3><span class="chip" title="عدد الطالبات">👥 <span id="lvN">0</span></span><span class="chip g" id="lvP">0%</span></div><div id="lvList" class="lv-list"></div><div class="net ok" id="net">متصلة</div></div>
       <div class="pcard score t-off"><h3>إجاباتي</h3><span class="chip" id="sc1">0 / 0</span><span class="chip g" id="sc2">0%</span></div>
       <div class="pcard me s-only"><div class="me-top"><span class="me-av">👩‍🎓</span><b id="meName"></b></div><div class="my-state" id="myState">اختاري إجابتك وستُرسل تلقائيًا</div></div>
+      <div class="pcard grp teacher-only" id="grpCard" hidden><h3>باركود المجموعات</h3><div class="grp-qr"><div class="gq"><div class="qrc" id="gq1"></div><b>المجموعة 1</b></div><div class="gq"><div class="qrc" id="gq2"></div><b>المجموعة 2</b></div><div class="gq"><div class="qrc" id="gq3"></div><b>المجموعة 3</b></div><div class="gq"><div class="qrc" id="gq4"></div><b>المجموعة 4</b></div></div></div>
       <div class="pcard draw">
         <h3>مساحة خطوات الحل</h3>
         <div class="tools" id="tools">
@@ -483,7 +485,7 @@ const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } cat
 const AR_LET = { a: "أ", b: "ب", c: "ج", d: "د" };
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const params = new URLSearchParams(location.search);
-const STUDENT = !!params.get("c");
+const GROUP = Math.min(9, parseInt(params.get("g"), 10) || 0); const STUDENT = !!params.get("c") || !!GROUP;
 document.body.classList.add(STUDENT ? "student" : "teacher");
 
 /* ---------- slides engine ---------- */
@@ -658,9 +660,10 @@ async function startSession() {
     afterLive(); pushState();
   } catch (e) { if (b) { b.disabled = false; b.textContent = "تعذّر الاتصال، حاولي مرة أخرى"; } }
 }
-function endSession() { live = null; store.del("live-teacher"); clearInterval(dashTimer); document.body.classList.remove("is-live"); renderLiveCover(); }
+function endSession() { live = null; { const c = $("#grpCard"); if (c) c.hidden = true; } store.del("live-teacher"); clearInterval(dashTimer); document.body.classList.remove("is-live"); renderLiveCover(); }
+function renderGroups() { const c = $("#grpCard"); if (!c) return; c.hidden = !live; if (!live || !window.QRCode) return; for (let n = 1; n <= 4; n++) { const el = $("#gq" + n); el.innerHTML = ""; new QRCode(el, { text: joinUrl() + "&g=" + n, width: 92, height: 92, correctLevel: QRCode.CorrectLevel.M }); } }
 function afterLive() {
-  document.body.classList.add("is-live"); renderLiveCover(); renderQR($("#qrSmall"), 120); $("#codeSmall").textContent = live.code;
+  renderGroups(); document.body.classList.add("is-live"); renderLiveCover(); renderQR($("#qrSmall"), 120); $("#codeSmall").textContent = live.code;
   clearInterval(dashTimer); dashTimer = setInterval(pollDash, 2500); pollDash(); score();
 }
 function renderLive() {
@@ -725,9 +728,12 @@ async function pollState() {
   } catch (e) { $("#follow").textContent = "انقطع الاتصال… نحاول مجددًا"; }
 }
 async function studentJoin() {
-  const code = params.get("c").toUpperCase().replace(/[^A-Z]/g, "");
-  const ov = $("#joinOv"); ov.hidden = false; $("#jCode").textContent = code;
-  const saved = store.get("live-student-" + code); if (saved && saved.name) $("#jName").value = saved.name;
+  let code = (params.get("c") || "").toUpperCase().replace(/[^A-Z]/g, "");
+  const ov = $("#joinOv"); ov.hidden = false;
+  if (!code && GROUP) { try { code = (await rpc("lesson_latest", { p_lesson: LESSON })) || ""; } catch (e) {}
+    if (!code) { $("#jName").value = "المجموعة " + GROUP; $("#jErr").textContent = "لم تبدأ المعلمة الحصة بعد. انتظري قليلًا ثم حدّثي الصفحة."; $("#jGo").disabled = true; return; } }
+  $("#jCode").textContent = code;
+  const SK = "live-student-" + code + (GROUP ? "-g" + GROUP : ""); const saved = store.get(SK); if (saved && saved.name) $("#jName").value = saved.name; if (GROUP) $("#jName").value = "المجموعة " + GROUP;
   let st; try { st = await rpc("lesson_state", { p_code: code }); } catch (e) { $("#jErr").textContent = "تعذّر الاتصال. تأكدي من الإنترنت ثم حدّثي الصفحة."; return; }
   if (!st) { $("#jErr").textContent = "الرمز غير صحيح أو انتهت الحصة."; $("#jGo").disabled = true; return; }
   $("#jForm").addEventListener("submit", async (e) => {
@@ -735,12 +741,13 @@ async function studentJoin() {
     const client = (saved && saved.client) || (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
     $("#jGo").disabled = true; $("#jGo").textContent = "جارٍ الدخول…";
     try { await rpc("lesson_join", { p_id: st.id, p_client: client, p_name: name });
-      live = { id: st.id, code, client, name }; store.set("live-student-" + code, { client, name });
+      live = { id: st.id, code, client, name }; store.set(SK, { client, name });
       try { (await rpc("lesson_mine", { p_id: st.id, p_client: client })).forEach((r) => { mine[r.q] = { a: r.a, img: r.img };
         const q = $(`.mcq[data-q="${r.q}"]`); if (q && !r.img) { const o = $(`.opt[data-k="${r.a}"]`, q); if (o) { o.classList.add("sel"); q.dataset.sel = r.a; } } }); } catch (e2) {}
-      ov.hidden = true; $("#meName").textContent = name; pollState(); setInterval(pollState, 2000);
+      ov.hidden = true; $("#meName").textContent = (GROUP ? "👥 " : "") + name; pollState(); setInterval(pollState, 2000);
     } catch (e3) { $("#jGo").disabled = false; $("#jGo").textContent = "دخول"; $("#jErr").textContent = "تعذّر الدخول، حاولي مرة أخرى."; }
   });
+  if (GROUP) $("#jForm").requestSubmit();
 }
 
 /* ---------- boot ---------- */
